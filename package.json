@@ -5,9 +5,11 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "capture:readme": "node scripts/capture-readme.mjs"
+        "capture:readme": "node scripts/capture-readme.mjs",
+        "build:favicons": "node scripts/build-favicons.mjs"
     },
     "devDependencies": {
+        "@flaticon/flaticon-uicons": "^3.3.1",
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^10.0.3",
         "laravel-vite-plugin": "^3.1",

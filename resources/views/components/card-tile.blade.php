@@ -12,7 +12,7 @@
        Appearance::surfaceClasses($card, $position),
    ])>
     <span class="flex items-start justify-between gap-3 p-4 text-[10px] leading-normal">
-        <span class="flex-none">{{ Appearance::typeMark($card) }}&nbsp; {{ $card->type->label() }}</span>
+        <span class="flex flex-none items-center gap-1.5"><x-uicon :name="Appearance::typeIcon($card->type)" :size="14" /> {{ $card->type->label() }}</span>
         @if ($themes)
             <span class="max-w-[65%] text-right">{{ $themes }}</span>
         @endif

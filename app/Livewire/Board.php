@@ -53,6 +53,9 @@ class Board extends Component
     #[Url(except: '')]
     public string $q = '';
 
+    /** Champ de recherche ouvert dans la barre d'outils (il filtre les cartes de la vue en direct). */
+    public bool $searching = false;
+
     /** Cartes affichées par section ; « Afficher plus » l'augmente. */
     public int $limit = 12;
 
@@ -60,6 +63,14 @@ class Board extends Component
     {
         $view ??= 'all';
         abort_unless(in_array($view, self::VIEWS, true), 404);
+
+        // /recherche : l'accueil, champ de recherche ouvert.
+        if ($view === 'search') {
+            $view = 'all';
+            $this->searching = true;
+        }
+
+        $this->searching = $this->searching || trim($this->q) !== '';
         abort_if($view === 'verdict' && ! isset(Appearance::VERDICT_TONES[$tone]), 404);
 
         $this->view = $view;
@@ -67,6 +78,12 @@ class Board extends Component
         $this->figure = $figure;
         $this->theme = $theme;
         $this->limit = $view === 'all' && $figure === null && $theme === null ? 12 : 48;
+    }
+
+    public function closeSearch(): void
+    {
+        $this->q = '';
+        $this->searching = false;
     }
 
     public function showMore(): void
@@ -104,10 +121,6 @@ class Board extends Component
      */
     private function sections(): array
     {
-        if ($this->view === 'search' && trim($this->q) === '') {
-            return [];
-        }
-
         $scopes = [
             'awaiting' => fn (Builder $query) => $query->awaitingVerdict()->orderBy('deadline'),
             'review' => fn (Builder $query) => $query->where('status', CardStatus::VerdictProposed)->orderBy('deadline'),

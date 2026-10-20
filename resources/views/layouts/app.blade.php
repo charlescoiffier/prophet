@@ -10,22 +10,28 @@
 
     <main class="min-w-0 flex-1 px-5 pt-5 pb-14 md:px-6 md:pt-7 lg:px-11">
         <div class="mx-auto flex max-w-[1700px] flex-col">
-            <div class="flex items-center justify-between gap-3 border-b border-ink pb-[18px] text-[10px] sm:text-xs">
-                <span>Un observatoire de la parole publique</span>
-                @if (config('prophet.test_notice'))
-                    <span class="bg-signal-yellow px-2 py-1 text-[10px]">Version de test</span>
-                @endif
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-ink pb-[18px] text-[10px] sm:text-xs">
+                <span>Un observatoire de la parole publique.</span>
+                <span class="flex items-center gap-3 text-muted">
+                    @php($commit = config('prophet.commit'))
+                    <a href="{{ config('prophet.repository').($commit ? '/commit/'.$commit : '/releases') }}" class="text-muted hover:text-ink" rel="noopener">
+                        Version {{ config('prophet.version') }}@if ($commit) · {{ substr($commit, 0, 7) }}@endif
+                    </a>
+                    <a href="{{ config('prophet.repository') }}" class="flex items-center gap-1 text-muted hover:text-ink" rel="noopener">
+                        <x-uicon name="github" :size="14" /> GitHub
+                    </a>
+                </span>
             </div>
 
             {{ $slot }}
 
-            <footer class="mt-10 flex flex-wrap justify-between gap-x-5 gap-y-2 border-t border-ink pt-4 text-[10px] text-muted">
-                <span>{{ config('app.name') }}. Les mots engagent.</span>
-                <span class="flex gap-3">
+            <footer class="mt-4 flex flex-wrap justify-between gap-x-5 gap-y-2 border-t border-ink pt-4 text-[10px] text-muted">
+                <span class="flex flex-wrap gap-3">
                     <a href="{{ route('pages.charter') }}" class="text-muted">Charte du contributeur</a>
                     <a href="{{ route('pages.privacy') }}" class="text-muted">Données personnelles</a>
                     <a href="{{ url('/docs/api') }}" class="text-muted">API</a>
                 </span>
+                <span>Icônes : <a href="https://www.flaticon.com/uicons" class="text-muted underline" rel="noopener">UIcons par Flaticon</a></span>
             </footer>
         </div>
     </main>

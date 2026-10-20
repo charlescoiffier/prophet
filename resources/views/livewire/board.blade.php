@@ -26,19 +26,22 @@
                 </button>
             @endforeach
         </div>
-        @if ($view !== 'search')
-            <a href="{{ route('search') }}" wire:navigate class="border border-line-strong px-3 py-[7px] text-xs text-ink no-underline hover:border-ink hover:text-ink">⌕ &nbsp; Rechercher</a>
+        @if ($searching)
+            <label class="flex min-h-10 w-full items-center gap-2 border border-ink bg-field px-3 sm:w-auto sm:min-w-[420px] lg:min-w-[520px]">
+                <x-uicon name="search" :size="20" />
+                <span class="sr-only">Rechercher dans les citations et leur contexte</span>
+                <input type="text" enterkeyhint="search" wire:model.live.debounce.300ms="q" x-init="$el.focus()" @keydown.escape="$wire.closeSearch()"
+                       placeholder="Rechercher dans les citations et leur contexte"
+                       class="min-w-0 flex-1 bg-transparent text-sm outline-none">
+                <button type="button" wire:click="closeSearch" class="cursor-pointer px-1 text-lg leading-none text-muted hover:text-ink" aria-label="Fermer la recherche">×</button>
+            </label>
+        @else
+            <button type="button" wire:click="$set('searching', true)"
+                    class="flex min-h-10 cursor-pointer items-center gap-2 border border-line-strong px-3 text-xs font-semibold hover:border-ink">
+                <x-uicon name="search" :size="20" /> Rechercher
+            </button>
         @endif
     </div>
-
-    @if ($view === 'search')
-        <label class="mt-6 flex min-h-12 items-center gap-2 border border-ink bg-field px-3">
-            <span aria-hidden="true">⌕</span>
-            <span class="sr-only">Rechercher une citation</span>
-            <input type="search" wire:model.live.debounce.400ms="q" autofocus placeholder="Rechercher dans les citations et leur contexte"
-                   class="min-w-0 flex-1 bg-transparent text-sm outline-none">
-        </label>
-    @endif
 
     @if ($record)
         <section aria-label="Bilan" class="mt-6 flex flex-wrap gap-x-8 gap-y-2 border border-ink bg-field px-4 py-3 text-[13px]">
@@ -59,7 +62,7 @@
     @forelse ($sections as $section)
         @php($featured = $isHome && $loop->first && $section['cards']->isNotEmpty())
         <section class="flex flex-col" wire:key="section-{{ $section['key'] }}">
-            <div class="mt-[30px] mb-[15px] flex items-center justify-between gap-3">
+            <div class="mt-[30px] mb-4 flex items-center justify-between gap-3 border-b border-ink pb-3">
                 <h2 class="flex items-center text-[19px] font-bold tracking-[-0.5px]">
                     {{ $section['title'] }}
                     <span class="ml-2 inline-grid size-[22px] place-items-center rounded-full border border-line-strong text-[11px] font-normal tracking-normal">{{ $section['total'] }}</span>
@@ -70,12 +73,8 @@
                 @foreach ($section['cards'] as $card)
                     <x-card-tile :card="$card" :position="$loop->index" :wide="$featured && $loop->first" wire:key="card-{{ $card->id }}" />
                     @if ($featured && $loop->first)
-                        <div class="hidden flex-col justify-between gap-6 border border-ink p-6 lg:flex">
-                            <span aria-hidden="true" class="relative block size-12 rounded-full bg-signal-red after:absolute after:left-6 after:h-12 after:w-6 after:rounded-r-full after:bg-signal-yellow after:content-['']"></span>
-                            <div>
-                                <h3 class="mb-2 font-serif text-[27px] leading-[1.05] font-extrabold">Une citation.<br>Des sources. Des faits.</h3>
-                                <p class="text-xs leading-relaxed">Chaque verdict confronte une déclaration mot pour mot à des éléments vérifiables. La nuance fait partie de la réponse.</p>
-                            </div>
+                        <div class="hidden items-end border border-ink p-6 lg:flex">
+                            <p class="font-serif text-[22px] leading-snug italic">Chaque verdict confronte une déclaration mot pour mot à des éléments vérifiables. La nuance fait partie de la réponse.</p>
                         </div>
                     @endif
                 @endforeach
@@ -88,9 +87,7 @@
         </section>
     @empty
         <p class="mt-8 border border-dashed border-line-strong px-4 py-10 text-center text-muted">
-            @if ($view === 'search' && trim($q) === '')
-                Tapez un mot de la citation ou de son contexte.
-            @elseif ($view === 'search')
+            @if (trim($q) !== '')
                 Aucune carte ne correspond à « {{ $q }} ».
             @else
                 Aucune carte pour l’instant.

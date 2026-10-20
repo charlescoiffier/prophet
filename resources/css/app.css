@@ -65,6 +65,27 @@
         @apply text-accent hover:text-accent-dark;
     }
 
+    /* Barres de défilement discrètes : fines, couleur du trait. */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-line) transparent;
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-line);
+        border: 2px solid transparent;
+        background-clip: content-box;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
     :focus-visible {
         outline: 3px solid var(--color-signal-red);
         outline-offset: 3px;

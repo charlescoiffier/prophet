@@ -53,19 +53,28 @@ it('filtre la page d’un thème', function () {
     $this->get('/themes/sante')->assertOk()->assertSee('« Avec thème. »')->assertDontSee('« Sans thème. »');
 });
 
-it('cherche en français et filtre par type', function () {
+it('ouvre la recherche dans la barre d’outils et filtre les cartes en direct, en français', function () {
     Card::factory()->published()->promise()->create(['quote' => '« Nous construirons des logements. »']);
     Card::factory()->published()->prediction()->create(['quote' => '« Les logements manqueront. »']);
     Card::factory()->published()->promise()->create(['quote' => '« Rien à voir. »']);
 
-    Livewire::test(Board::class, ['view' => 'search'])
-        ->assertSee('Tapez un mot')
+    Livewire::test(Board::class)
+        ->assertSet('searching', false)
+        ->set('searching', true)
+        ->assertSee('« Rien à voir. »')
         ->set('q', 'logement')
         ->assertSee('« Nous construirons des logements. »')
         ->assertSee('« Les logements manqueront. »')
         ->assertDontSee('« Rien à voir. »')
         ->set('type', 'promise')
-        ->assertDontSee('« Les logements manqueront. »');
+        ->assertDontSee('« Les logements manqueront. »')
+        ->call('closeSearch')
+        ->assertSet('q', '')
+        ->assertSee('« Rien à voir. »');
+});
+
+it('ouvre l’accueil avec la recherche ouverte depuis /recherche', function () {
+    Livewire::test(Board::class, ['view' => 'search'])->assertSet('searching', true)->assertSet('view', 'all');
 });
 
 it('répond 404 pour une personnalité inconnue', function () {

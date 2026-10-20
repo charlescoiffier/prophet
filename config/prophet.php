@@ -2,7 +2,10 @@
 
 return [
     /*
-     * Bandeau « Version de test » en haut du site public : à couper au lancement (PROPHET_TEST_NOTICE=false).
+     * Version affichée en haut du site public, avec le commit de construction (APP_COMMIT, posé par le
+     * workflow de déploiement) et le lien vers le dépôt.
      */
-    'test_notice' => (bool) env('PROPHET_TEST_NOTICE', true),
+    'version' => '0.3.0',
+    'commit' => env('APP_COMMIT'),
+    'repository' => 'https://github.com/charlescoiffier/prophet',
 ];

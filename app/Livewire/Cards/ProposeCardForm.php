@@ -12,14 +12,12 @@ use App\Models\Theme;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
- * Ajout rapide d'une carte (docs/maquettes/Proposer.html), ouvert par la touche Q.
+ * Proposition d'une carte, page du site (maquette éditoriale « nouvelle carte »), ouverte aussi par la touche Q.
  */
-#[Layout('layouts::dialog')]
 #[Title('Proposer une carte')]
 class ProposeCardForm extends Component
 {

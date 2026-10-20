@@ -1,152 +1,184 @@
 @php
-    $chip = 'inline-flex min-h-11 items-center gap-1.5 border px-3 text-[13px]';
-    $chipOn = 'border-accent-line bg-accent-soft font-semibold text-accent-dark';
-    $chipOff = 'border-line-strong bg-field text-subtle';
-    $field = 'flex min-h-11 items-center gap-2 border border-line-strong px-3 focus-within:border-accent';
+    $label = 'mb-2 block text-xs font-semibold';
+    $field = 'w-full border border-line-strong bg-field px-3 py-3 text-[13px] text-ink outline-none focus:border-ink';
+    $hint = 'mt-1.5 text-[11px] leading-relaxed text-muted';
+    $error = 'mt-1.5 block text-xs text-negative-text';
+    $section = 'border-t border-ink py-6';
+    $heading = 'mb-5 font-serif text-[27px] leading-none font-extrabold';
 @endphp
-<div class="flex flex-col items-center gap-4 pt-4 sm:pt-6">
+<div class="flex flex-col">
+    <header class="pt-7 pb-6 lg:pt-[35px] lg:pb-[30px]">
+        <a href="{{ route('home') }}" wire:navigate class="text-[11px] text-muted no-underline hover:text-ink">← Toutes les cartes</a>
+        <h1 class="mt-6 font-serif text-[clamp(40px,4.4vw,60px)] leading-[0.97] font-extrabold tracking-[-2px]">Les mots engagent.<br>Gardons-en la trace.</h1>
+        <p class="mt-4 max-w-[580px] text-[13px] leading-relaxed text-subtle">Une promesse précise, une prédiction vérifiable ? Rassemblez la citation, sa source et son échéance : un modérateur relira la carte avant sa publication.</p>
+    </header>
+
     @if ($sent)
-        <div role="status" class="flex w-full max-w-[680px] flex-col gap-3 bg-field p-6 shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
-            <h1 class="text-lg font-bold">
+        <section role="status" class="flex max-w-[760px] flex-col gap-4 border border-ink bg-field p-6">
+            <h2 class="font-serif text-[30px] leading-[1.05] font-extrabold">
                 {{ $sent->author_id ? 'Merci, votre carte part en relecture.' : 'Merci ! Vérifiez votre boîte de réception.' }}
-            </h1>
-            <blockquote class="border-l-[3px] border-accent pl-3 text-subtle">{{ $sent->quote }}</blockquote>
-            @if ($sent->author_id)
-                <p>Un modérateur va vérifier la citation et la source. Vous serez prévenu par e-mail.</p>
-            @else
-                <p>Nous vous avons envoyé un lien de confirmation. Votre proposition partira en relecture dès que vous aurez cliqué dessus.</p>
-            @endif
-            <div class="flex gap-2">
-                <a href="{{ route('home') }}" wire:navigate class="inline-flex min-h-11 items-center border border-ink bg-transparent px-4 font-semibold text-ink no-underline">Retour aux cartes</a>
-                <a href="{{ route('cards.propose') }}" class="inline-flex min-h-11 items-center bg-accent px-4 font-semibold text-white no-underline hover:text-white">Proposer une autre carte</a>
+            </h2>
+            <blockquote class="border-l-[3px] border-ink pl-3 font-serif text-xl font-bold">{{ $sent->quote }}</blockquote>
+            <p class="text-[13px] leading-relaxed">
+                @if ($sent->author_id)
+                    Un modérateur va vérifier la citation et la source. Vous serez prévenu par e-mail.
+                @else
+                    Nous vous avons envoyé un lien de confirmation : votre proposition partira en relecture dès que vous aurez cliqué dessus.
+                @endif
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('home') }}" wire:navigate class="inline-flex min-h-11 items-center border border-ink px-4 text-[13px] font-semibold text-ink no-underline hover:text-ink">Retour aux cartes</a>
+                <a href="{{ route('cards.propose') }}" class="inline-flex min-h-11 items-center bg-accent px-4 text-[13px] font-semibold text-white no-underline hover:text-white">Proposer une autre carte</a>
             </div>
-        </div>
+        </section>
     @else
-        <form wire:submit="submit" role="dialog" aria-label="Proposer une carte"
-              class="flex w-full max-w-[680px] flex-col border border-ink bg-field">
-            <div class="flex flex-col gap-1.5 px-5 pt-[18px] pb-3">
-                <label class="block">
-                    <span class="sr-only">Citation exacte</span>
-                    <textarea wire:model="quote" rows="2" autofocus placeholder="Citation exacte, mot pour mot"
-                              class="w-full resize-none border-0 p-0 bg-transparent font-serif text-[28px] leading-[1.08] font-extrabold tracking-[-0.5px] outline-none placeholder:text-[#A8A598]"></textarea>
-                </label>
-                @error('quote') <span class="text-xs text-negative-text">{{ $message }}</span> @enderror
-                <label class="block">
-                    <span class="sr-only">Contexte</span>
-                    <input type="text" wire:model="context" placeholder="Contexte : à quelle question répondait-elle ou répondait-il ?"
-                           class="min-h-8 w-full border-0 p-0 text-subtle outline-none">
-                </label>
-            </div>
+        <div class="grid grid-cols-1 gap-[38px] lg:grid-cols-[minmax(0,1fr)_280px]">
+            <form wire:submit="submit" class="flex flex-col">
+                <section class="{{ $section }}">
+                    <h2 class="{{ $heading }}">La déclaration</h2>
 
-            <div class="flex flex-wrap gap-2 px-5 pb-3.5">
-                <label class="{{ $chip }} {{ $publicFigureId ? $chipOn : $chipOff }}">
-                    <x-glyph name="user" :size="16" />
-                    <span class="sr-only">Personnalité</span>
-                    <select wire:model.live="publicFigureId" class="max-w-48 cursor-pointer bg-transparent outline-none">
-                        <option value="">Personnalité</option>
-                        @foreach ($figures as $figure)
-                            <option value="{{ $figure->id }}">{{ $figure->name }}</option>
-                        @endforeach
-                    </select>
-                </label>
-                <label class="{{ $chip }} {{ $statedOn ? $chipOn : $chipOff }}">
-                    <x-glyph name="calendar" :size="16" />
-                    <span>Déclarée le</span>
-                    <input type="date" wire:model.live="statedOn" max="{{ today()->toDateString() }}" class="bg-transparent outline-none">
-                </label>
-                <div class="inline-flex gap-1" role="radiogroup" aria-label="Type">
-                    @foreach (\App\Enums\CardType::cases() as $option)
-                        <label class="{{ $chip }} cursor-pointer {{ $type === $option->value ? $chipOn : $chipOff }}">
-                            <input type="radio" wire:model.live="type" value="{{ $option->value }}" class="sr-only">
-                            <x-glyph name="tag" :size="16" />
-                            {{ $option->label() }}
-                        </label>
-                    @endforeach
-                </div>
-                <label class="{{ $chip }} {{ $deadline ? $chipOn : $chipOff }}">
-                    <x-glyph name="clock" :size="16" />
-                    <span>Échéance</span>
-                    <input type="date" wire:model.live="deadline" class="bg-transparent outline-none">
-                </label>
-                <div x-data="{ open: false }" class="relative">
-                    <button type="button" @click="open = ! open" class="{{ $chip }} cursor-pointer {{ $themes ? $chipOn : $chipOff }}">
-                        <span aria-hidden="true">#</span>
-                        Thèmes
-                        @if ($themes)
-                            ({{ count($themes) }})
-                        @endif
-                    </button>
-                    <div x-show="open" x-cloak @click.outside="open = false"
-                         class="absolute left-0 z-10 mt-1 flex max-h-72 w-60 flex-col overflow-y-auto border border-line bg-field p-1 shadow-lg">
-                        @foreach ($allThemes as $theme)
-                            <label class="flex min-h-10 cursor-pointer items-center gap-2 px-2 text-[13px] hover:bg-sidebar">
-                                <input type="checkbox" wire:model.live="themes" value="{{ $theme->id }}">
-                                {{ $theme->name }}
-                            </label>
-                        @endforeach
+                    <fieldset class="mb-5">
+                        <legend class="{{ $label }}">De quoi s’agit-il ?</legend>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            @foreach (\App\Enums\CardType::cases() as $option)
+                                <label @class([
+                                    'flex min-h-12 cursor-pointer items-center gap-2.5 border px-3 text-[13px]',
+                                    'border-ink bg-signal-yellow font-semibold' => $type === $option->value,
+                                    'border-ink bg-field' => $type !== $option->value,
+                                ])>
+                                    <input type="radio" wire:model.live="type" value="{{ $option->value }}" class="accent-accent">
+                                    <x-uicon :name="\App\View\Appearance::typeIcon($option)" :size="18" />
+                                    Une {{ mb_strtolower($option->label()) }}
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+
+                    <div class="mb-5">
+                        <label for="quote" class="{{ $label }}">Citation exacte *</label>
+                        <textarea id="quote" wire:model="quote" rows="3" placeholder="« Nous nous engageons à… »"
+                                  class="{{ $field }} resize-none font-serif text-xl leading-snug font-bold"></textarea>
+                        <p class="{{ $hint }}">Reprenez les mots prononcés, sans les reformuler ni les couper.</p>
+                        @error('quote') <span class="{{ $error }}">{{ $message }}</span> @enderror
                     </div>
-                </div>
-            </div>
-            @if ($errors->hasAny(['publicFigureId', 'statedOn', 'type', 'deadline', 'themes']))
-                <div class="flex flex-col px-5 pb-3 text-xs text-negative-text">
-                    @foreach (['publicFigureId', 'statedOn', 'type', 'deadline', 'themes'] as $name)
-                        @error($name) <span>{{ $message }}</span> @enderror
-                    @endforeach
-                </div>
-            @endif
 
-            <div class="flex flex-wrap gap-2 px-5 pb-1.5">
-                <label class="{{ $field }} flex-[4_1_280px]">
-                    <x-glyph name="link" :size="16" stroke="#6F6F6F" :width="2" />
-                    <span class="sr-only">Lien vers la source</span>
-                    <input type="url" wire:model="sourceUrl" placeholder="Lien vers la source" class="min-w-0 flex-1 outline-none">
-                </label>
-                <label class="{{ $field }} flex-[1_1_120px]">
-                    <span class="sr-only">Nature de la source</span>
-                    <select wire:model="sourceKind" class="min-w-0 flex-1 bg-transparent outline-none">
-                        @foreach (\App\Enums\SourceKind::cases() as $kind)
-                            <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
-                        @endforeach
-                    </select>
-                </label>
-                <label class="{{ $field }} flex-[1_1_100px]">
-                    <span class="sr-only">Horodatage dans la vidéo ou l’audio</span>
-                    <input type="text" wire:model="timecode" placeholder="à 12:34" class="min-w-0 flex-1 outline-none">
-                </label>
-            </div>
-            @foreach (['sourceUrl', 'timecode'] as $name)
-                @error($name) <span class="px-5 text-xs text-negative-text">{{ $message }}</span> @enderror
-            @endforeach
-            <p class="px-5 pb-4 text-xs text-muted">Une copie archivée de la page est créée à l’envoi.</p>
+                    <div class="mb-5">
+                        <label for="figure" class="{{ $label }}">Personnalité *</label>
+                        <select id="figure" wire:model="publicFigureId" class="{{ $field }}">
+                            <option value="">Choisir une personnalité</option>
+                            @foreach ($figures as $figure)
+                                <option value="{{ $figure->id }}">{{ $figure->name }}</option>
+                            @endforeach
+                        </select>
+                        <p class="{{ $hint }}">Elle n’est pas dans la liste ? Indiquez son nom et sa fonction dans le contexte : un modérateur créera sa fiche.</p>
+                        @error('publicFigureId') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                    </div>
 
-            <div class="flex flex-col gap-2.5 border-t border-line bg-sidebar px-5 py-3.5">
-                @guest
-                    <span class="text-xs font-semibold text-muted">Vous n’êtes pas connecté · <a href="{{ route('login') }}" wire:navigate>Se connecter</a></span>
-                    <label class="{{ $field }} bg-white">
-                        <span class="text-[13px] whitespace-nowrap text-subtle">Votre e-mail</span>
-                        <input type="email" wire:model="email" placeholder="vous@exemple.fr" class="min-w-0 flex-1 outline-none">
+                    <div>
+                        <label for="context" class="{{ $label }}">Contexte</label>
+                        <textarea id="context" wire:model="context" rows="3" placeholder="À quelle question répondait-elle ou répondait-il ? Où, devant qui ?"
+                                  class="{{ $field }} resize-none"></textarea>
+                    </div>
+                </section>
+
+                <section class="{{ $section }}">
+                    <h2 class="{{ $heading }}">La source &amp; le calendrier</h2>
+
+                    <div class="mb-5">
+                        <label for="source" class="{{ $label }}">Lien vers la source originale *</label>
+                        <input id="source" type="url" wire:model="sourceUrl" placeholder="https://…" class="{{ $field }}">
+                        <p class="{{ $hint }}">Interview, vidéo, discours, publication : de première main de préférence. Une copie archivée est créée à l’envoi.</p>
+                        @error('sourceUrl') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="kind" class="{{ $label }}">Nature de la source</label>
+                            <select id="kind" wire:model="sourceKind" class="{{ $field }}">
+                                @foreach (\App\Enums\SourceKind::cases() as $kind)
+                                    <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="timecode" class="{{ $label }}">Horodatage (vidéo ou audio)</label>
+                            <input id="timecode" type="text" wire:model="timecode" placeholder="12:34" class="{{ $field }}">
+                            @error('timecode') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="stated" class="{{ $label }}">Date de la déclaration *</label>
+                            <input id="stated" type="date" wire:model="statedOn" max="{{ today()->toDateString() }}" class="{{ $field }}">
+                            @error('statedOn') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label for="deadline" class="{{ $label }}">Échéance annoncée</label>
+                            <input id="deadline" type="date" wire:model="deadline" class="{{ $field }}">
+                            <p class="{{ $hint }}">La date à laquelle on pourra trancher.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="{{ $section }}">
+                    <h2 class="{{ $heading }}">Le classement</h2>
+                    <fieldset>
+                        <legend class="{{ $label }}">Thèmes (cinq au plus)</legend>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($allThemes as $theme)
+                                <label @class([
+                                    'flex min-h-10 cursor-pointer items-center gap-1.5 border px-3 text-[13px]',
+                                    'border-ink bg-ink text-paper' => in_array($theme->id, $themes, true),
+                                    'border-line-strong bg-field hover:border-ink' => ! in_array($theme->id, $themes, true),
+                                ])>
+                                    <input type="checkbox" wire:model.live="themes" value="{{ $theme->id }}" class="sr-only">
+                                    <x-uicon name="theme" :size="12" /> {{ $theme->name }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('themes') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                    </fieldset>
+                </section>
+
+                <section class="{{ $section }}">
+                    <h2 class="{{ $heading }}">Vous</h2>
+                    @guest
+                        <div class="mb-5">
+                            <label for="email" class="{{ $label }}">Votre adresse e-mail *</label>
+                            <input id="email" type="email" wire:model="email" placeholder="vous@exemple.fr" class="{{ $field }}">
+                            <p class="{{ $hint }}">Un lien de confirmation vous sera envoyé. L’adresse sert seulement à vous informer du sort de la carte et à vous proposer un compte ; elle n’est jamais publiée. Déjà inscrit ? <a href="{{ route('login') }}" wire:navigate>Se connecter</a></p>
+                            @error('email') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                        </div>
+                    @endguest
+                    <label class="mb-5 flex items-start gap-2.5 text-[13px] leading-normal">
+                        <input type="checkbox" wire:model="charter" class="mt-[3px] accent-accent">
+                        <span>J’ai lu la <a href="{{ route('pages.charter') }}" target="_blank">charte du contributeur</a> et la citation est exacte.</span>
                     </label>
-                    @error('email') <span class="text-xs text-negative-text">{{ $message }}</span> @enderror
-                    <p class="text-xs leading-normal text-muted">Un lien de confirmation vous sera envoyé. L’adresse sert seulement à vous informer du sort de la carte et à vous proposer un compte.</p>
-                @endguest
-                <label class="flex items-start gap-2 text-[13px] leading-normal">
-                    <input type="checkbox" wire:model="charter" class="mt-[3px]">
-                    <span>J’ai lu la <a href="{{ route('pages.charter') }}" target="_blank">charte du contributeur</a> et la citation est exacte.</span>
-                </label>
-                @error('charter') <span class="text-xs text-negative-text">{{ $message }}</span> @enderror
-                @guest
-                    <x-altcha />
-                @endguest
-            </div>
+                    @error('charter') <span class="{{ $error }} -mt-3 mb-5">{{ $message }}</span> @enderror
+                    @guest
+                        <x-altcha />
+                    @endguest
+                </section>
 
-            <div class="flex justify-end gap-2 border-t border-line px-5 py-3">
-                <a href="{{ route('home') }}" wire:navigate class="inline-flex min-h-11 items-center border border-ink bg-transparent px-4 font-semibold text-ink no-underline hover:text-ink">Annuler</a>
-                <button type="submit" wire:loading.attr="disabled" class="min-h-11 cursor-pointer bg-accent px-4 font-semibold text-white disabled:opacity-60">Envoyer pour relecture</button>
-            </div>
-        </form>
+                <div class="border-t border-ink pt-6">
+                    <button type="submit" wire:loading.attr="disabled" class="inline-flex min-h-12 cursor-pointer items-center bg-accent px-5 text-[13px] font-semibold text-white hover:bg-accent-dark disabled:opacity-60">
+                        Proposer cette carte ↗
+                    </button>
+                    <p class="{{ $hint }}">La carte sera relue avant sa publication. Raccourci : <kbd class="border border-line-strong px-1">Q</kbd> ouvre cette page depuis n’importe où.</p>
+                </div>
+            </form>
 
-        <p class="max-w-[680px] text-center text-[13px] leading-relaxed text-[#4A4A4A]">
-            Raccourci : <strong class="font-semibold">Q</strong> ouvre l’ajout rapide depuis n’importe quelle page. La citation, elle, n’est jamais interprétée.
-        </p>
+            <aside class="self-start border border-ink bg-signal-yellow p-6 lg:sticky lg:top-6">
+                <h2 class="font-serif text-[30px] leading-[1.05] font-extrabold">Une bonne carte commence par une bonne source.</h2>
+                <p class="mt-4 text-xs leading-relaxed">Une citation exacte, attribuée et datée.</p>
+                <hr class="my-5 border-ink/30">
+                <p class="text-xs leading-relaxed"><b>Vérifiable</b><br>Un engagement ou un résultat que l’on pourra confronter aux faits.</p>
+                <p class="mt-3 text-xs leading-relaxed"><b>Contextualisée</b><br>Le passage complet, pour comprendre ce qui a réellement été dit.</p>
+                <p class="mt-3 text-xs leading-relaxed"><b>Sourcée</b><br>Un lien consultable ; la copie archivée est faite pour vous.</p>
+                <hr class="my-5 border-ink/30">
+                <p class="text-xs leading-relaxed">On juge des faits, jamais des intentions : une promesse trop vague sera refusée, avec son motif.</p>
+            </aside>
+        </div>
     @endif
 </div>

@@ -1,0 +1,1 @@
+<span {{ $attributes->class('inline-flex flex-none items-center justify-center') }} style="width: {{ $size }}px; height: {{ $size }}px">{!! str_replace('<svg ', '<svg width="'.$size.'" height="'.$size.'" ', $svg()) !!}</span>

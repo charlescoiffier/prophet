@@ -32,7 +32,10 @@ RUN composer dump-autoload --optimize --no-dev \
 
 # Au démarrage du conteneur « app » (AUTORUN_ENABLED) : migrations, lien de stockage,
 # caches de configuration, routes et vues. Le worker et le planificateur le désactivent.
-ENV AUTORUN_ENABLED=true \
+# Commit de construction, affiché à côté de la version (passé par le workflow).
+ARG APP_COMMIT=""
+ENV APP_COMMIT=${APP_COMMIT} \
+    AUTORUN_ENABLED=true \
     AUTORUN_LARAVEL_MIGRATION_ISOLATION=true \
     PHP_OPCACHE_ENABLE=1 \
     SSL_MODE=off

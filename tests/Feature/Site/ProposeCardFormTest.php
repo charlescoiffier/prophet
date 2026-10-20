@@ -28,8 +28,13 @@ function fillProposal($component)
         ->set('charter', true);
 }
 
-it('affiche l’ajout rapide', function () {
-    $this->get('/proposer')->assertOk()->assertSee('Citation exacte, mot pour mot', escape: false)->assertSee('Votre e-mail');
+it('affiche la page de proposition, avec le menu du site', function () {
+    $this->get('/proposer')
+        ->assertOk()
+        ->assertSee('Gardons-en la trace.', escape: false)
+        ->assertSee('Citation exacte *')
+        ->assertSee('Votre adresse e-mail *')
+        ->assertSee('Toutes les cartes'); // menu de gauche : c'est une page du site
 });
 
 it('envoie la proposition d’un visiteur et demande de confirmer l’adresse', function () {

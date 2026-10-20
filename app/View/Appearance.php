@@ -18,13 +18,13 @@ class Appearance
     /**
      * Tonalités de verdict : adresse (/verdicts/{slug}) => tonalité et libellé de la barre latérale.
      *
-     * @var array<string, array{tone: string, label: string, mark: string}>
+     * @var array<string, array{tone: string, label: string, mark: string, icon: string}>
      */
     public const VERDICT_TONES = [
-        'tenues-ou-justes' => ['tone' => 'positive', 'label' => 'Tenues ou justes', 'mark' => '✓'],
-        'partielles' => ['tone' => 'partial', 'label' => 'Partielles', 'mark' => '≈'],
-        'abandonnees-ou-fausses' => ['tone' => 'negative', 'label' => 'Abandonnées ou fausses', 'mark' => '×'],
-        'caduques-ou-inverifiables' => ['tone' => 'neutral', 'label' => 'Caduques ou invérifiables', 'mark' => '?'],
+        'tenues-ou-justes' => ['tone' => 'positive', 'label' => 'Tenues ou justes', 'mark' => '✓', 'icon' => 'verdict-positive'],
+        'partielles' => ['tone' => 'partial', 'label' => 'Partielles', 'mark' => '≈', 'icon' => 'verdict-partial'],
+        'abandonnees-ou-fausses' => ['tone' => 'negative', 'label' => 'Abandonnées ou fausses', 'mark' => '×', 'icon' => 'verdict-negative'],
+        'caduques-ou-inverifiables' => ['tone' => 'neutral', 'label' => 'Caduques ou invérifiables', 'mark' => '?', 'icon' => 'verdict-neutral'],
     ];
 
     /** Aplats des cartes encore ouvertes, en alternance comme dans la maquette. */
@@ -63,10 +63,10 @@ class Appearance
         };
     }
 
-    /** Symbole du type : ○ promesse, ◇ prédiction. */
-    public static function typeMark(Card $card): string
+    /** Icône du type (resources/icons) : poignée de main pour une promesse, boule de cristal pour une prédiction. */
+    public static function typeIcon(CardType $type): string
     {
-        return $card->type === CardType::Promise ? '○' : '◇';
+        return $type === CardType::Promise ? 'promise' : 'prediction';
     }
 
     /**
