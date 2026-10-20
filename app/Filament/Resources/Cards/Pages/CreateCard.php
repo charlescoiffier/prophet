@@ -31,6 +31,8 @@ class CreateCard extends CreateRecord
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Carte enregistrée : un autre modérateur doit la publier';
+        return auth()->user()->isAdmin()
+            ? 'Carte enregistrée, en modération : vous pouvez la publier'
+            : 'Carte enregistrée : un autre modérateur doit la publier';
     }
 }

@@ -19,7 +19,10 @@ class PublishCard
     {
         Gate::forUser($actor)->authorize('publish', $card);
 
-        DB::transaction(function () use ($card, $actor) {
+        // Seul l'admin peut publier sa propre carte (CardPolicy) : l'historique public le dit.
+        $selfPublished = $card->isAuthoredBy($actor);
+
+        DB::transaction(function () use ($card, $actor, $selfPublished) {
             $before = $card->status;
 
             $card->status = CardStatus::Published;
@@ -29,10 +32,13 @@ class PublishCard
             $this->recordActivity->handle(
                 $card, $actor, ActivityAction::Approved,
                 ['status' => $before->value], ['status' => $card->status->value],
+                $selfPublished ? __('moderation.self_published') : null,
             );
         });
 
-        $card->notifyAuthor(new CardPublished($card));
+        if (! $selfPublished) {
+            $card->notifyAuthor(new CardPublished($card));
+        }
 
         return $card;
     }

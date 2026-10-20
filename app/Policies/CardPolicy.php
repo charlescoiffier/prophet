@@ -29,18 +29,23 @@ class CardPolicy
     }
 
     /**
-     * Modifier la rédaction (règle 2), jamais sur sa propre carte (règle 4).
+     * Modifier la rédaction (règle 2), jamais sur sa propre carte (règle 4), sauf pour l'admin.
      */
     public function update(User $user, Card $card): bool
     {
         return $user->isModerator()
-            && ! $card->isAuthoredBy($user)
+            && (! $card->isAuthoredBy($user) || $user->isAdmin())
             && ! in_array($card->status, [CardStatus::AwaitingEmail, CardStatus::Rejected], true);
     }
 
+    /**
+     * Exception à la règle 4 décidée par Charles : l'admin publie ses propres cartes.
+     * PublishCard le signale alors dans l'historique public.
+     */
     public function publish(User $user, Card $card): bool
     {
-        return $this->decide($user, $card);
+        return $this->decide($user, $card)
+            || ($user->isAdmin() && $card->status === CardStatus::InModeration);
     }
 
     public function reject(User $user, Card $card): bool

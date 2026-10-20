@@ -18,11 +18,26 @@ it('interdit à un membre de publier ou refuser', function (string $ability) {
     expect(User::factory()->create()->can($ability, $card))->toBeFalse();
 })->with(['publish', 'reject']);
 
-it('interdit de décider sur sa propre carte, admin compris (règle 4)', function (string $ability) {
-    $admin = User::factory()->admin()->create();
+it('interdit à un modérateur de décider sur sa propre carte (règle 4)', function (string $ability) {
+    $moderator = User::factory()->moderator()->create();
 
-    expect($admin->can($ability, Card::factory()->create(['author_id' => $admin->id])))->toBeFalse();
+    expect($moderator->can($ability, Card::factory()->create(['author_id' => $moderator->id])))->toBeFalse();
 })->with(['publish', 'reject', 'update']);
+
+it('laisse l’admin publier et modifier sa propre carte, mais pas la refuser', function () {
+    $admin = User::factory()->admin()->create();
+    $card = Card::factory()->create(['author_id' => $admin->id]);
+
+    expect($admin->can('publish', $card))->toBeTrue()
+        ->and($admin->can('update', $card))->toBeTrue()
+        ->and($admin->can('reject', $card))->toBeFalse();
+});
+
+it('ne laisse pas l’admin publier sa carte avant confirmation de l’e-mail', function () {
+    $admin = User::factory()->admin()->create(['email' => 'admin@example.test']);
+
+    expect($admin->can('publish', Card::factory()->anonymous('admin@example.test')->create()))->toBeFalse();
+});
 
 it('reconnaît la carte proposée sans compte avec la même adresse comme la sienne', function () {
     $moderator = User::factory()->moderator()->create(['email' => 'modo@example.test']);

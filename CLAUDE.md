@@ -29,7 +29,7 @@ Site qui recense les promesses et prédictions de personnalités publiques (poli
 1. Une carte proposée sans compte reste en `awaiting_email` tant que l'e-mail n'est pas confirmé par lien.
 2. Seuls les modérateurs et l'admin publient, refusent (avec motif) ou modifient la rédaction d'une carte ; l'auteur est notifié par e-mail, un non-inscrit est invité à créer un compte.
 3. Seul un membre inscrit propose un verdict, avec au moins une source.
-4. Personne ne décide sur sa propre proposition (carte ou verdict), modérateurs compris.
+4. Personne ne décide sur sa propre proposition (carte ou verdict), modérateurs compris. Exception décidée par Charles le 20 octobre 2026 : l'admin peut publier et modifier ses propres cartes (pas les refuser, et jamais pour les verdicts) ; l'historique public le signale (`moderation.self_published`).
 5. Une seule proposition de verdict en attente par carte.
 6. Chaque action de modération écrit une ligne dans le journal (état avant/après) ; l'historique d'une carte est public.
 7. Chaque source est archivée automatiquement (Wayback Machine « Save Page Now ») par un job, à l'enregistrement.

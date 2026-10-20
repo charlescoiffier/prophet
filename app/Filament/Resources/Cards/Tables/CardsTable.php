@@ -31,7 +31,9 @@ class CardsTable
                     ->searchable()
                     // Comme dans la maquette de modération : ses propres propositions sont signalées.
                     ->description(fn (Card $record) => $record->isAuthoredBy(auth()->user())
-                        ? 'Votre proposition : un autre modérateur doit la traiter.'
+                        ? (auth()->user()->isAdmin()
+                            ? 'Votre proposition : sa publication sera signalée dans l’historique.'
+                            : 'Votre proposition : un autre modérateur doit la traiter.')
                         : null),
                 TextColumn::make('publicFigure.name')
                     ->label('Personnalité')

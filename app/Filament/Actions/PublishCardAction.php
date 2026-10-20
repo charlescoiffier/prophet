@@ -19,7 +19,9 @@ class PublishCardAction
             ->authorize('publish')
             ->requiresConfirmation()
             ->modalHeading('Publier la carte')
-            ->modalDescription('La carte devient visible du public et son auteur est prévenu par e-mail.')
+            ->modalDescription(fn (Card $record) => $record->isAuthoredBy(auth()->user())
+                ? 'C’est votre propre carte : l’historique public indiquera qu’aucun autre modérateur ne l’a relue.'
+                : 'La carte devient visible du public et son auteur est prévenu par e-mail.')
             ->action(fn (Action $action, Card $record, PublishCard $publishCard) => DomainAction::run(
                 $action,
                 fn () => $publishCard->handle($record, auth()->user()),

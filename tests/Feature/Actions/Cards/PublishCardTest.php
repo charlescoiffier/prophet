@@ -40,6 +40,18 @@ it('prévient par e-mail l’auteur sans compte et l’invite à s’inscrire', 
     });
 });
 
+it('signale dans l’historique la carte publiée par l’admin qui l’a saisie', function () {
+    $admin = User::factory()->admin()->create();
+    $card = Card::factory()->create(['author_id' => $admin->id]);
+
+    app(PublishCard::class)->handle($card, $admin);
+
+    expect($card->refresh()->status)->toBe(CardStatus::Published)
+        ->and($card->activityLogs()->sole()->comment)
+        ->toBe('Publiée par son auteur (administrateur), sans relecture par un autre modérateur.');
+    Notification::assertNothingSent();
+});
+
 it('refuse que le modérateur publie sa propre carte', function () {
     $moderator = User::factory()->moderator()->create();
     $card = Card::factory()->create(['author_id' => $moderator->id]);
