@@ -25,12 +25,47 @@ use Illuminate\Support\Str;
 
 /**
  * Jeu de démonstration fictif, repris des maquettes (docs/maquettes).
- * Mot de passe de tous les comptes : « password ».
+ * Mot de passe de tous les comptes : « password » (sauf en mode verrouillé, voir demo:load).
  */
 class DemoSeeder extends Seeder
 {
+    /**
+     * Personnalités créées par la démonstration : demo:purge les retrouve par leur slug.
+     *
+     * @var list<string>
+     */
+    public const FIGURES = [
+        'Jeanne Exemple', 'Paul Modèle', 'Lucie Témoin', 'Marc Hypothèse', 'Hugo Fiction', 'Anne Scénario', 'Claire Récit',
+        'Bruno Brouillon', 'Sophie Maquette', 'Karim Parabole', 'Inès Esquisse', 'Thomas Ébauche', 'Nadia Synopsis',
+        'Louis Prototype', 'Émilie Variante', 'Victor Postulat', 'Rose Hypallage', 'Samuel Prologue', 'Agathe Corollaire',
+        'Yves Épilogue', 'Margaux Tangente',
+    ];
+
+    /**
+     * Thèmes propres à la démonstration (le vocabulaire de production reste dans ThemeSeeder).
+     *
+     * @var list<string>
+     */
+    public const THEMES = ['Fiscalité', 'Vie publique', 'Services publics', 'Logement', 'Transports', 'Retraites', 'Énergie', 'International'];
+
+    /** Domaine des comptes et adresses de démonstration : réservé, il ne reçoit aucun e-mail. */
+    public const EMAIL_DOMAIN = 'example.test';
+
+    /**
+     * Comptes verrouillés (site de test) : pas d'administrateur de démonstration, et des mots de passe
+     * aléatoires jamais affichés, donc aucun compte de démonstration ne peut être ouvert.
+     */
+    private bool $locked = false;
+
     /** @var array<string, User> */
     private array $users = [];
+
+    public function locked(): static
+    {
+        $this->locked = true;
+
+        return $this;
+    }
 
     /** @var array<string, PublicFigure> */
     private array $figures = [];
@@ -46,7 +81,7 @@ class DemoSeeder extends Seeder
     private function seedUsers(): void
     {
         foreach ([
-            'admin' => Role::Admin,
+            ...($this->locked ? [] : ['admin' => Role::Admin]),
             's.leroy' => Role::Moderator,
             'm.durand' => Role::Member,
             'j.martin' => Role::Member,
@@ -56,8 +91,9 @@ class DemoSeeder extends Seeder
         ] as $username => $role) {
             $this->users[$username] = User::factory()->create([
                 'username' => $username,
-                'email' => $username.'@example.test',
+                'email' => $username.'@'.self::EMAIL_DOMAIN,
                 'role' => $role,
+                ...($this->locked ? ['password' => Str::random(64)] : []),
             ]);
         }
     }
@@ -152,7 +188,7 @@ class DemoSeeder extends Seeder
     private function seedCatalog(): void
     {
         // Thèmes propres à la démonstration (le vocabulaire de production reste dans ThemeSeeder).
-        foreach (['Fiscalité', 'Vie publique', 'Services publics', 'Logement', 'Transports', 'Retraites', 'Énergie', 'International'] as $name) {
+        foreach (self::THEMES as $name) {
             Theme::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name]);
         }
 
