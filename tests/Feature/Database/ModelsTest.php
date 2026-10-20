@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\CardStatus;
+use App\Enums\VerdictValue;
 use App\Models\ActivityLog;
 use App\Models\Affiliation;
 use App\Models\Card;
@@ -66,12 +67,15 @@ it('ne laisse pas un utilisateur choisir son rôle', function () {
     expect((new User(['role' => 'admin']))->isAdmin())->toBeFalse();
 });
 
-it('charge le jeu de démonstration', function () {
+it('charge un jeu de démonstration qui couvre chaque statut et chaque verdict', function () {
     $this->seed(DatabaseSeeder::class);
 
-    expect(Card::count())->toBe(9)
-        ->and(Card::visible()->count())->toBe(7)
-        ->and(Card::where('status', CardStatus::Closed)->has('approvedVerdict')->count())->toBe(3);
+    expect(Card::distinct()->pluck('status')->map->value->sort()->values()->all())
+        ->toBe(collect(CardStatus::cases())->map->value->sort()->values()->all())
+        ->and(Verdict::where('status', 'approved')->distinct()->pluck('value')->map->value->sort()->values()->all())
+        ->toBe(collect(VerdictValue::cases())->map->value->sort()->values()->all())
+        ->and(Card::where('status', CardStatus::Closed)->doesntHave('approvedVerdict')->count())->toBe(0)
+        ->and(Card::awaitingVerdict()->count())->toBeGreaterThan(0);
 });
 
 it('résume les changements du journal avec les libellés français', function () {

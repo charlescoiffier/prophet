@@ -40,6 +40,7 @@ class DemoSeeder extends Seeder
         $this->seedUsers();
         $this->seedPublicFigures();
         $this->seedCards();
+        $this->seedCatalog();
     }
 
     private function seedUsers(): void
@@ -49,6 +50,9 @@ class DemoSeeder extends Seeder
             's.leroy' => Role::Moderator,
             'm.durand' => Role::Member,
             'j.martin' => Role::Member,
+            'a.moreau' => Role::Moderator,
+            'c.bernard' => Role::Member,
+            'l.petit' => Role::Member,
         ] as $username => $role) {
             $this->users[$username] = User::factory()->create([
                 'username' => $username,
@@ -138,6 +142,153 @@ class DemoSeeder extends Seeder
             'email' => 'lecteur@example.test',
             'reason' => 'Le lien vers la source du verdict ne fonctionne plus.',
             'status' => ReportStatus::Open,
+        ]);
+    }
+
+    /**
+     * Catalogue étoffé : personnalités, thèmes et cartes fictifs couvrant tous les états et tous les verdicts.
+     * Les échéances sont relatives à la date du chargement, pour que la démonstration ne vieillisse pas.
+     */
+    private function seedCatalog(): void
+    {
+        // Thèmes propres à la démonstration (le vocabulaire de production reste dans ThemeSeeder).
+        foreach (['Fiscalité', 'Vie publique', 'Services publics', 'Logement', 'Transports', 'Retraites', 'Énergie', 'International'] as $name) {
+            Theme::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name]);
+        }
+
+        foreach ([
+            ['Bruno Brouillon', PublicFigureCategory::Politician, 'Maire d’une grande ville', [['Parti F', 'Maire', '-6 years', null]]],
+            ['Sophie Maquette', PublicFigureCategory::Politician, 'Sénatrice', [['Parti A', 'Sénatrice', '-5 years', null]]],
+            ['Karim Parabole', PublicFigureCategory::Columnist, 'Éditorialiste à la télévision', [['Télé G', 'Éditorialiste', '-8 years', null]]],
+            ['Inès Esquisse', PublicFigureCategory::Economist, 'Économiste, professeure d’université', [['Institut D', 'Chercheuse associée', '-10 years', null]]],
+            ['Thomas Ébauche', PublicFigureCategory::Politician, 'Ministre de l’Économie', [['Parti B', 'Député', '-9 years', '-2 years'], ['Gouvernement C', 'Ministre de l’Économie', '-2 years', null]]],
+            ['Nadia Synopsis', PublicFigureCategory::Journalist, 'Journaliste politique', [['Hebdo H', 'Rédactrice en chef', '-4 years', null]]],
+            ['Louis Prototype', PublicFigureCategory::Politician, 'Candidat à l’élection présidentielle', [['Parti G', 'Candidat', '-1 year', null]]],
+            ['Émilie Variante', PublicFigureCategory::Politician, 'Présidente de région', [['Parti B', 'Présidente de région', '-5 years', null]]],
+            ['Victor Postulat', PublicFigureCategory::Economist, 'Économiste de banque', [['Banque K', 'Chef économiste', '-7 years', null]]],
+            ['Rose Hypallage', PublicFigureCategory::Columnist, 'Chroniqueuse radio', [['Radio E', 'Chroniqueuse', '-3 years', null]]],
+            ['Samuel Prologue', PublicFigureCategory::Politician, 'Député', [['Parti A', 'Député', '-4 years', null]]],
+            ['Agathe Corollaire', PublicFigureCategory::Journalist, 'Présentatrice de la matinale', [['Télé G', 'Présentatrice', '-6 years', null]]],
+            ['Yves Épilogue', PublicFigureCategory::Politician, 'Ancien Premier ministre', [['Gouvernement C', 'Premier ministre', '-7 years', '-4 years'], ['Parti B', 'Conseiller politique', '-4 years', null]]],
+            ['Margaux Tangente', PublicFigureCategory::Other, 'Secrétaire générale d’un syndicat', [['Syndicat L', 'Secrétaire générale', '-3 years', null]]],
+        ] as [$name, $category, $description, $affiliations]) {
+            $figure = PublicFigure::create([
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'category' => $category,
+                'description' => $description,
+            ]);
+
+            foreach ($affiliations as [$organization, $role, $start, $end]) {
+                $figure->affiliations()->create([
+                    'organization' => $organization,
+                    'role' => $role,
+                    'started_on' => now()->modify($start)->startOfYear()->toDateString(),
+                    'ended_on' => $end ? now()->modify($end)->endOfYear()->toDateString() : null,
+                ]);
+            }
+
+            $this->figures[$name] = $figure;
+        }
+
+        $members = [$this->users['m.durand'], $this->users['j.martin'], $this->users['c.bernard'], $this->users['l.petit']];
+        $moderators = [$this->users['s.leroy'], $this->users['a.moreau']];
+        $at = fn (string $relative) => now()->modify($relative)->toDateString();
+
+        // [personnalité, type, citation, déclarée (relatif), échéance (relatif), thèmes, statut, verdict ?, contexte, source]
+        $cards = [
+            // Prochaines échéances
+            ['Louis Prototype', CardType::Promise, '« Je baisserai l’impôt sur le revenu des classes moyennes de 10 % sur le quinquennat. »', '-1 month', '+5 years', ['Présidentielle 2027', 'Fiscalité'], CardStatus::Published, null, 'Meeting de lancement de campagne, devant ses soutiens.', [SourceKind::Video, 'Télé G', '41:05']],
+            ['Sophie Maquette', CardType::Promise, '« Aucun bureau de poste ne fermera dans les communes rurales d’ici trois ans. »', '-2 months', '+34 months', ['Services publics'], CardStatus::Published, null, 'Questions au gouvernement, en séance publique.', [SourceKind::OfficialJournal, 'Compte rendu des débats', null]],
+            ['Karim Parabole', CardType::Prediction, '« La participation au premier tour sera inférieure à 70 %. »', '-3 weeks', '+6 months', ['Présidentielle 2027', 'Vie publique'], CardStatus::Published, null, 'Débat de fin d’émission sur l’abstention.', [SourceKind::Video, 'Télé G', '52:10']],
+            ['Inès Esquisse', CardType::Prediction, '« Les prix de l’immobilier ancien baisseront encore de 5 % l’an prochain. »', '-5 weeks', '+14 months', ['Logement', 'Économie'], CardStatus::Published, null, 'Tribune publiée dans un quotidien économique.', [SourceKind::Article, 'Journal B', null]],
+            ['Émilie Variante', CardType::Promise, '« Les cars régionaux seront gratuits pour les moins de 26 ans à la rentrée prochaine. »', '-2 months', '+11 months', ['Transports'], CardStatus::Published, null, 'Vote du budget régional.', [SourceKind::Programme, 'Région', null]],
+            ['Bruno Brouillon', CardType::Promise, '« Nous planterons 20 000 arbres dans la ville avant la fin du mandat. »', '-7 months', '+5 years', ['Environnement'], CardStatus::Published, null, 'Conseil municipal consacré au plan climat.', [SourceKind::Video, 'Ville', '1:12:40']],
+            ['Victor Postulat', CardType::Prediction, '« La croissance dépassera 1,5 % l’an prochain. »', '-6 weeks', '+15 months', ['Économie'], CardStatus::Published, null, 'Présentation des prévisions trimestrielles de la banque.', [SourceKind::PublicData, 'Banque K', null]],
+            ['Samuel Prologue', CardType::Promise, '« Je déposerai une proposition de loi sur le non-cumul des indemnités avant la fin de l’année. »', '-1 month', '+2 months', ['Vie publique', 'Institutions'], CardStatus::Published, null, 'Entretien à la matinale.', [SourceKind::Audio, 'Radio E', '08:47']],
+            ['Margaux Tangente', CardType::Prediction, '« La dernière réforme des retraites sera abrogée avant deux ans. »', '-3 months', '+21 months', ['Retraites'], CardStatus::Published, null, 'Conférence de presse à l’issue d’une journée de mobilisation.', [SourceKind::Video, 'Hebdo H', '06:30']],
+            ['Thomas Ébauche', CardType::Promise, '« Le déficit public repassera sous 3 % du PIB d’ici trois ans. »', '-4 months', '+3 years', ['Économie', 'Fiscalité'], CardStatus::Published, null, 'Présentation du projet de loi de finances.', [SourceKind::OfficialJournal, 'Assemblée', null]],
+
+            // Échéance dépassée, verdict attendu
+            ['Thomas Ébauche', CardType::Promise, '« Les prix de l’électricité baisseront de 10 % au 1er février. »', '-14 months', '-8 months', ['Énergie'], CardStatus::Published, null, 'Annonce au journal du soir.', [SourceKind::Video, 'Télé G', '12:02']],
+            ['Rose Hypallage', CardType::Prediction, '« Le gouvernement ne passera pas l’été. »', '-9 months', '-3 months', ['Vie publique'], CardStatus::Published, null, 'Chronique politique du vendredi.', [SourceKind::Audio, 'Radio E', '03:15']],
+            ['Émilie Variante', CardType::Promise, '« Le nouveau lycée ouvrira ses portes à la rentrée. »', '-18 months', '-1 month', ['Éducation'], CardStatus::Published, null, 'Pose de la première pierre.', [SourceKind::Article, 'Journal B', null]],
+
+            // Verdict en relecture
+            ['Bruno Brouillon', CardType::Promise, '« La piscine municipale rouvrira avant l’été. »', '-13 months', '-4 months', ['Services publics'], CardStatus::VerdictProposed,
+                [VerdictValue::Kept, null, 'La piscine a rouvert au public trois semaines avant la date annoncée, selon l’arrêté municipal et la presse locale.'], 'Réunion publique de quartier.', [SourceKind::Video, 'Ville', '27:45']],
+
+            // Tranchées : une carte par valeur de verdict
+            ['Yves Épilogue', CardType::Promise, '« Nous créerons 2 000 places de prison supplémentaires d’ici la fin du mandat. »', '-6 years', '-4 years', ['Sécurité'], CardStatus::Closed,
+                [VerdictValue::Kept, '-40 months', 'Le bilan officiel publié à la fin du mandat recense 2 150 places nettes créées.'], 'Déclaration de politique générale.', [SourceKind::OfficialJournal, 'Assemblée', null]],
+            ['Margaux Tangente', CardType::Promise, '« Nous obtiendrons une hausse de 3 % du point d’indice cette année. »', '-20 months', '-9 months', ['Services publics'], CardStatus::Closed,
+                [VerdictValue::PartiallyKept, '-7 months', 'Le point d’indice a été revalorisé de 1,5 % : la hausse obtenue est réelle mais deux fois moindre que l’objectif annoncé.'], 'Ouverture des négociations salariales.', [SourceKind::Video, 'Hebdo H', '02:10']],
+            ['Sophie Maquette', CardType::Promise, '« Je ferai voter la semaine de quatre jours dans la fonction publique territoriale. »', '-30 months', '-12 months', ['Services publics'], CardStatus::Closed,
+                [VerdictValue::Compromised, '-10 months', 'Le texte adopté autorise la semaine de quatre jours à titre expérimental et sur la base du volontariat, loin de la généralisation promise.'], 'Entretien dans un quotidien régional.', [SourceKind::Article, 'Journal B', null]],
+            ['Samuel Prologue', CardType::Promise, '« Je présenterai un plan vélo national avant la fin de l’année. »', '-24 months', '-14 months', ['Transports'], CardStatus::Closed,
+                [VerdictValue::Abandoned, '-11 months', 'Aucun plan n’a été présenté ; le député a déclaré en commission que le projet était « mis de côté ».'], 'Congrès d’une fédération de cyclistes.', [SourceKind::Video, 'Télé G', '19:30']],
+            ['Louis Prototype', CardType::Promise, '« Si je suis élu maire, je gèlerai les loyers des logements municipaux. »', '-26 months', '-18 months', ['Logement'], CardStatus::Closed,
+                [VerdictValue::Moot, '-17 months', 'Le candidat n’a pas été élu : la promesse est devenue sans objet.'], 'Débat de second tour des municipales.', [SourceKind::Video, 'Télé G', '33:12']],
+            ['Victor Postulat', CardType::Prediction, '« Le chômage dépassera 9 % à la fin de l’année. »', '-22 months', '-10 months', ['Emploi'], CardStatus::Closed,
+                [VerdictValue::Wrong, '-8 months', 'Le taux de chômage publié pour le dernier trimestre s’établit à 7,3 %, bien en dessous du seuil annoncé.'], 'Note de conjoncture.', [SourceKind::PublicData, 'Banque K', null]],
+            ['Inès Esquisse', CardType::Prediction, '« Les taux baisseront deux fois cette année et l’immobilier repartira. »', '-28 months', '-16 months', ['Économie', 'Logement'], CardStatus::Closed,
+                [VerdictValue::PartiallyCorrect, '-14 months', 'Les taux directeurs ont bien baissé deux fois, mais le nombre de ventes de logements anciens est resté stable sur l’année.'], 'Colloque annuel de l’Institut.', [SourceKind::Video, 'Institut D', '1:05:20']],
+            ['Karim Parabole', CardType::Prediction, '« Ce débat télévisé changera l’issue de l’élection. »', '-30 months', '-28 months', ['Vie publique'], CardStatus::Closed,
+                [VerdictValue::Unverifiable, '-26 months', 'Aucune donnée ne permet d’isoler l’effet d’un débat sur le résultat : la prédiction ne peut être ni confirmée ni infirmée.'], 'Éditorial du soir.', [SourceKind::Video, 'Télé G', '04:50']],
+            ['Agathe Corollaire', CardType::Prediction, '« Le texte sera adopté à moins de dix voix d’écart. »', '-15 months', '-13 months', ['Institutions'], CardStatus::Closed,
+                [VerdictValue::Correct, '-12 months', 'Le scrutin public a donné 289 voix pour et 282 contre : un écart de sept voix.'], 'Matinale, la veille du vote.', [SourceKind::Video, 'Télé G', '07:58']],
+
+            // En modération et refusée
+            ['Nadia Synopsis', CardType::Prediction, '« Les primaires seront annulées faute de candidats sérieux. »', '-1 week', '+5 months', ['Présidentielle 2027'], CardStatus::InModeration, null, 'Lettre politique hebdomadaire.', [SourceKind::Article, 'Hebdo H', null]],
+            ['Rose Hypallage', CardType::Prediction, '« Le ticket de métro dépassera 3 euros l’an prochain. »', '-4 days', '+14 months', ['Transports'], CardStatus::InModeration, null, 'Chronique consacrée aux transports.', [SourceKind::Audio, 'Radio E', '02:40']],
+            ['Karim Parabole', CardType::Prediction, '« Tout le monde sait que ce ministre finira par mentir. »', '-2 weeks', '+1 year', ['Vie publique'], CardStatus::Rejected, null, 'Éditorial.', [SourceKind::Video, 'Télé G', '01:20']],
+        ];
+
+        foreach ($cards as $index => [$figure, $type, $quote, $statedOn, $deadline, $themes, $status, $verdict, $context, [$kind, $outlet, $timecode]]) {
+            $author = $members[$index % count($members)];
+            $moderator = $moderators[$index % count($moderators)];
+            $overrides = ['context' => $context, 'author_id' => $author->id];
+
+            if ($status === CardStatus::Rejected) {
+                $overrides['rejection_reason'] = 'Ce n’est ni une promesse ni une prédiction vérifiable : on juge des faits, jamais des intentions.';
+            }
+
+            $card = $this->card($figure, $type, $quote, $at($statedOn), $at($deadline), $themes, $status, $overrides, $kind, $outlet, $timecode);
+
+            if ($status->isPublic()) {
+                $this->log($card, $author, ActivityAction::Proposed, $at($statedOn));
+                $this->log($card, $moderator, ActivityAction::Approved, now()->modify($statedOn)->addDays(3)->toDateString(), ['status' => 'in_moderation'], ['status' => 'published']);
+            }
+
+            if ($verdict !== null) {
+                [$value, $decidedAt, $justification] = $verdict;
+                $proposer = $members[($index + 1) % count($members)];
+                $this->verdict(
+                    $card, $value, $proposer,
+                    $decidedAt === null ? VerdictStatus::Proposed : VerdictStatus::Approved,
+                    $decidedAt === null ? null : $moderator,
+                    $decidedAt === null ? null : $at($decidedAt),
+                    $justification,
+                );
+            }
+        }
+
+        // Un signalement ouvert et un signalement traité
+        $electricity = Card::where('quote', 'like', '%prix de l’électricité%')->sole();
+        Report::factory()->create([
+            'card_id' => $electricity->id,
+            'email' => 'lectrice@example.test',
+            'reason' => 'La date de l’annonce semble être le 12 et non le 14.',
+            'status' => ReportStatus::Open,
+        ]);
+        Report::factory()->create([
+            'card_id' => Card::where('quote', 'like', '%moins de dix voix%')->sole()->id,
+            'user_id' => $this->users['l.petit']->id,
+            'email' => null,
+            'reason' => 'Le lien vers le compte rendu du scrutin a changé.',
+            'status' => ReportStatus::Resolved,
+            'handled_by' => $this->users['a.moreau']->id,
+            'handled_at' => now()->subMonths(2),
         ]);
     }
 

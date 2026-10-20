@@ -159,7 +159,7 @@ Livewire et ressources Filament se contentent de les appeler ; aucune règle n�
 | `app/Http/Controllers/Api/V1/` | Contrôleurs minces de l’API ; Form Requests et ressources à côté. |
 | `app/Support/AltchaGuard.php` | Création et vérification des défis anti-robot. |
 | `resources/views/` | Vues Blade et Livewire ; `resources/css/app.css` porte la charte (`@theme`). |
-| `database/seeders/` | Thèmes (`ThemeSeeder`, aussi en production) et données de démonstration fictives (`DemoSeeder`). |
+| `database/seeders/` | Thèmes (`ThemeSeeder`, aussi en production) et données de démonstration fictives (`DemoSeeder` : 21 personnalités, 35 cartes couvrant chaque statut et chaque verdict). |
 | `deploy/` | `docker-compose.yml` de production et modèle des secrets (`env.example`). |
 | `docs/` | Spécification, maquettes (`docs/maquettes/editoriale` : charte actuelle), images du README. |
 
