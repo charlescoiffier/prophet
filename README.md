@@ -6,13 +6,15 @@ Voir `docs/specification.md` et les maquettes dans `docs/maquettes/`.
 
 ## Installation locale
 
-Prérequis : PHP 8.4, Composer, Node, PostgreSQL.
+Prérequis : PHP 8.4, Composer, Node, PostgreSQL (le PostgreSQL Homebrew de Charles écoute sur le port 5433 ; adapter `DB_PORT` sinon).
 
 ```bash
 composer install
 cp .env.example .env
 php artisan key:generate
-createdb prophet && createdb prophet_test
+psql -h 127.0.0.1 -p 5433 -d postgres -c "create role prophet login"
+createdb -h 127.0.0.1 -p 5433 -O prophet prophet
+createdb -h 127.0.0.1 -p 5433 -O prophet prophet_test
 php artisan migrate --seed
 ./vendor/bin/pest
 ```
