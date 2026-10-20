@@ -12,10 +12,12 @@ use App\Models\Source;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function () {
     Notification::fake();
+    Queue::fake();
     $this->moderator = User::factory()->moderator()->create();
     $this->actingAs($this->moderator);
 });

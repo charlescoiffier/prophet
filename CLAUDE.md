@@ -73,7 +73,14 @@ Principes de Todoist (sobriété, barre latérale de vues, ajout rapide au clavi
 
 1. Migrations, modèles, enums, factories et seeders (données fictives, jamais de vraies citations inventées). **Fait.**
 2. Filament : saisie et modération (panneau `/moderation`). **Fait**, avec les actions et Policies de modération qu'il appelle (`app/Actions`, `app/Policies`, boutons réutilisables dans `app/Filament/Actions`).
-3. Actions + Policies + tests (Pest) des parcours restants : proposition d'une carte par un visiteur ou un membre (règle 1), proposition d'un verdict par un membre (règles 3 et 5), signalement, archivage des sources par un job (règle 7), rattachement des cartes à l'inscription (règle 8).
+3. Actions + Policies + tests (Pest) des parcours restants. **Fait** : `ProposeCard` + lien signé `/confirmations/{card}` (règle 1), `ProposeVerdict` (règles 3 et 5), `ReportCard`, job `ArchiveSource` (règle 7), `AttachGuestCards` (règle 8). Choix faits :
+   - toute source passe par `AttachSources`, qui lance l'archivage ; ne jamais créer une source autrement ;
+   - archivage : demande « Save Page Now » puis vérification par l'API de disponibilité ; une capture antérieure à l'enregistrement de la source est refusée ; en cas de 429, le job patiente ; `sources:archive-missing` relance chaque nuit ;
+   - un verdict peut être proposé dès que la carte est publiée, sans attendre l'échéance (une promesse peut être tenue ou abandonnée avant) ; la modération filtre ;
+   - les cartes sont rattachées à la confirmation de l'adresse du compte (événement `Verified`), pas à l'inscription, et l'adresse est alors effacée de la carte ;
+   - les cartes jamais confirmées sont effacées après 8 jours (`cards:purge-unconfirmed`) ;
+   - le texte d'un signalement reste privé ; l'historique public n'en montre que l'existence et la note du modérateur ;
+   - les tests bloquent tout appel HTTP réel (`Http::preventStrayRequests()` dans `tests/TestCase.php`).
 4. API `/api/v1` + documentation Scramble. (À l'installation de Sanctum, passer `personal_access_tokens` en `uuidMorphs`.)
 5. Site public Blade/Livewire d'après les maquettes.
 6. Ouverture des propositions publiques (confirmation e-mail, anti-spam, limitation de débit).

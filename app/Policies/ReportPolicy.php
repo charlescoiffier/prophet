@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\ReportStatus;
+use App\Models\Card;
 use App\Models\Report;
 use App\Models\User;
 
@@ -18,9 +19,12 @@ class ReportPolicy
         return $user->isModerator();
     }
 
-    public function create(?User $user): bool
+    /**
+     * Tout le monde peut signaler une erreur sur une carte visible du public.
+     */
+    public function create(?User $user, Card $card): bool
     {
-        return false;
+        return $card->status->isPublic();
     }
 
     public function handle(User $user, Report $report): bool

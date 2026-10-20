@@ -21,7 +21,16 @@ class CardPolicy
     }
 
     /**
-     * Saisie directe depuis la modération. La proposition publique passera par une autre capacité.
+     * Proposition publique : un visiteur (qui confirmera son e-mail, règle 1)
+     * ou un membre dont l'adresse est confirmée.
+     */
+    public function propose(?User $user): bool
+    {
+        return $user === null || $user->hasVerifiedEmail();
+    }
+
+    /**
+     * Saisie directe depuis la modération.
      */
     public function create(User $user): bool
     {

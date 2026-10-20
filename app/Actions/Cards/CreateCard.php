@@ -3,6 +3,7 @@
 namespace App\Actions\Cards;
 
 use App\Actions\RecordActivity;
+use App\Actions\Sources\AttachSources;
 use App\Enums\ActivityAction;
 use App\Enums\CardStatus;
 use App\Models\Card;
@@ -17,7 +18,10 @@ use Illuminate\Validation\ValidationException;
  */
 class CreateCard
 {
-    public function __construct(private RecordActivity $recordActivity) {}
+    public function __construct(
+        private RecordActivity $recordActivity,
+        private AttachSources $attachSources,
+    ) {}
 
     /**
      * @param  array{public_figure_id: string, type: mixed, quote: string, stated_on: mixed, themes?: list<string>, sources?: list<array<string, mixed>>}&array<string, mixed>  $data
@@ -40,9 +44,7 @@ class CreateCard
 
             $card->themes()->sync($data['themes'] ?? []);
 
-            foreach ($data['sources'] as $source) {
-                $card->sources()->create($source);
-            }
+            $this->attachSources->handle($card, $data['sources']);
 
             $this->recordActivity->handle($card, $actor, ActivityAction::Proposed);
 

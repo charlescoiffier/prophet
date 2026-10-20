@@ -62,13 +62,21 @@ return [
     'custom' => [
         'sources' => [
             'required' => 'Une carte doit avoir au moins une source.',
+            'verdict_required' => 'Un verdict doit citer au moins une source.',
             'last' => 'Impossible de retirer la dernière source : ajoutez-en une autre d’abord.',
         ],
         'reason' => [
             'required' => 'Indiquez le motif du refus.',
         ],
+        'email' => [
+            'required_for_guest' => 'Indiquez votre adresse e-mail : nous vous enverrons un lien de confirmation.',
+        ],
+        'report' => [
+            'reason' => 'Décrivez l’erreur que vous signalez.',
+        ],
         'value' => [
             'type' => 'Cette valeur de verdict ne correspond pas au type de la carte.',
+            'pending' => 'Cette carte n’accepte pas de proposition de verdict pour le moment.',
         ],
     ],
 

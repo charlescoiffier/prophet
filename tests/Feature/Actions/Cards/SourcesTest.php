@@ -6,7 +6,10 @@ use App\Enums\ActivityAction;
 use App\Models\Card;
 use App\Models\Source;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
+
+beforeEach(fn () => Queue::fake());
 
 it('ajoute une source et le journalise', function () {
     $card = Card::factory()->published()->create();

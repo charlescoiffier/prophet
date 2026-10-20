@@ -35,7 +35,7 @@ class HandleReport
             $this->recordActivity->handle(
                 $report->card, $actor,
                 $outcome === ReportStatus::Resolved ? ActivityAction::ReportResolved : ActivityAction::ReportDismissed,
-                after: ['report' => $report->reason],
+                // Le texte du signalement reste privé : seule la note du modérateur est publique.
                 comment: $comment,
             );
         });

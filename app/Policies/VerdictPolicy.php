@@ -2,7 +2,9 @@
 
 namespace App\Policies;
 
+use App\Enums\CardStatus;
 use App\Enums\VerdictStatus;
+use App\Models\Card;
 use App\Models\User;
 use App\Models\Verdict;
 
@@ -21,11 +23,21 @@ class VerdictPolicy
     }
 
     /**
-     * Les propositions de verdict viennent des membres (étape 3), pas du panneau.
+     * Les propositions passent par propose(), avec la carte visée.
      */
     public function create(User $user): bool
     {
         return false;
+    }
+
+    /**
+     * Règle 3 : seul un membre inscrit (adresse confirmée) propose un verdict.
+     * Règle 5 : la carte ne doit pas déjà avoir une proposition en attente.
+     */
+    public function propose(User $user, Card $card): bool
+    {
+        return $user->hasVerifiedEmail()
+            && $card->status === CardStatus::Published;
     }
 
     public function update(User $user, Verdict $verdict): bool

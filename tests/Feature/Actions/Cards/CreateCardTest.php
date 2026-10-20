@@ -3,11 +3,15 @@
 use App\Actions\Cards\CreateCard;
 use App\Enums\ActivityAction;
 use App\Enums\CardStatus;
+use App\Jobs\ArchiveSource;
 use App\Models\PublicFigure;
 use App\Models\Theme;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
+
+beforeEach(fn () => Queue::fake());
 
 function cardInput(array $overrides = []): array
 {
@@ -34,6 +38,7 @@ it('enregistre la carte du modérateur en modération, avec thèmes, sources et 
         ->and($card->themes)->toHaveCount(1)
         ->and($card->sources()->sole()->timecode)->toBe('12:34')
         ->and($card->activityLogs()->sole()->action)->toBe(ActivityAction::Proposed);
+    Queue::assertPushed(ArchiveSource::class, 1);
 });
 
 it('exige au moins une source', function () {
