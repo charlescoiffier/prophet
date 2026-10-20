@@ -6,7 +6,7 @@ use App\Models\Card;
 use App\Models\PublicFigure;
 use App\Models\Theme;
 use App\Models\Verdict;
-use App\View\Appearance;
+use App\View\Components\Sidebar;
 use Livewire\Livewire;
 
 it('affiche l’accueil groupé par sections, sans les cartes non publiques', function () {
@@ -72,10 +72,63 @@ it('répond 404 pour une personnalité inconnue', function () {
     $this->get('/personnalites/inconnue')->assertNotFound();
 });
 
-it('donne à une personnalité la même pastille quel que soit son identifiant', function () {
-    $first = PublicFigure::factory()->create(['slug' => 'jeanne-exemple']);
-    $color = Appearance::figureColor($first);
-    $first->delete();
+it('montre la photo d’une personnalité, ou son monogramme à défaut', function () {
+    $withPhoto = PublicFigure::factory()->create(['name' => 'Jeanne Exemple', 'photo_url' => 'https://example.org/jeanne.jpg']);
+    $withoutPhoto = PublicFigure::factory()->create(['name' => 'Paul Modèle', 'photo_url' => null]);
+    Card::factory()->for($withPhoto)->published()->create();
+    Card::factory()->for($withoutPhoto)->published()->create();
 
-    expect(Appearance::figureColor(PublicFigure::factory()->create(['slug' => 'jeanne-exemple'])))->toBe($color);
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('src="https://example.org/jeanne.jpg"', escape: false)
+        ->assertSee('>PM</span>', escape: false);
+});
+
+it('liste les cartes dont le verdict est en relecture', function () {
+    Card::factory()->overdue()->create(['status' => CardStatus::VerdictProposed, 'quote' => '« En relecture. »']);
+    Card::factory()->published()->create(['quote' => '« Ouverte. »']);
+
+    $this->get('/en-relecture')->assertOk()->assertSee('« En relecture. »')->assertDontSee('« Ouverte. »');
+});
+
+it('regroupe les verdicts par tonalité, promesses et prédictions confondues', function () {
+    foreach ([['promise', 'kept', '« Tenue. »'], ['prediction', 'correct', '« Juste. »'], ['prediction', 'wrong', '« Fausse. »']] as [$type, $value, $quote]) {
+        $card = Card::factory()->overdue()->create(['type' => $type, 'status' => CardStatus::Closed, 'quote' => $quote]);
+        Verdict::factory()->approved()->create(['card_id' => $card->id, 'value' => $value]);
+    }
+
+    $this->get('/verdicts/tenues-ou-justes')
+        ->assertOk()
+        ->assertSee('Tenues ou justes')
+        ->assertSee('« Tenue. »')
+        ->assertSee('« Juste. »')
+        ->assertDontSee('« Fausse. »');
+
+    $this->get('/verdicts/abandonnees-ou-fausses')->assertOk()->assertSee('« Fausse. »')->assertDontSee('« Juste. »');
+});
+
+it('répond 404 pour une tonalité de verdict inconnue', function () {
+    $this->get('/verdicts/inconnue')->assertNotFound();
+});
+
+it('compte les promesses et les prédictions dans les onglets', function () {
+    Card::factory()->count(2)->published()->promise()->create();
+    Card::factory()->published()->prediction()->create();
+
+    Livewire::test(Board::class)
+        ->assertSeeHtml('Toutes les cartes <sup>3</sup>')
+        ->assertSeeHtml('Promesses <sup>2</sup>')
+        ->assertSeeHtml('Prédictions <sup>1</sup>');
+});
+
+it('affiche dans la barre latérale le nombre de verdicts de chaque tonalité', function () {
+    $card = Card::factory()->overdue()->prediction()->create(['status' => CardStatus::Closed]);
+    Verdict::factory()->approved()->create(['card_id' => $card->id, 'value' => 'partially_correct']);
+
+    expect((new Sidebar)->toneCounts)->toBe([
+        'tenues-ou-justes' => 0,
+        'partielles' => 1,
+        'abandonnees-ou-fausses' => 0,
+        'caduques-ou-inverifiables' => 0,
+    ]);
 });

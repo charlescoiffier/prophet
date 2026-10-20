@@ -63,6 +63,16 @@ enum VerdictValue: string implements HasColor, HasLabel
     }
 
     /**
+     * Valeurs d'une même tonalité, toutes cartes confondues (« positive » : tenue et juste).
+     *
+     * @return list<self>
+     */
+    public static function withTone(string $tone): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $value) => $value->tone() === $tone));
+    }
+
+    /**
      * @return list<self>
      */
     public static function forType(CardType $type): array

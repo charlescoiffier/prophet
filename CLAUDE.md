@@ -67,7 +67,7 @@ Champs renommés par rapport à la spécification : `reformulation` → `testabl
 
 ## Style visuel
 
-Principes de Todoist (sobriété, barre latérale de vues, ajout rapide au clavier avec la touche Q) mais écran principal organisé en grille de cartes. Accent bleu `#2552C6`, typographie Inter, rond d'état coloré selon le verdict. Ne pas reprendre le logo ni le rouge de Todoist. Voir `docs/maquettes/`.
+Charte éditoriale (21 octobre 2026), référence `docs/maquettes/editoriale/index.html` : papier crème `#F7F4EA`, encre `#20212B`, traits d'encre de 1 px et angles droits, DM Sans pour le texte et Newsreader (serif grasse) pour les titres et les citations. Cartes en aplats colorés : une carte tranchée prend la couleur de son verdict (bleu tenue/juste, jaune partielle, rouge abandonnée/fausse, gris caduque/invérifiable), une carte en relecture le bleu soutenu, les cartes ouvertes alternent jaune, bleu clair et gris. Portrait d'une personnalité en photocopie (photo libre de droits en noir et blanc contrasté), monogramme en serif à défaut. Barre latérale : États, Verdicts (par tonalité), Personnalités, Thèmes ; ajout rapide au clavier avec la touche Q. Les maquettes d'origine (`docs/maquettes/*.html`, style Todoist) restent la référence de structure des autres écrans. Le panneau de modération Filament garde son thème.
 
 ## Ordre de construction
 
@@ -88,7 +88,7 @@ Principes de Todoist (sobriété, barre latérale de vues, ajout rapide au clavi
    - bilan d'une personnalité en décomptes de verdicts, jamais en pourcentages ;
    - limites de débit : `api` (120/min), `proposals` (10/h par IP), `auth` ; confirmation de compte par la route web `verification.verify`, réinitialisation du mot de passe vers `/mot-de-passe/nouveau` (page à faire à l'étape 5).
 5. Site public Blade/Livewire d'après les maquettes. **Fait** : composants Livewire à classe (`app/Livewire`, vues dans `resources/views/livewire`), mises en page `layouts/app` (barre latérale) et `layouts/dialog` (fenêtre sur fond gris). `Board` sert l'accueil, les vues, les pages personnalité, thème et recherche. Repères :
-   - palette des maquettes dans `resources/css/app.css` (`@theme`) ; ronds d'état et couleurs de verdict dans `App\View\Appearance` (classes Tailwind écrites en entier) : juste/tenue = bleu, partiel = ambre, fausse/abandonnée = orange, invérifiable/caduque = ardoise ; le sarcelle et le violet ne servent qu'aux pastilles des personnalités ;
+   - palette et polices dans `resources/css/app.css` (`@theme`) et `vite.config.js` (Bunny Fonts) ; aplats des cartes, ronds d'état, statuts et tonalités de verdict (`Appearance::VERDICT_TONES`, vues `/verdicts/{tonalité}`) dans `App\View\Appearance` (classes Tailwind écrites en entier) ; portraits : composant `<x-portrait>` ; bandeau « Version de test » : `PROPHET_TEST_NOTICE` ;
    - icônes : composant `<x-glyph>` (`<x-icon>` est pris par blade-icons, livré avec Filament) ;
    - historique public en phrases : `ActivityLog::publicSentence()` + `lang/fr/history.php` ;
    - touche Q : `resources/js/app.js` ; mêmes limites de débit que l'API pour les formulaires publics ;

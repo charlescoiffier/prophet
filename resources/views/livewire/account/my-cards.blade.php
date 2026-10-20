@@ -1,17 +1,17 @@
 <div class="flex flex-col gap-8">
     <div class="flex flex-col gap-0.5">
-        <h1 class="text-[22px] font-bold">Mes propositions</h1>
+        <h1 class="pt-7 font-serif text-[clamp(40px,4.4vw,64px)] leading-[0.97] font-extrabold tracking-[-2px]">Mes propositions</h1>
         <span class="text-xs text-muted">{{ auth()->user()->username }} · {{ auth()->user()->email }}</span>
     </div>
 
     @if (session('status'))
-        <p role="status" class="rounded-md bg-accent-soft px-3 py-2.5 text-[13px] text-accent-dark">{{ session('status') }}</p>
+        <p role="status" class="bg-accent-soft px-3 py-2.5 text-[13px] text-accent-dark">{{ session('status') }}</p>
     @endif
 
     @unless (auth()->user()->hasVerifiedEmail())
-        <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#F0DFB4] bg-[#FFF9EC] px-4 py-3 text-[13px] text-partial-text">
+        <div class="flex flex-wrap items-center justify-between gap-2 border border-[#F0DFB4] bg-[#FFF9EC] px-4 py-3 text-[13px] text-partial-text">
             <span>Confirmez votre adresse e-mail pour proposer des cartes et des verdicts : un lien vous a été envoyé.</span>
-            <button type="button" wire:click="resendVerification" class="min-h-10 cursor-pointer rounded-md px-3 font-semibold hover:bg-white">Renvoyer le lien</button>
+            <button type="button" wire:click="resendVerification" class="min-h-10 cursor-pointer px-3 font-semibold hover:bg-white">Renvoyer le lien</button>
         </div>
     @endunless
 

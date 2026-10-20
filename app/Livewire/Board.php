@@ -4,9 +4,11 @@ namespace App\Livewire;
 
 use App\Enums\CardStatus;
 use App\Enums\CardType;
+use App\Enums\VerdictValue;
 use App\Models\Card;
 use App\Models\PublicFigure;
 use App\Models\Theme;
+use App\View\Appearance;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -22,13 +24,28 @@ use Livewire\Component;
 class Board extends Component
 {
     /** Vues de la barre latérale. */
-    public const VIEWS = ['all', 'awaiting', 'upcoming', 'closed', 'search'];
+    public const VIEWS = ['all', 'awaiting', 'upcoming', 'review', 'closed', 'verdict', 'search'];
+
+    /**
+     * Sections : titre et phrase d'accompagnement (maquette éditoriale).
+     *
+     * @var array<string, array{0: string, 1: string}>
+     */
+    public const SECTIONS = [
+        'awaiting' => ['Échéance dépassée, verdict attendu', 'L’échéance est passée. Aux faits de parler.'],
+        'review' => ['Verdict en relecture', 'Les faits sont là. Le verdict se vérifie.'],
+        'upcoming' => ['Prochaines échéances', 'Le rendez-vous est pris.'],
+        'closed' => ['Verdicts récents', 'Quand la parole rencontre le réel.'],
+    ];
 
     public string $view = 'all';
 
     public ?PublicFigure $figure = null;
 
     public ?Theme $theme = null;
+
+    /** Tonalité de verdict de la vue « verdict » (clé de Appearance::VERDICT_TONES). */
+    public ?string $tone = null;
 
     #[Url(as: 'type', except: '')]
     public string $type = '';
@@ -39,12 +56,14 @@ class Board extends Component
     /** Cartes affichées par section ; « Afficher plus » l'augmente. */
     public int $limit = 12;
 
-    public function mount(?string $view = null, ?PublicFigure $figure = null, ?Theme $theme = null): void
+    public function mount(?string $view = null, ?PublicFigure $figure = null, ?Theme $theme = null, ?string $tone = null): void
     {
         $view ??= 'all';
         abort_unless(in_array($view, self::VIEWS, true), 404);
+        abort_if($view === 'verdict' && ! isset(Appearance::VERDICT_TONES[$tone]), 404);
 
         $this->view = $view;
+        $this->tone = $tone;
         $this->figure = $figure;
         $this->theme = $theme;
         $this->limit = $view === 'all' && $figure === null && $theme === null ? 12 : 48;
@@ -57,8 +76,21 @@ class Board extends Component
 
     public function render(): View
     {
+        $counts = (clone $this->baseQuery(withType: false))
+            ->reorder()
+            ->toBase()
+            ->selectRaw('type, count(*) as total')
+            ->groupBy('type')
+            ->pluck('total', 'type');
+
         return view('livewire.board', [
             'heading' => $this->title(),
+            'lead' => $this->lead(),
+            'typeCounts' => [
+                '' => (int) $counts->sum(),
+                CardType::Promise->value => (int) ($counts[CardType::Promise->value] ?? 0),
+                CardType::Prediction->value => (int) ($counts[CardType::Prediction->value] ?? 0),
+            ],
             'sections' => $this->sections(),
             'record' => $this->figure?->record(),
             'currentAffiliation' => $this->figure?->affiliationOn(now()),
@@ -76,31 +108,37 @@ class Board extends Component
             return [];
         }
 
-        $definitions = [
-            'awaiting' => ['Échéance dépassée, verdict attendu', fn (Builder $query) => $query->awaitingVerdict()->orderBy('deadline')],
-            'review' => ['Verdict en relecture', fn (Builder $query) => $query->where('status', CardStatus::VerdictProposed)->orderBy('deadline')],
-            'upcoming' => ['Prochaines échéances', fn (Builder $query) => $query
+        $scopes = [
+            'awaiting' => fn (Builder $query) => $query->awaitingVerdict()->orderBy('deadline'),
+            'review' => fn (Builder $query) => $query->where('status', CardStatus::VerdictProposed)->orderBy('deadline'),
+            'upcoming' => fn (Builder $query) => $query
                 ->where('status', CardStatus::Published)
                 ->where(fn (Builder $deadline) => $deadline->whereNull('deadline')->orWhereDate('deadline', '>=', today()))
-                ->orderByRaw('deadline asc nulls last')],
-            'closed' => ['Tranchées récemment', fn (Builder $query) => $query->where('status', CardStatus::Closed)->latest('updated_at')],
+                ->orderByRaw('deadline asc nulls last'),
+            'closed' => fn (Builder $query) => $query
+                ->where('status', CardStatus::Closed)
+                ->when($this->tone, fn (Builder $closed) => $closed->whereHas('approvedVerdict', fn (Builder $verdict) => $verdict
+                    ->whereIn('value', VerdictValue::withTone(Appearance::VERDICT_TONES[$this->tone]['tone']))))
+                ->latest('updated_at'),
         ];
 
         $keys = match ($this->view) {
             'awaiting' => ['awaiting'],
             'upcoming' => ['upcoming'],
-            'closed' => ['closed'],
-            default => array_keys($definitions),
+            'review' => ['review'],
+            'closed', 'verdict' => ['closed'],
+            default => array_keys($scopes),
         };
 
         return collect($keys)
-            ->map(function (string $key) use ($definitions) {
-                [$title, $scope] = $definitions[$key];
-                $query = $scope($this->baseQuery());
+            ->map(function (string $key) use ($scopes) {
+                [$title, $tagline] = self::SECTIONS[$key];
+                $query = $scopes[$key]($this->baseQuery());
 
                 return [
                     'key' => $key,
-                    'title' => $title,
+                    'title' => $this->view === 'verdict' ? Appearance::VERDICT_TONES[$this->tone]['label'] : $title,
+                    'tagline' => $tagline,
                     'total' => (clone $query)->count(),
                     'cards' => $query->orderBy('id')->limit($this->limit)->get(),
                 ];
@@ -113,14 +151,14 @@ class Board extends Component
     /**
      * @return Builder<Card>
      */
-    private function baseQuery(): Builder
+    private function baseQuery(bool $withType = true): Builder
     {
         return Card::query()
             ->visible()
             ->with(['publicFigure', 'themes', 'approvedVerdict'])
             ->when($this->figure, fn (Builder $query) => $query->where('public_figure_id', $this->figure->getKey()))
             ->when($this->theme, fn (Builder $query) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereKey($this->theme->getKey())))
-            ->when(CardType::tryFrom($this->type), fn (Builder $query, CardType $type) => $query->where('type', $type))
+            ->when($withType ? CardType::tryFrom($this->type) : null, fn (Builder $query, CardType $type) => $query->where('type', $type))
             ->when(trim($this->q) !== '', fn (Builder $query) => $query->whereRaw(
                 "to_tsvector('french', quote || ' ' || coalesce(context, '')) @@ websearch_to_tsquery('french', ?)",
                 [trim($this->q)],
@@ -135,9 +173,30 @@ class Board extends Component
             default => match ($this->view) {
                 'awaiting' => 'Verdict attendu',
                 'upcoming' => 'Échéances à venir',
+                'review' => 'Verdict en relecture',
                 'closed' => 'Tranchées',
+                'verdict' => Appearance::VERDICT_TONES[$this->tone]['label'],
                 'search' => 'Rechercher',
                 default => 'Toutes les cartes',
+            },
+        };
+    }
+
+    /**
+     * Chapeau sous le titre (accueil : l'accroche de la maquette).
+     */
+    private function lead(): string
+    {
+        return match (true) {
+            $this->figure !== null => trim(($this->figure->description ?? '').' · Promesses et prédictions citées, datées et sourcées.', ' ·'),
+            $this->theme !== null => 'Promesses et prédictions sur ce thème.',
+            default => match ($this->view) {
+                'awaiting' => 'L’échéance est passée : il reste à confronter la parole aux faits.',
+                'upcoming' => 'Les engagements et pronostics dont l’heure approche.',
+                'review' => 'Des verdicts ont été proposés : les modérateurs vérifient leurs sources.',
+                'closed', 'verdict' => 'Des déclarations confrontées aux faits, sources à l’appui.',
+                'search' => 'Dans les citations et leur contexte.',
+                default => 'Qui a dit quoi, et pour quand ? Des déclarations sourcées, des échéances suivies et des verdicts documentés.',
             },
         };
     }

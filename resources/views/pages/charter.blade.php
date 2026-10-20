@@ -1,8 +1,8 @@
 {{-- Texte de travail, à relire par Charles avant l'ouverture des propositions. --}}
 <x-page title="Charte du contributeur" description="Les règles pour proposer une carte ou un verdict.">
-    <article class="mx-auto flex max-w-[680px] flex-col gap-4 rounded-xl bg-white p-6 leading-relaxed shadow-[0_16px_48px_rgba(0,0,0,0.18)] sm:p-8">
+    <article class="mx-auto flex max-w-[680px] flex-col gap-4 bg-field p-6 leading-relaxed shadow-[0_16px_48px_rgba(0,0,0,0.18)] sm:p-8">
         <a href="{{ route('home') }}" class="text-[13px]">← Toutes les cartes</a>
-        <h1 class="text-2xl font-bold">Charte du contributeur</h1>
+        <h1 class="font-serif text-[40px] leading-none font-extrabold tracking-[-1px]">Charte du contributeur</h1>
         <p>{{ config('app.name') }} recense des promesses et des prédictions de personnalités publiques pour les confronter, le moment venu, aux faits. Chaque proposition est relue par un modérateur avant publication.</p>
         <h2 class="pt-2 text-base font-bold">En proposant une carte, je m’engage à :</h2>
         <ul class="list-disc space-y-1 pl-5">

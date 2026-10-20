@@ -1,12 +1,12 @@
 @php
-    $chip = 'inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 text-[13px]';
+    $chip = 'inline-flex min-h-11 items-center gap-1.5 border px-3 text-[13px]';
     $chipOn = 'border-accent-line bg-accent-soft font-semibold text-accent-dark';
-    $chipOff = 'border-line-strong bg-white text-subtle';
-    $field = 'flex min-h-11 items-center gap-2 rounded-md border border-line-strong px-3 focus-within:border-accent';
+    $chipOff = 'border-line-strong bg-field text-subtle';
+    $field = 'flex min-h-11 items-center gap-2 border border-line-strong px-3 focus-within:border-accent';
 @endphp
 <div class="flex flex-col items-center gap-4 pt-4 sm:pt-6">
     @if ($sent)
-        <div role="status" class="flex w-full max-w-[680px] flex-col gap-3 rounded-xl bg-white p-6 shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
+        <div role="status" class="flex w-full max-w-[680px] flex-col gap-3 bg-field p-6 shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
             <h1 class="text-lg font-bold">
                 {{ $sent->author_id ? 'Merci, votre carte part en relecture.' : 'Merci ! Vérifiez votre boîte de réception.' }}
             </h1>
@@ -17,18 +17,18 @@
                 <p>Nous vous avons envoyé un lien de confirmation. Votre proposition partira en relecture dès que vous aurez cliqué dessus.</p>
             @endif
             <div class="flex gap-2">
-                <a href="{{ route('home') }}" wire:navigate class="inline-flex min-h-11 items-center rounded-md bg-[#F2F2F2] px-4 font-semibold text-ink no-underline">Retour aux cartes</a>
-                <a href="{{ route('cards.propose') }}" class="inline-flex min-h-11 items-center rounded-md bg-accent px-4 font-semibold text-white no-underline hover:text-white">Proposer une autre carte</a>
+                <a href="{{ route('home') }}" wire:navigate class="inline-flex min-h-11 items-center border border-ink bg-transparent px-4 font-semibold text-ink no-underline">Retour aux cartes</a>
+                <a href="{{ route('cards.propose') }}" class="inline-flex min-h-11 items-center bg-accent px-4 font-semibold text-white no-underline hover:text-white">Proposer une autre carte</a>
             </div>
         </div>
     @else
         <form wire:submit="submit" role="dialog" aria-label="Proposer une carte"
-              class="flex w-full max-w-[680px] flex-col rounded-xl bg-white shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
+              class="flex w-full max-w-[680px] flex-col border border-ink bg-field">
             <div class="flex flex-col gap-1.5 px-5 pt-[18px] pb-3">
                 <label class="block">
                     <span class="sr-only">Citation exacte</span>
                     <textarea wire:model="quote" rows="2" autofocus placeholder="Citation exacte, mot pour mot"
-                              class="w-full resize-none border-0 p-0 text-[19px] leading-snug font-semibold outline-none placeholder:text-[#A3A3A3]"></textarea>
+                              class="w-full resize-none border-0 p-0 bg-transparent font-serif text-[28px] leading-[1.08] font-extrabold tracking-[-0.5px] outline-none placeholder:text-[#A8A598]"></textarea>
                 </label>
                 @error('quote') <span class="text-xs text-negative-text">{{ $message }}</span> @enderror
                 <label class="block">
@@ -77,9 +77,9 @@
                         @endif
                     </button>
                     <div x-show="open" x-cloak @click.outside="open = false"
-                         class="absolute left-0 z-10 mt-1 flex max-h-72 w-60 flex-col overflow-y-auto rounded-lg border border-line bg-white p-1 shadow-lg">
+                         class="absolute left-0 z-10 mt-1 flex max-h-72 w-60 flex-col overflow-y-auto border border-line bg-field p-1 shadow-lg">
                         @foreach ($allThemes as $theme)
-                            <label class="flex min-h-10 cursor-pointer items-center gap-2 rounded-md px-2 text-[13px] hover:bg-sidebar">
+                            <label class="flex min-h-10 cursor-pointer items-center gap-2 px-2 text-[13px] hover:bg-sidebar">
                                 <input type="checkbox" wire:model.live="themes" value="{{ $theme->id }}">
                                 {{ $theme->name }}
                             </label>
@@ -140,8 +140,8 @@
             </div>
 
             <div class="flex justify-end gap-2 border-t border-line px-5 py-3">
-                <a href="{{ route('home') }}" wire:navigate class="inline-flex min-h-11 items-center rounded-md bg-[#F2F2F2] px-4 font-semibold text-ink no-underline hover:text-ink">Annuler</a>
-                <button type="submit" wire:loading.attr="disabled" class="min-h-11 cursor-pointer rounded-md bg-accent px-4 font-semibold text-white disabled:opacity-60">Envoyer pour relecture</button>
+                <a href="{{ route('home') }}" wire:navigate class="inline-flex min-h-11 items-center border border-ink bg-transparent px-4 font-semibold text-ink no-underline hover:text-ink">Annuler</a>
+                <button type="submit" wire:loading.attr="disabled" class="min-h-11 cursor-pointer bg-accent px-4 font-semibold text-white disabled:opacity-60">Envoyer pour relecture</button>
             </div>
         </form>
 

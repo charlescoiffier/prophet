@@ -1,6 +1,6 @@
 <x-dialog-card title="Se connecter">
     @if (session('status'))
-        <p role="status" class="rounded-md bg-accent-soft px-3 py-2.5 text-[13px] text-accent-dark">{{ session('status') }}</p>
+        <p role="status" class="bg-accent-soft px-3 py-2.5 text-[13px] text-accent-dark">{{ session('status') }}</p>
     @endif
     <form wire:submit="login" class="flex flex-col gap-3">
         <x-text-field label="Adresse e-mail" name="email" type="email" autocomplete="email" autofocus required />
@@ -8,7 +8,7 @@
         <label class="flex items-center gap-2 text-[13px]">
             <input type="checkbox" wire:model="remember"> Rester connecté
         </label>
-        <button type="submit" class="min-h-11 cursor-pointer rounded-md bg-accent font-semibold text-white">Se connecter</button>
+        <button type="submit" class="min-h-11 cursor-pointer bg-accent font-semibold text-white">Se connecter</button>
     </form>
     <div class="flex flex-wrap justify-between gap-2 text-[13px]">
         <a href="{{ route('password.request') }}" wire:navigate>Mot de passe oublié ?</a>

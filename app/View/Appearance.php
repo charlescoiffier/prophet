@@ -3,29 +3,79 @@
 namespace App\View;
 
 use App\Enums\CardStatus;
+use App\Enums\CardType;
 use App\Models\Card;
 use App\Models\PublicFigure;
 use Illuminate\Support\Str;
 
 /**
- * Apparence des cartes sur le site public, d'après docs/maquettes.
+ * Apparence des cartes sur le site public, d'après la maquette éditoriale (docs/maquettes/editoriale).
  *
  * Les classes Tailwind sont écrites en entier ici pour que Tailwind les détecte.
  */
 class Appearance
 {
-    /** Pastilles des personnalités, dans l'ordre des maquettes. */
-    private const FIGURE_COLORS = ['#2552C6', '#0F766E', '#B7791F', '#7C3AED', '#C2410C', '#475569'];
+    /**
+     * Tonalités de verdict : adresse (/verdicts/{slug}) => tonalité et libellé de la barre latérale.
+     *
+     * @var array<string, array{tone: string, label: string, mark: string}>
+     */
+    public const VERDICT_TONES = [
+        'tenues-ou-justes' => ['tone' => 'positive', 'label' => 'Tenues ou justes', 'mark' => '✓'],
+        'partielles' => ['tone' => 'partial', 'label' => 'Partielles', 'mark' => '≈'],
+        'abandonnees-ou-fausses' => ['tone' => 'negative', 'label' => 'Abandonnées ou fausses', 'mark' => '×'],
+        'caduques-ou-inverifiables' => ['tone' => 'neutral', 'label' => 'Caduques ou invérifiables', 'mark' => '?'],
+    ];
+
+    /** Aplats des cartes encore ouvertes, en alternance comme dans la maquette. */
+    private const OPEN_SURFACES = ['bg-card-bright', 'bg-card-blue', 'bg-card-grey'];
 
     /**
-     * Rond d'état : coloré et rempli selon le verdict ; cerclé d'orange si l'échéance
-     * est dépassée sans verdict ; gris sinon.
+     * Fond d'une carte de la grille : couleur du verdict une fois tranchée, bleu soutenu
+     * en relecture, aplats en alternance tant qu'elle est ouverte.
+     */
+    public static function surfaceClasses(Card $card, int $position = 0): string
+    {
+        return match (self::tone($card)) {
+            'positive' => 'bg-card-blue',
+            'partial' => 'bg-card-yellow',
+            'negative' => 'bg-card-red',
+            'neutral' => 'bg-card-grey',
+            default => $card->status === CardStatus::VerdictProposed
+                ? 'bg-card-review'
+                : self::OPEN_SURFACES[$position % count(self::OPEN_SURFACES)],
+        };
+    }
+
+    /**
+     * Statut en bas de carte : « ✓ Juste », « En relecture », « Verdict attendu », « À suivre ↗ ».
+     */
+    public static function statusLabel(Card $card): string
+    {
+        if ($card->status === CardStatus::Closed && $card->approvedVerdict !== null) {
+            return self::markFor($card->approvedVerdict->value->tone()).' '.$card->approvedVerdict->value->label();
+        }
+
+        return match (true) {
+            $card->status === CardStatus::VerdictProposed => 'En relecture',
+            self::isOverdue($card) => 'Verdict attendu',
+            default => 'À suivre ↗',
+        };
+    }
+
+    /** Symbole du type : ○ promesse, ◇ prédiction. */
+    public static function typeMark(Card $card): string
+    {
+        return $card->type === CardType::Promise ? '○' : '◇';
+    }
+
+    /**
+     * Rond d'état (fiche d'une carte, mes propositions) : couleur du verdict,
+     * rouge si l'échéance est dépassée sans verdict, gris sinon.
      */
     public static function ringClasses(Card $card): string
     {
-        $tone = self::tone($card);
-
-        return match ($tone) {
+        return match (self::tone($card)) {
             'positive' => 'border-positive bg-positive-fill',
             'partial' => 'border-partial bg-partial-fill',
             'negative' => 'border-negative bg-negative-fill',
@@ -47,15 +97,15 @@ class Appearance
     }
 
     /**
-     * Encadré du verdict sur la fiche d'une carte.
+     * Encadré du verdict sur la fiche d'une carte : l'aplat de la carte tranchée.
      */
     public static function verdictPanelClasses(Card $card): string
     {
         return match (self::tone($card)) {
-            'positive' => 'bg-[#F3F6FD] border-accent-line',
-            'partial' => 'bg-[#FFF9EC] border-[#F0DFB4]',
-            'negative' => 'bg-[#FEF4EF] border-[#F3CDB9]',
-            default => 'bg-[#F5F6F8] border-[#DDE1E6]',
+            'positive' => 'bg-card-blue',
+            'partial' => 'bg-card-yellow',
+            'negative' => 'bg-card-red',
+            default => 'bg-card-grey',
         };
     }
 
@@ -67,10 +117,21 @@ class Appearance
             && ! $card->deadline->isToday();
     }
 
-    public static function figureColor(PublicFigure $figure): string
+    public static function markFor(string $tone): string
     {
-        // Tirée du slug, stable d'une base à l'autre (l'identifiant change à chaque import).
-        return self::FIGURE_COLORS[crc32($figure->slug) % count(self::FIGURE_COLORS)];
+        return collect(self::VERDICT_TONES)->firstWhere('tone', $tone)['mark'] ?? '';
+    }
+
+    /**
+     * Monogramme d'une personnalité sans photo : « Jeanne Exemple » → « JE ».
+     */
+    public static function monogram(PublicFigure $figure): string
+    {
+        return Str::upper(collect(preg_split('/[\s\-]+/u', $figure->name))
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part) => Str::substr($part, 0, 1))
+            ->implode(''));
     }
 
     /**

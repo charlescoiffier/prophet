@@ -5,7 +5,7 @@
     @else
         <form wire:submit="send" class="flex flex-col gap-3">
             <x-text-field label="Adresse e-mail du compte" name="email" type="email" autocomplete="email" autofocus required />
-            <button type="submit" class="min-h-11 cursor-pointer rounded-md bg-accent font-semibold text-white">Recevoir un lien</button>
+            <button type="submit" class="min-h-11 cursor-pointer bg-accent font-semibold text-white">Recevoir un lien</button>
         </form>
     @endif
 </x-dialog-card>

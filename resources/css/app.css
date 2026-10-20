@@ -3,48 +3,71 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-/* Palette et typographie des maquettes (docs/maquettes). */
+/*
+ * Charte éditoriale (docs/maquettes/editoriale) : papier, encre, aplats de couleur,
+ * DM Sans pour le texte, Newsreader pour les titres et les citations.
+ */
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Newsreader', Georgia, serif;
 
-    --color-ink: #202020;
-    --color-ink-soft: #3D3D3D;
-    --color-muted: #6F6F6F;
-    --color-subtle: #5C5C5C;
-    --color-line: #EEEEEE;
-    --color-line-strong: #E0E0E0;
-    --color-sidebar: #FBFAF8;
-    --color-backdrop: #E7E6E2;
-    --color-tag: #EFEDE8;
+    --color-paper: #F7F4EA;
+    --color-paper-deep: #F0EDE3;
+    --color-field: #FFFDF7;
 
-    --color-accent: #2552C6;
-    --color-accent-dark: #1B3F99;
-    --color-accent-soft: #EAEFFB;
-    --color-accent-line: #C9D6F5;
+    --color-ink: #20212B;
+    --color-ink-soft: #3A3B44;
+    --color-muted: #6C6B67;
+    --color-subtle: #55544F;
+    --color-line: #C6C3BB;
+    --color-line-strong: #AAA89F;
+    --color-sidebar: #F0EDE3;
+    --color-backdrop: #F7F4EA;
+    --color-tag: #E6E2D6;
+
+    --color-accent: #075BEA;
+    --color-accent-dark: #0646B4;
+    --color-accent-soft: #DCE6FB;
+    --color-accent-line: #9DB8EE;
+    --color-signal-red: #F04445;
+    --color-signal-yellow: #FFCF35;
+
+    /* Aplats des cartes */
+    --color-card-yellow: #F0C635;
+    --color-card-bright: #FFCF35;
+    --color-card-blue: #83A4E5;
+    --color-card-review: #588BE7;
+    --color-card-red: #F26B62;
+    --color-card-grey: #C4C1B3;
 
     /* Ronds d'état et verdicts */
-    --color-positive: #2552C6;
-    --color-positive-fill: #DCE5FA;
-    --color-positive-text: #1B3F99;
-    --color-partial: #B7791F;
-    --color-partial-fill: #F8EBCB;
-    --color-partial-text: #7A4F0C;
-    --color-negative: #C2410C;
-    --color-negative-fill: #FBDFD0;
-    --color-negative-text: #A3360A;
-    --color-neutral: #475569;
-    --color-neutral-fill: #E2E8F0;
-    --color-neutral-text: #334155;
-    --color-pending: #A3A3A3;
+    --color-positive: #075BEA;
+    --color-positive-fill: #DCE6FB;
+    --color-positive-text: #0646B4;
+    --color-partial: #B58A00;
+    --color-partial-fill: #FFE69A;
+    --color-partial-text: #6B5000;
+    --color-negative: #D42F30;
+    --color-negative-fill: #FBD3D0;
+    --color-negative-text: #A3201F;
+    --color-neutral: #6C6B67;
+    --color-neutral-fill: #E6E2D6;
+    --color-neutral-text: #44433F;
+    --color-pending: #8A887F;
 }
 
 @layer base {
     body {
-        @apply bg-white font-sans text-sm text-ink antialiased;
+        @apply bg-paper font-sans text-sm text-ink antialiased;
     }
 
     a {
         @apply text-accent hover:text-accent-dark;
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--color-signal-red);
+        outline-offset: 3px;
     }
 }
 
@@ -54,8 +77,9 @@
 
 /* Widget ALTCHA aux couleurs du site. */
 altcha-widget {
-    --altcha-border-radius: 6px;
-    --altcha-color-border: var(--color-line-strong);
+    --altcha-border-radius: 0;
+    --altcha-color-border: var(--color-ink);
+    --altcha-color-base: var(--color-field);
     --altcha-color-border-focus: var(--color-accent);
     --altcha-color-checkbox: var(--color-accent);
     --altcha-max-width: 100%;

@@ -3,7 +3,7 @@
     use App\View\Appearance;
     $verdict = $card->approvedVerdict;
 @endphp
-<div role="dialog" aria-label="Carte : {{ $card->publicFigure->name }}" class="mx-auto max-w-[1000px] overflow-hidden rounded-xl bg-white shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
+<div role="dialog" aria-label="Carte : {{ $card->publicFigure->name }}" class="mx-auto max-w-[1000px] overflow-hidden border border-ink bg-field">
     <div class="flex items-center justify-between gap-3 border-b border-line py-1.5 pr-2 pl-5">
         <nav aria-label="Fil d’Ariane" class="flex min-w-0 items-center gap-2 text-[13px] text-muted">
             <x-glyph name="list" :size="16" />
@@ -11,7 +11,7 @@
             <span aria-hidden="true">/</span>
             <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="truncate text-muted no-underline">{{ $card->publicFigure->name }}</a>
         </nav>
-        <a href="{{ route('home') }}" wire:navigate aria-label="Fermer" class="flex size-11 items-center justify-center rounded-md text-muted hover:bg-sidebar">
+        <a href="{{ route('home') }}" wire:navigate aria-label="Fermer" class="flex size-11 items-center justify-center text-muted hover:bg-sidebar">
             <x-glyph name="close" :size="20" />
         </a>
     </div>
@@ -30,7 +30,7 @@
             <div class="flex items-start gap-3">
                 <x-status-ring :card="$card" size="lg" />
                 <div class="flex flex-col gap-2">
-                    <h1 class="text-2xl leading-[1.35] font-semibold">{{ $card->quote }}</h1>
+                    <h1 class="font-serif text-[30px] leading-[1.08] font-extrabold tracking-[-0.6px] sm:text-[38px]">{{ $card->quote }}</h1>
                     @if ($card->context)
                         <p class="leading-relaxed text-subtle">{{ $card->context }}</p>
                     @endif
@@ -52,7 +52,7 @@
                 @endif
 
                 @if ($verdict)
-                    <section class="flex flex-col gap-2.5 rounded-lg border p-4 {{ Appearance::verdictPanelClasses($card) }}">
+                    <section class="flex flex-col gap-2.5 border p-4 {{ Appearance::verdictPanelClasses($card) }}">
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <h2 class="flex items-center gap-2 text-[15px] font-bold {{ Appearance::verdictTextClasses($card) }}">
                                 <x-glyph name="flag" :size="16" :width="2" />
@@ -70,7 +70,7 @@
                         </div>
                     </section>
                 @elseif ($card->status === CardStatus::VerdictProposed)
-                    <p class="rounded-lg border border-line bg-sidebar p-4 text-[13px] text-subtle">
+                    <p class="border border-line bg-sidebar p-4 text-[13px] text-subtle">
                         Un verdict a été proposé : il est en cours de relecture par les modérateurs.
                     </p>
                 @endif
@@ -128,7 +128,7 @@
             <div class="flex flex-col gap-1.5 border-b border-line py-2.5">
                 <span class="text-xs font-semibold text-muted">Personnalité</span>
                 <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="flex items-center gap-2 font-semibold text-ink no-underline">
-                    <x-figure-dot :figure="$card->publicFigure" />{{ $card->publicFigure->name }}
+                    <x-portrait :figure="$card->publicFigure" size="avatar" />{{ $card->publicFigure->name }}
                 </a>
                 @if ($affiliation)
                     <span class="text-xs text-muted">{{ trim($affiliation->role.', '.$affiliation->organization, ', ') }}, au moment de la déclaration</span>
@@ -181,7 +181,7 @@
                 <div x-data="{ copied: false }" class="mt-2">
                     <button type="button"
                             @click="navigator.share ? navigator.share({ title: document.title, url: '{{ route('cards.show', $card) }}' }) : navigator.clipboard.writeText('{{ route('cards.show', $card) }}').then(() => { copied = true; setTimeout(() => copied = false, 2000) })"
-                            class="min-h-11 w-full cursor-pointer rounded-md border border-[#DDDDDD] bg-white font-semibold hover:border-accent-line">
+                            class="min-h-11 w-full cursor-pointer border border-ink bg-field font-semibold hover:border-accent-line">
                         <span x-show="! copied">Partager la carte</span>
                         <span x-show="copied" x-cloak>Lien copié</span>
                     </button>
