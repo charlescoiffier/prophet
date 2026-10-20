@@ -59,10 +59,10 @@ execFileSync('php', ['artisan', 'migrate:fresh', '--seed', '--no-interaction'], 
 const card = execFileSync('php', ['artisan', 'tinker', '--execute',
     'echo App\\Models\\Card::where("quote", "like", "%10 000 places%")->value("id");'], { cwd: ROOT }).toString().trim();
 
-// Serveur intégré de PHP (il transmet l'environnement, contrairement à « artisan serve ») : sans bandeau de test.
+// Serveur intégré de PHP (il transmet l'environnement, contrairement à « artisan serve »).
 // Il se lance depuis public/, où le routeur de Laravel cherche index.php.
 const server = spawn('php', ['-S', `127.0.0.1:${PORT}`, join(ROOT, 'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')],
-    { cwd: join(ROOT, 'public'), env: { ...process.env, PROPHET_TEST_NOTICE: 'false' }, stdio: 'ignore' });
+    { cwd: join(ROOT, 'public'), env: process.env, stdio: 'ignore' });
 const profile = mkdtempSync(join(tmpdir(), 'prophet-chrome-'));
 const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run',
     `--remote-debugging-port=${DEBUG_PORT}`, `--user-data-dir=${profile}`, 'about:blank'], { stdio: 'ignore' });

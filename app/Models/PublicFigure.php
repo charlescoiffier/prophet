@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\CardType;
-use App\Enums\PublicFigureCategory;
 use App\Enums\VerdictStatus;
 use App\Enums\VerdictValue;
 use Database\Factories\PublicFigureFactory;
@@ -11,26 +10,37 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'slug', 'category', 'description', 'photo_url', 'wikidata_id'])]
+#[Fillable(['name', 'slug', 'category_id', 'description', 'photo_url', 'photo_path', 'wikidata_id'])]
 class PublicFigure extends Model
 {
     /** @use HasFactory<PublicFigureFactory> */
     use HasFactory, HasUuids;
 
-    protected function casts(): array
-    {
-        return [
-            'category' => PublicFigureCategory::class,
-        ];
-    }
-
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    /** @return BelongsTo<Category, $this> */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Photo affichée : celle téléversée en modération, sinon le lien externe.
+     */
+    public function photoUrl(): ?string
+    {
+        return $this->photo_path !== null
+            ? Storage::disk('public')->url($this->photo_path)
+            : $this->photo_url;
     }
 
     /** @return HasMany<Card, $this> */

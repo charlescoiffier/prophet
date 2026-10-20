@@ -10,7 +10,7 @@
 @endphp
 <div class="flex flex-col">
     <a href="{{ $source->url }}" target="_blank" rel="noopener nofollow" {{ $attributes->merge(['class' => 'flex min-h-8 items-center gap-2']) }}>
-        <x-glyph name="link" :size="14" :width="2" />
+        <x-uicon name="link" :size="14" />
         {{ $label }}@if ($source->timecode), à {{ $source->timecode }}@endif
     </a>
     @if ($source->archive_url)

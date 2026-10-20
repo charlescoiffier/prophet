@@ -19,4 +19,7 @@ enum ActivityAction: string implements HasLabel
     case SourceAdded = 'source_added';
     case SourceRemoved = 'source_removed';
     case RoleChanged = 'role_changed';
+    case AccountDeleted = 'account_deleted';
+    case AccountRestored = 'account_restored';
+    case CategoryCreated = 'category_created';
 }

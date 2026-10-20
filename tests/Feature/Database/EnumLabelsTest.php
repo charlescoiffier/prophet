@@ -4,7 +4,6 @@ use App\Enums\ActivityAction;
 use App\Enums\CardStatus;
 use App\Enums\CardType;
 use App\Enums\DeadlineNature;
-use App\Enums\PublicFigureCategory;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\SourceKind;
@@ -17,7 +16,7 @@ it('a un libellé français pour chaque valeur d’enum', function (string $enum
     }
 })->with([
     ActivityAction::class, CardStatus::class, CardType::class, DeadlineNature::class,
-    PublicFigureCategory::class, ReportStatus::class, Role::class, SourceKind::class,
+    ReportStatus::class, Role::class, SourceKind::class,
     VerdictStatus::class, VerdictValue::class,
 ]);
 

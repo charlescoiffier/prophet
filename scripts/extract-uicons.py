@@ -39,6 +39,11 @@ ICONS = {
     'logout': ('rr', 'sign-out-alt'),
     'login': ('rr', 'sign-in-alt'),
     'menu': ('rr', 'menu-burger'),
+    'list': ('rr', 'list'),
+    'close': ('rr', 'cross-small'),
+    'flag': ('rr', 'flag'),
+    'calendar': ('rr', 'calendar'),
+    'link': ('rr', 'link-alt'),
     'github': ('brands', 'github'),
     'logo-quote': ('sr', 'quote-right'),
 }

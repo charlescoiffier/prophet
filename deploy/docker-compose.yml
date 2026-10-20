@@ -41,6 +41,9 @@ services:
   app:
     <<: *app
     networks: [web, internal]
+    # Photos téléversées depuis la modération : elles survivent aux redéploiements.
+    volumes:
+      - uploads:/var/www/html/storage/app/public
     mem_limit: 384m
     cpus: 0.6
     labels:
@@ -121,6 +124,7 @@ services:
 volumes:
   pgdata:
   redisdata:
+  uploads:
 
 networks:
   web:

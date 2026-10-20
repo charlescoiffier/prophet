@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\PublicFigures\Tables;
 
-use App\Enums\PublicFigureCategory;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,7 +14,7 @@ class PublicFiguresTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->withCount('cards'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('category')->withCount('cards'))
             ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')
@@ -23,7 +22,7 @@ class PublicFiguresTable
                     ->searchable()
                     ->sortable()
                     ->description(fn ($record) => $record->description),
-                TextColumn::make('category')
+                TextColumn::make('category.name')
                     ->label('Catégorie')
                     ->badge()
                     ->color('gray'),
@@ -32,9 +31,9 @@ class PublicFiguresTable
                     ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('category')
+                SelectFilter::make('category_id')
                     ->label('Catégorie')
-                    ->options(PublicFigureCategory::class),
+                    ->relationship('category', 'name'),
             ])
             ->recordActions([
                 EditAction::make(),

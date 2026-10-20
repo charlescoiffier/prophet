@@ -124,6 +124,8 @@ sur `/moderation`, la documentation de l’API sur `/docs/api`.
 php artisan test --compact      # tests (Pest), sur la base prophet_test
 vendor/bin/pint --dirty         # mise en forme du code
 npm run capture:readme          # régénère les images du README (Chrome requis)
+npm run build:favicons          # régénère les icônes d'onglet depuis public/logo.svg
+python3 scripts/extract-uicons.py   # extrait les icônes UIcons utilisées (pip install fonttools brotli)
 ```
 
 ## Technologies
@@ -133,8 +135,8 @@ Une seule application [Laravel 13](https://laravel.com/) porte l’API, le site 
 | Brique | Choix |
 |---|---|
 | Base de données | PostgreSQL (contraintes `CHECK`, index uniques partiels, recherche plein texte `french`) |
-| Site public | Blade + [Livewire 4](https://livewire.laravel.com/), rendu serveur, [Tailwind CSS 4](https://tailwindcss.com/), polices DM Sans et Newsreader (Bunny Fonts) |
-| Modération | [Filament 5](https://filamentphp.com/), panneau `/moderation` |
+| Site public | Blade + [Livewire 4](https://livewire.laravel.com/), rendu serveur, [Tailwind CSS 4](https://tailwindcss.com/), polices DM Sans et Newsreader (Bunny Fonts), icônes [UIcons](https://www.flaticon.com/uicons) de Flaticon (Regular Rounded, extraites en SVG) |
+| Modération | [Filament 5](https://filamentphp.com/), panneau `/moderation` en version compacte : saisie des fiches avec photo téléversée, catégories et organisations sans doublon, gestion des comptes (suppression douce) |
 | API | REST JSON sous `/api/v1`, [Sanctum](https://laravel.com/docs/sanctum), documentation OpenAPI par [Scramble](https://scramble.dedoc.co/) |
 | Tâches de fond | files Redis, [Horizon](https://laravel.com/docs/horizon), planificateur |
 | Anti-robot | [ALTCHA](https://altcha.org/) (preuve de travail, sans cookie) + limites de débit |
@@ -219,10 +221,19 @@ actions, API, écrans Filament, composants Livewire, anti-robot, commandes plani
 extérieur (`Http::preventStrayRequests()` dans `tests/TestCase.php`) ; les défis anti-robot sont résolus pour de vrai
 avec une difficulté minimale (`altchaSolution()` dans `tests/Pest.php`).
 
+## Icônes et logo
+
+Les icônes viennent de la collection [UIcons](https://www.flaticon.com/uicons) de Flaticon, dans un seul style
+(Regular Rounded). Plutôt que de charger toute la police d’icônes (385 Ko), `scripts/extract-uicons.py` extrait en SVG,
+dans `resources/icons/`, celles que le site utilise ; `<x-uicon name="…">` les affiche en couleur du texte. Pour en
+ajouter une, l’inscrire dans la liste du script et le relancer. La licence gratuite impose de **créditer Flaticon** :
+la mention figure en pied de page. Le logo (`public/logo.svg`) reprend des guillemets de la même collection ;
+`npm run build:favicons` en tire les icônes d’onglet, de favoris et d’écran d’accueil.
+
 ## Images du README
 
 `npm run capture:readme` (`scripts/capture-readme.mjs`) recharge la base locale avec les données de démonstration, sert
-le site avec le serveur intégré de PHP (sans le bandeau « Version de test ») et pilote Chrome par son protocole de
+le site avec le serveur intégré de PHP et pilote Chrome par son protocole de
 débogage, avec le WebSocket natif de Node : c’est ce qui permet d’émuler un vrai téléphone. Les images sont écrites dans
 `docs/images/` et versionnées. Prérequis : Google Chrome (ou `CHROME_PATH`).
 
@@ -254,8 +265,7 @@ docker compose logs -f app horizon                                              
 ```
 
 Avant l’ouverture au public : renseigner le SMTP (offre e-mail OVH) dans le `.env`, mettre en place les sauvegardes hors
-du VPS, retirer le mot de passe d’accès (deux lignes `basicauth` du `docker-compose.yml`) et le bandeau de test
-(`PROPHET_TEST_NOTICE=false`).
+du VPS, retirer le mot de passe d’accès (deux lignes `basicauth` du `docker-compose.yml`).
 
 ## Documents de référence
 

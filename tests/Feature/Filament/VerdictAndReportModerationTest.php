@@ -4,6 +4,7 @@ use App\Enums\CardStatus;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\VerdictStatus;
+use App\Filament\Resources\PublicFigures\Pages\CreatePublicFigure;
 use App\Filament\Resources\Reports\Pages\ListReports;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Filament\Resources\Verdicts\Pages\ListVerdicts;
@@ -55,4 +56,32 @@ it('laisse l’administrateur nommer un modérateur', function () {
         ->callAction(TestAction::make('changeRole')->table($member), ['role' => 'moderator']);
 
     expect($member->refresh()->role)->toBe(Role::Moderator);
+});
+
+it('fait suivre l’identifiant d’URL au nom tant qu’il n’a pas été retouché', function () {
+    Livewire::actingAs(User::factory()->moderator()->create())
+        ->test(CreatePublicFigure::class)
+        ->fillForm(['name' => 'Élise Démo'])
+        ->assertSchemaStateSet(['slug' => 'elise-demo'])
+        ->fillForm(['slug' => 'elise'])
+        ->fillForm(['name' => 'Élise Démonstration'])
+        ->assertSchemaStateSet(['slug' => 'elise']);
+});
+
+it('laisse l’administrateur supprimer puis restaurer un compte depuis le panneau', function () {
+    $member = User::factory()->create();
+
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(ManageUsers::class)
+        ->callAction(TestAction::make('deleteAccount')->table($member))
+        ->assertNotified('Compte supprimé');
+
+    expect($member->refresh()->trashed())->toBeTrue();
+
+    Livewire::actingAs(User::where('role', 'admin')->first())
+        ->test(ManageUsers::class)
+        ->filterTable('trashed', true)
+        ->callAction(TestAction::make('restoreAccount')->table($member));
+
+    expect($member->refresh()->trashed())->toBeFalse();
 });

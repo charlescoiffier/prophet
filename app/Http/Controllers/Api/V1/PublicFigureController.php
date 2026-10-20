@@ -23,6 +23,7 @@ class PublicFigureController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $figures = PublicFigure::query()
+            ->with('category')
             ->withCount(['cards' => fn ($query) => $query->visible()])
             ->when($request->string('q')->isNotEmpty(), fn ($query) => $query->where('name', 'ilike', '%'.$request->string('q').'%'))
             ->orderBy('name')
@@ -43,7 +44,7 @@ class PublicFigureController extends Controller
      */
     public function show(PublicFigure $publicFigure): JsonResponse
     {
-        $publicFigure->load('affiliations')->loadCount(['cards' => fn ($query) => $query->visible()]);
+        $publicFigure->load(['affiliations', 'category'])->loadCount(['cards' => fn ($query) => $query->visible()]);
 
         return PublicFigureResource::make($publicFigure)
             ->additional(['record' => $publicFigure->record()])
@@ -57,9 +58,9 @@ class PublicFigureController extends Controller
      */
     public function store(SavePublicFigureRequest $request, SavePublicFigure $savePublicFigure): JsonResponse
     {
-        $figure = $savePublicFigure->handle(null, $request->user(), $request->validated());
+        $figure = $savePublicFigure->handle(null, $request->user(), $request->toActionData());
 
-        return PublicFigureResource::make($figure->load('affiliations'))->response()->setStatusCode(201);
+        return PublicFigureResource::make($figure->load(['affiliations', 'category']))->response()->setStatusCode(201);
     }
 
     /**
@@ -71,9 +72,9 @@ class PublicFigureController extends Controller
     {
         $figure = $savePublicFigure->handle($publicFigure, $request->user(), [
             'name' => $publicFigure->name,
-            ...$request->validated(),
+            ...$request->toActionData(),
         ]);
 
-        return PublicFigureResource::make($figure->load('affiliations'));
+        return PublicFigureResource::make($figure->load(['affiliations', 'category']));
     }
 }

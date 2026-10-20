@@ -6,8 +6,10 @@ use App\Actions\RecordActivity;
 use App\Enums\ActivityAction;
 use App\Models\PublicFigure;
 use App\Models\User;
+use App\Support\Organizations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -29,9 +31,16 @@ class SavePublicFigure
             $figure ??= new PublicFigure;
             $before = $isNew ? [] : $this->snapshot($figure);
 
+            $previousPhoto = $figure->photo_path;
+
             $figure->fill($data);
             $figure->slug = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['name']);
             $figure->save();
+
+            // Photo remplacée ou retirée : l'ancien fichier ne sert plus.
+            if ($previousPhoto !== null && $previousPhoto !== $figure->photo_path) {
+                DB::afterCommit(fn () => Storage::disk('public')->delete($previousPhoto));
+            }
 
             if (array_key_exists('affiliations', $data)) {
                 $this->syncAffiliations($figure, $data['affiliations']);
@@ -58,6 +67,9 @@ class SavePublicFigure
         $keep = [];
 
         foreach ($affiliations as $attributes) {
+            // « parti a » devient « Parti A » si cette organisation est déjà connue : pas de doublon.
+            $attributes['organization'] = Organizations::canonical($attributes['organization']);
+
             $affiliation = $figure->affiliations()->updateOrCreate(
                 ['id' => $attributes['id'] ?? null],
                 collect($attributes)->except('id')->all(),
@@ -77,9 +89,10 @@ class SavePublicFigure
         return [
             'name' => $figure->name,
             'slug' => $figure->slug,
-            'category' => $figure->category?->value,
+            'category' => $figure->category()->value('name'),
             'description' => $figure->description,
             'photo_url' => $figure->photo_url,
+            'photo_path' => $figure->photo_path,
             'wikidata_id' => $figure->wikidata_id,
             'affiliations' => $figure->affiliations()->get()
                 ->map(fn ($a) => trim("{$a->organization} — {$a->role} ({$a->started_on?->toDateString()} → {$a->ended_on?->toDateString()})"))

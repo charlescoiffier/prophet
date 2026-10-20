@@ -27,6 +27,7 @@ class ModerationPanelProvider extends PanelProvider
             ->default()
             ->id('moderation')
             ->path('moderation')
+            ->viteTheme('resources/css/filament/moderation/theme.css')
             ->login()
             ->brandName('Parole tenue · Modération')
             ->font('Inter')

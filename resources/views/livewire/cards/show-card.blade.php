@@ -6,13 +6,13 @@
 <div role="dialog" aria-label="Carte : {{ $card->publicFigure->name }}" class="mx-auto max-w-[1000px] overflow-hidden border border-ink bg-field">
     <div class="flex items-center justify-between gap-3 border-b border-line py-1.5 pr-2 pl-5">
         <nav aria-label="Fil d’Ariane" class="flex min-w-0 items-center gap-2 text-[13px] text-muted">
-            <x-glyph name="list" :size="16" />
+            <x-uicon name="list" :size="16" />
             <a href="{{ route('home') }}" wire:navigate class="text-muted no-underline">Toutes les cartes</a>
             <span aria-hidden="true">/</span>
             <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="truncate text-muted no-underline">{{ $card->publicFigure->name }}</a>
         </nav>
         <a href="{{ route('home') }}" wire:navigate aria-label="Fermer" class="flex size-11 items-center justify-center text-muted hover:bg-sidebar">
-            <x-glyph name="close" :size="20" />
+            <x-uicon name="close" :size="20" />
         </a>
     </div>
 
@@ -55,7 +55,7 @@
                     <section class="flex flex-col gap-2.5 border p-4 {{ Appearance::verdictPanelClasses($card) }}">
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <h2 class="flex items-center gap-2 text-[15px] font-bold {{ Appearance::verdictTextClasses($card) }}">
-                                <x-glyph name="flag" :size="16" :width="2" />
+                                <x-uicon name="flag" :size="16" />
                                 Verdict : {{ mb_strtolower($verdict->value->label()) }}
                             </h2>
                             @if ($verdict->decided_at)
@@ -146,7 +146,7 @@
                 <div class="flex flex-col gap-1.5 border-b border-line py-2.5">
                     <span class="text-xs font-semibold text-muted">Échéance</span>
                     <span @class(['flex items-center gap-1.5', 'font-semibold text-negative-text' => Appearance::isOverdue($card)])>
-                        <x-glyph name="calendar" :size="14" stroke="#6F6F6F" :width="2" />
+                        <x-uicon name="calendar" :size="14" />
                         {{ $card->deadline->translatedFormat('j M Y') }}
                         @if ($card->deadline_nature)
                             ({{ mb_strtolower($card->deadline_nature->label()) }})
@@ -158,7 +158,7 @@
                 <span class="text-xs font-semibold text-muted">Verdict</span>
                 @if ($verdict)
                     <span class="flex items-center gap-1.5 font-semibold {{ Appearance::verdictTextClasses($card) }}">
-                        <x-glyph name="flag" :size="14" :width="2" />
+                        <x-uicon name="flag" :size="14" />
                         {{ $verdict->value->label() }}
                     </span>
                 @else

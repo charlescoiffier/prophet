@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\PublicFigureCategory;
+use App\Models\Category;
 use App\Models\PublicFigure;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -19,7 +19,8 @@ class PublicFigureFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name),
-            'category' => fake()->randomElement(PublicFigureCategory::cases()),
+            // Une des catégories d'origine, créées par la migration.
+            'category_id' => fn () => Category::inRandomOrder()->value('id') ?? Category::factory(),
             'description' => fake()->jobTitle(),
         ];
     }

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -25,7 +26,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements FilamentUser, HasName, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasUuids, Notifiable;
+    use HasApiTokens, HasFactory, HasUuids, Notifiable, SoftDeletes;
 
     /**
      * Le rôle n'est pas « fillable » : il ne se change que par une action d'administration.

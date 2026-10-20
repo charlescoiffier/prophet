@@ -63,11 +63,13 @@ Rôles : `member`, `moderator`, `admin`.
 
 Les enums sont dans `app/Enums` ; leurs libellés français dans `lang/fr/enums.php` (`$enum->label()`, `Enum::options()`).
 
+Catégorie d'une personnalité : table `categories` (enrichissable par les modérateurs via `CreateCategory`), plus l'ancien enum. Organisations : `App\Support\Organizations` fusionne les variantes d'écriture et signale les quasi-doublons (`NotNearDuplicateOrganization`). Comptes : suppression douce par l'admin (`DeleteUser`, `RestoreUser`).
+
 Champs renommés par rapport à la spécification : `reformulation` → `testable_statement`, `critere_verdict` → `verdict_criterion`, `pseudo` → `username`, `media` → `outlet`, `horodatage` → `timecode`, `valide_par`/`valide_le` → `decided_by`/`decided_at`.
 
 ## Style visuel
 
-Charte éditoriale (21 octobre 2026), référence `docs/maquettes/editoriale/index.html` : papier crème `#F7F4EA`, encre `#20212B`, traits d'encre de 1 px et angles droits, DM Sans pour le texte et Newsreader (serif grasse) pour les titres et les citations. Cartes en aplats colorés : une carte tranchée prend la couleur de son verdict (bleu tenue/juste, jaune partielle, rouge abandonnée/fausse, gris caduque/invérifiable), une carte en relecture le bleu soutenu, les cartes ouvertes alternent jaune, bleu clair et gris. Portrait d'une personnalité en photocopie (photo libre de droits en noir et blanc contrasté), monogramme en serif à défaut. Barre latérale : États, Verdicts (par tonalité), Personnalités, Thèmes ; ajout rapide au clavier avec la touche Q. Les maquettes d'origine (`docs/maquettes/*.html`, style Todoist) restent la référence de structure des autres écrans. Le panneau de modération Filament garde son thème.
+Charte éditoriale (21 octobre 2026), référence `docs/maquettes/editoriale/index.html` : papier crème `#F7F4EA`, encre `#20212B`, traits d'encre de 1 px et angles droits, DM Sans pour le texte et Newsreader (serif grasse) pour les titres et les citations. Cartes en aplats colorés : une carte tranchée prend la couleur de son verdict (bleu tenue/juste, jaune partielle, rouge abandonnée/fausse, gris caduque/invérifiable), une carte en relecture le bleu soutenu, les cartes ouvertes alternent jaune, bleu clair et gris. Portrait d'une personnalité en photocopie (photo libre de droits en noir et blanc contrasté), monogramme en serif à défaut. Barre latérale : États, Verdicts (par tonalité), Personnalités, Thèmes ; ajout rapide au clavier avec la touche Q. Les maquettes d'origine (`docs/maquettes/*.html`, style Todoist) restent la référence de structure des autres écrans. Le panneau de modération Filament garde son thème, rendu compact (`resources/css/filament/moderation/theme.css` : taille de base 14 px et pas d'espacement réduit).
 
 ## Ordre de construction
 
@@ -88,8 +90,9 @@ Charte éditoriale (21 octobre 2026), référence `docs/maquettes/editoriale/ind
    - bilan d'une personnalité en décomptes de verdicts, jamais en pourcentages ;
    - limites de débit : `api` (120/min), `proposals` (10/h par IP), `auth` ; confirmation de compte par la route web `verification.verify`, réinitialisation du mot de passe vers `/mot-de-passe/nouveau` (page à faire à l'étape 5).
 5. Site public Blade/Livewire d'après les maquettes. **Fait** : composants Livewire à classe (`app/Livewire`, vues dans `resources/views/livewire`), mises en page `layouts/app` (barre latérale) et `layouts/dialog` (fenêtre sur fond gris). `Board` sert l'accueil, les vues, les pages personnalité, thème et recherche. Repères :
-   - palette et polices dans `resources/css/app.css` (`@theme`) et `vite.config.js` (Bunny Fonts) ; aplats des cartes, ronds d'état, statuts et tonalités de verdict (`Appearance::VERDICT_TONES`, vues `/verdicts/{tonalité}`) dans `App\View\Appearance` (classes Tailwind écrites en entier) ; portraits : composant `<x-portrait>` ; bandeau « Version de test » : `PROPHET_TEST_NOTICE` ;
-   - icônes : composant `<x-glyph>` (`<x-icon>` est pris par blade-icons, livré avec Filament) ;
+   - palette et polices dans `resources/css/app.css` (`@theme`) et `vite.config.js` (Bunny Fonts) ; aplats des cartes, ronds d'état, statuts et tonalités de verdict (`Appearance::VERDICT_TONES`, vues `/verdicts/{tonalité}`) dans `App\View\Appearance` (classes Tailwind écrites en entier) ; portraits : composant `<x-portrait>` (photo téléversée `photo_path` ou lien `photo_url`, sinon monogramme) ;
+   - icônes : UIcons de Flaticon, style Regular Rounded uniquement, extraites en SVG dans `resources/icons/` par `scripts/extract-uicons.py` (ajouter une icône : l'inscrire dans la liste du script) et affichées par `<x-uicon name>` (`<x-icon>` est pris par blade-icons, livré avec Filament) ; mention « UIcons par Flaticon » obligatoire (pied de page) ; logo `public/logo.svg`, favicons régénérés par `npm run build:favicons` ;
+   - en haut du site : version (`config/prophet.php`) et commit de construction (`APP_COMMIT`, posé par le workflow) ;
    - historique public en phrases : `ActivityLog::publicSentence()` + `lang/fr/history.php` ;
    - touche Q : `resources/js/app.js` ; mêmes limites de débit que l'API pour les formulaires publics ;
    - textes de la charte et de la page données personnelles : brouillons à relire par Charles ;

@@ -30,7 +30,7 @@
 
             <div class="flex flex-wrap gap-2">
                 <label class="flex min-h-11 flex-[4_1_260px] items-center gap-2 border border-line-strong px-3 focus-within:border-accent">
-                    <x-glyph name="link" :size="16" stroke="#6F6F6F" :width="2" />
+                    <x-uicon name="link" :size="16" />
                     <span class="sr-only">Lien vers la source</span>
                     <input type="url" wire:model="sourceUrl" placeholder="Lien vers la source du verdict" class="min-w-0 flex-1 outline-none">
                 </label>

@@ -1,0 +1,16 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+ * Panneau de modération compact : Filament s'exprime en rem et en multiples de --spacing,
+ * réduire la taille de base et le pas d'espacement resserre tout l'écran d'un coup.
+ */
+@theme {
+    --spacing: 0.21rem;
+}
+
+html {
+    font-size: 14px;
+}

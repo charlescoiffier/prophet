@@ -71,6 +71,9 @@ return [
         'email' => [
             'required_for_guest' => 'Indiquez votre adresse e-mail : nous vous enverrons un lien de confirmation.',
         ],
+        'organization' => [
+            'near_duplicate' => 'Une organisation très proche existe déjà : « :names ». Choisissez-la dans la liste, ou cochez « C’est une autre organisation ».',
+        ],
         'altcha' => [
             'invalid' => 'La vérification anti-robot a échoué ou a expiré : recommencez-la.',
         ],
@@ -120,5 +123,7 @@ return [
         'photo_url' => 'photo',
         'wikidata_id' => 'Wikidata',
         'affiliations' => 'affiliations',
+        'category_id' => 'catégorie',
+        'photo_path' => 'photo',
     ],
 ];

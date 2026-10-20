@@ -20,9 +20,10 @@ class PublicFigureResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'category' => EnumValue::of($this->category),
+            /** Catégorie : slug stable et nom affiché. */
+            'category' => $this->whenLoaded('category', fn () => ['value' => $this->category->slug, 'label' => $this->category->name]),
             'description' => $this->description,
-            'photo_url' => $this->photo_url,
+            'photo_url' => $this->resource->photoUrl(),
             'wikidata_id' => $this->wikidata_id,
             'affiliations' => AffiliationResource::collection($this->whenLoaded('affiliations')),
             'cards_count' => $this->whenCounted('cards'),

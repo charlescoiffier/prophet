@@ -50,6 +50,7 @@ class CardController extends Controller
 
         $card->load([
             'publicFigure.affiliations',
+            'publicFigure.category',
             'themes',
             'author',
             'sources',

@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
-use App\Enums\PublicFigureCategory;
+use App\Models\Category;
 use App\Models\PublicFigure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -20,7 +20,8 @@ class SavePublicFigureRequest extends FormRequest
 
         return [
             'name' => [$required, 'string', 'max:255'],
-            'category' => [$required, Rule::enum(PublicFigureCategory::class)],
+            /** Slug d'une catégorie existante (politique, journaliste, editorialiste, economiste, autre…). */
+            'category' => [$required, 'string', Rule::exists('categories', 'slug')],
             'description' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'alpha_dash', 'max:255', Rule::unique('public_figures', 'slug')->ignore($figure)],
             'wikidata_id' => ['nullable', 'regex:/^Q\d+$/', Rule::unique('public_figures', 'wikidata_id')->ignore($figure)],
@@ -33,5 +34,21 @@ class SavePublicFigureRequest extends FormRequest
             'affiliations.*.started_on' => ['nullable', 'date'],
             'affiliations.*.ended_on' => ['nullable', 'date', 'after_or_equal:affiliations.*.started_on'],
         ];
+    }
+
+    /**
+     * Données pour SavePublicFigure : la catégorie passe de son slug à son identifiant.
+     *
+     * @return array<string, mixed>
+     */
+    public function toActionData(): array
+    {
+        $data = $this->safe()->except('category');
+
+        if ($this->has('category')) {
+            $data['category_id'] = Category::where('slug', $this->validated('category'))->value('id');
+        }
+
+        return $data;
     }
 }

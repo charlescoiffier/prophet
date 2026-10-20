@@ -6,7 +6,6 @@ use App\Enums\ActivityAction;
 use App\Enums\CardStatus;
 use App\Enums\CardType;
 use App\Enums\DeadlineNature;
-use App\Enums\PublicFigureCategory;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\SourceKind;
@@ -14,6 +13,7 @@ use App\Enums\VerdictStatus;
 use App\Enums\VerdictValue;
 use App\Models\ActivityLog;
 use App\Models\Card;
+use App\Models\Category;
 use App\Models\PublicFigure;
 use App\Models\Report;
 use App\Models\Theme;
@@ -101,18 +101,18 @@ class DemoSeeder extends Seeder
     private function seedPublicFigures(): void
     {
         foreach ([
-            ['Jeanne Exemple', PublicFigureCategory::Politician, 'Candidate à l’élection présidentielle', 'Parti A', 'Candidate'],
-            ['Paul Modèle', PublicFigureCategory::Columnist, 'Éditorialiste politique', 'Journal B', 'Éditorialiste'],
-            ['Lucie Témoin', PublicFigureCategory::Politician, 'Ancienne ministre', 'Gouvernement C', 'Ministre'],
-            ['Marc Hypothèse', PublicFigureCategory::Economist, 'Économiste', 'Institut D', 'Directeur des études'],
-            ['Hugo Fiction', PublicFigureCategory::Journalist, 'Chroniqueur radio', 'Radio E', 'Chroniqueur'],
-            ['Anne Scénario', PublicFigureCategory::Politician, 'Ministre', 'Gouvernement C', 'Ministre'],
-            ['Claire Récit', PublicFigureCategory::Politician, 'Députée', 'Parti F', 'Députée'],
+            ['Jeanne Exemple', 'politique', 'Candidate à l’élection présidentielle', 'Parti A', 'Candidate'],
+            ['Paul Modèle', 'editorialiste', 'Éditorialiste politique', 'Journal B', 'Éditorialiste'],
+            ['Lucie Témoin', 'politique', 'Ancienne ministre', 'Gouvernement C', 'Ministre'],
+            ['Marc Hypothèse', 'economiste', 'Économiste', 'Institut D', 'Directeur des études'],
+            ['Hugo Fiction', 'journaliste', 'Chroniqueur radio', 'Radio E', 'Chroniqueur'],
+            ['Anne Scénario', 'politique', 'Ministre', 'Gouvernement C', 'Ministre'],
+            ['Claire Récit', 'politique', 'Députée', 'Parti F', 'Députée'],
         ] as [$name, $category, $description, $organization, $role]) {
             $figure = PublicFigure::create([
                 'name' => $name,
                 'slug' => Str::slug($name),
-                'category' => $category,
+                'category_id' => Category::where('slug', $category)->value('id'),
                 'description' => $description,
             ]);
 
@@ -193,25 +193,25 @@ class DemoSeeder extends Seeder
         }
 
         foreach ([
-            ['Bruno Brouillon', PublicFigureCategory::Politician, 'Maire d’une grande ville', [['Parti F', 'Maire', '-6 years', null]]],
-            ['Sophie Maquette', PublicFigureCategory::Politician, 'Sénatrice', [['Parti A', 'Sénatrice', '-5 years', null]]],
-            ['Karim Parabole', PublicFigureCategory::Columnist, 'Éditorialiste à la télévision', [['Télé G', 'Éditorialiste', '-8 years', null]]],
-            ['Inès Esquisse', PublicFigureCategory::Economist, 'Économiste, professeure d’université', [['Institut D', 'Chercheuse associée', '-10 years', null]]],
-            ['Thomas Ébauche', PublicFigureCategory::Politician, 'Ministre de l’Économie', [['Parti B', 'Député', '-9 years', '-2 years'], ['Gouvernement C', 'Ministre de l’Économie', '-2 years', null]]],
-            ['Nadia Synopsis', PublicFigureCategory::Journalist, 'Journaliste politique', [['Hebdo H', 'Rédactrice en chef', '-4 years', null]]],
-            ['Louis Prototype', PublicFigureCategory::Politician, 'Candidat à l’élection présidentielle', [['Parti G', 'Candidat', '-1 year', null]]],
-            ['Émilie Variante', PublicFigureCategory::Politician, 'Présidente de région', [['Parti B', 'Présidente de région', '-5 years', null]]],
-            ['Victor Postulat', PublicFigureCategory::Economist, 'Économiste de banque', [['Banque K', 'Chef économiste', '-7 years', null]]],
-            ['Rose Hypallage', PublicFigureCategory::Columnist, 'Chroniqueuse radio', [['Radio E', 'Chroniqueuse', '-3 years', null]]],
-            ['Samuel Prologue', PublicFigureCategory::Politician, 'Député', [['Parti A', 'Député', '-4 years', null]]],
-            ['Agathe Corollaire', PublicFigureCategory::Journalist, 'Présentatrice de la matinale', [['Télé G', 'Présentatrice', '-6 years', null]]],
-            ['Yves Épilogue', PublicFigureCategory::Politician, 'Ancien Premier ministre', [['Gouvernement C', 'Premier ministre', '-7 years', '-4 years'], ['Parti B', 'Conseiller politique', '-4 years', null]]],
-            ['Margaux Tangente', PublicFigureCategory::Other, 'Secrétaire générale d’un syndicat', [['Syndicat L', 'Secrétaire générale', '-3 years', null]]],
+            ['Bruno Brouillon', 'politique', 'Maire d’une grande ville', [['Parti F', 'Maire', '-6 years', null]]],
+            ['Sophie Maquette', 'politique', 'Sénatrice', [['Parti A', 'Sénatrice', '-5 years', null]]],
+            ['Karim Parabole', 'editorialiste', 'Éditorialiste à la télévision', [['Télé G', 'Éditorialiste', '-8 years', null]]],
+            ['Inès Esquisse', 'economiste', 'Économiste, professeure d’université', [['Institut D', 'Chercheuse associée', '-10 years', null]]],
+            ['Thomas Ébauche', 'politique', 'Ministre de l’Économie', [['Parti B', 'Député', '-9 years', '-2 years'], ['Gouvernement C', 'Ministre de l’Économie', '-2 years', null]]],
+            ['Nadia Synopsis', 'journaliste', 'Journaliste politique', [['Hebdo H', 'Rédactrice en chef', '-4 years', null]]],
+            ['Louis Prototype', 'politique', 'Candidat à l’élection présidentielle', [['Parti G', 'Candidat', '-1 year', null]]],
+            ['Émilie Variante', 'politique', 'Présidente de région', [['Parti B', 'Présidente de région', '-5 years', null]]],
+            ['Victor Postulat', 'economiste', 'Économiste de banque', [['Banque K', 'Chef économiste', '-7 years', null]]],
+            ['Rose Hypallage', 'editorialiste', 'Chroniqueuse radio', [['Radio E', 'Chroniqueuse', '-3 years', null]]],
+            ['Samuel Prologue', 'politique', 'Député', [['Parti A', 'Député', '-4 years', null]]],
+            ['Agathe Corollaire', 'journaliste', 'Présentatrice de la matinale', [['Télé G', 'Présentatrice', '-6 years', null]]],
+            ['Yves Épilogue', 'politique', 'Ancien Premier ministre', [['Gouvernement C', 'Premier ministre', '-7 years', '-4 years'], ['Parti B', 'Conseiller politique', '-4 years', null]]],
+            ['Margaux Tangente', 'autre', 'Secrétaire générale d’un syndicat', [['Syndicat L', 'Secrétaire générale', '-3 years', null]]],
         ] as [$name, $category, $description, $affiliations]) {
             $figure = PublicFigure::create([
                 'name' => $name,
                 'slug' => Str::slug($name),
-                'category' => $category,
+                'category_id' => Category::where('slug', $category)->value('id'),
                 'description' => $description,
             ]);
 

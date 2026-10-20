@@ -22,13 +22,6 @@ return [
         'explicit' => 'Explicite',
         'inferred' => 'Déduite',
     ],
-    'public_figure_category' => [
-        'politician' => 'Politique',
-        'journalist' => 'Journaliste',
-        'columnist' => 'Éditorialiste',
-        'economist' => 'Économiste',
-        'other' => 'Autre',
-    ],
     'source_kind' => [
         'article' => 'Article',
         'video' => 'Vidéo',
@@ -71,5 +64,8 @@ return [
         'source_added' => 'Ajout d’une source',
         'source_removed' => 'Retrait d’une source',
         'role_changed' => 'Changement de rôle',
+        'account_deleted' => 'Suppression du compte',
+        'account_restored' => 'Restauration du compte',
+        'category_created' => 'Création d’une catégorie',
     ],
 ];

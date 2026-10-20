@@ -5,8 +5,8 @@ namespace App\Filament\Resources\Cards\Schemas;
 use App\Actions\PublicFigures\SavePublicFigure;
 use App\Enums\CardType;
 use App\Enums\DeadlineNature;
-use App\Enums\PublicFigureCategory;
 use App\Enums\SourceKind;
+use App\Models\Category;
 use App\Models\PublicFigure;
 use App\Models\Theme;
 use Filament\Forms\Components\DatePicker;
@@ -67,7 +67,7 @@ class CardForm
                             ->required()
                             ->createOptionForm([
                                 TextInput::make('name')->label('Nom')->required(),
-                                Select::make('category')->label('Catégorie')->options(PublicFigureCategory::class)->required(),
+                                Select::make('category_id')->label('Catégorie')->options(fn () => Category::orderBy('name')->pluck('name', 'id'))->required(),
                                 TextInput::make('description')->label('Fonction actuelle'),
                             ])
                             ->createOptionUsing(fn (array $data, SavePublicFigure $savePublicFigure) => $savePublicFigure

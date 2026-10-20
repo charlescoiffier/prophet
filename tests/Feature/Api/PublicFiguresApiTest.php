@@ -28,7 +28,7 @@ it('laisse un modérateur créer une personnalité', function () {
 
     $this->postJson('/api/v1/public-figures', [
         'name' => 'Élise Démo',
-        'category' => 'politician',
+        'category' => 'politique',
         'affiliations' => [['organization' => 'Parti A', 'role' => 'Députée', 'started_on' => '2022-06-01']],
     ])
         ->assertCreated()
@@ -39,7 +39,7 @@ it('laisse un modérateur créer une personnalité', function () {
 it('refuse la création à un membre', function () {
     Sanctum::actingAs(User::factory()->create());
 
-    $this->postJson('/api/v1/public-figures', ['name' => 'X', 'category' => 'other'])->assertForbidden();
+    $this->postJson('/api/v1/public-figures', ['name' => 'X', 'category' => 'autre'])->assertForbidden();
 });
 
 it('liste les thèmes avec leur nombre de cartes publiques', function () {

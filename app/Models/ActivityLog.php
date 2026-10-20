@@ -6,7 +6,6 @@ use App\Enums\ActivityAction;
 use App\Enums\CardStatus;
 use App\Enums\CardType;
 use App\Enums\DeadlineNature;
-use App\Enums\PublicFigureCategory;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\VerdictStatus;
@@ -110,7 +109,6 @@ class ActivityLog extends Model
         'value' => VerdictValue::class,
         'verdict' => VerdictValue::class,
         'role' => Role::class,
-        'category' => PublicFigureCategory::class,
     ];
 
     private function format(string $key, mixed $value): string

@@ -34,7 +34,23 @@ class UserPolicy
         return $user->isAdmin() && ! $user->is($model);
     }
 
+    /**
+     * Suppression douce, par l'administrateur, jamais de son propre compte.
+     */
     public function delete(User $user, User $model): bool
+    {
+        return $user->isAdmin() && ! $user->is($model) && ! $model->trashed();
+    }
+
+    public function restore(User $user, User $model): bool
+    {
+        return $user->isAdmin() && $model->trashed();
+    }
+
+    /**
+     * Pas de suppression définitive depuis le panneau : l'historique public doit rester cohérent.
+     */
+    public function forceDelete(User $user, User $model): bool
     {
         return false;
     }
