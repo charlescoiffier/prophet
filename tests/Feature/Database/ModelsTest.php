@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\CardStatus;
+use App\Models\ActivityLog;
 use App\Models\Affiliation;
 use App\Models\Card;
 use App\Models\PublicFigure;
@@ -70,4 +71,17 @@ it('charge le jeu de démonstration', function () {
     expect(Card::count())->toBe(9)
         ->and(Card::visible()->count())->toBe(7)
         ->and(Card::where('status', CardStatus::Closed)->has('approvedVerdict')->count())->toBe(3);
+});
+
+it('résume les changements du journal avec les libellés français', function () {
+    $log = ActivityLog::factory()->create([
+        'before' => ['status' => 'in_moderation', 'quote' => 'Avant'],
+        'after' => ['status' => 'published', 'quote' => 'Après', 'themes' => ['Santé', 'Emploi']],
+    ]);
+
+    expect($log->describeChanges())->toBe(implode("\n", [
+        'statut : En modération → Publiée',
+        'citation : Avant → Après',
+        'thèmes : ∅ → Santé, Emploi',
+    ]));
 });

@@ -8,12 +8,20 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'slug'])]
 class Theme extends Model
 {
     /** @use HasFactory<ThemeFactory> */
     use HasFactory, HasUuids;
+
+    protected static function booted(): void
+    {
+        static::saving(function (Theme $theme) {
+            $theme->slug = filled($theme->slug) ? $theme->slug : Str::slug($theme->name);
+        });
+    }
 
     public function getRouteKeyName(): string
     {

@@ -7,12 +7,19 @@ use Illuminate\Support\Str;
 /**
  * Libellé français d'un cas d'enum, lu dans lang/fr/enums.php
  * sous la clé « enums.<nom_de_l_enum>.<valeur> ».
+ *
+ * getLabel() le rend utilisable tel quel par Filament (contrat HasLabel).
  */
 trait HasTranslatedLabel
 {
     public function label(): string
     {
         return __('enums.'.Str::snake(class_basename(static::class)).'.'.$this->value);
+    }
+
+    public function getLabel(): string
+    {
+        return $this->label();
     }
 
     /**

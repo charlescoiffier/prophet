@@ -72,8 +72,8 @@ Principes de Todoist (sobriété, barre latérale de vues, ajout rapide au clavi
 ## Ordre de construction
 
 1. Migrations, modèles, enums, factories et seeders (données fictives, jamais de vraies citations inventées). **Fait.**
-2. Filament : saisie et modération.
-3. Actions + Policies + tests (Pest) des règles ci-dessus.
+2. Filament : saisie et modération (panneau `/moderation`). **Fait**, avec les actions et Policies de modération qu'il appelle (`app/Actions`, `app/Policies`, boutons réutilisables dans `app/Filament/Actions`).
+3. Actions + Policies + tests (Pest) des parcours restants : proposition d'une carte par un visiteur ou un membre (règle 1), proposition d'un verdict par un membre (règles 3 et 5), signalement, archivage des sources par un job (règle 7), rattachement des cartes à l'inscription (règle 8).
 4. API `/api/v1` + documentation Scramble. (À l'installation de Sanctum, passer `personal_access_tokens` en `uuidMorphs`.)
 5. Site public Blade/Livewire d'après les maquettes.
 6. Ouverture des propositions publiques (confirmation e-mail, anti-spam, limitation de débit).

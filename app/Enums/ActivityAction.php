@@ -2,7 +2,9 @@
 
 namespace App\Enums;
 
-enum ActivityAction: string
+use Filament\Support\Contracts\HasLabel;
+
+enum ActivityAction: string implements HasLabel
 {
     use HasTranslatedLabel;
 

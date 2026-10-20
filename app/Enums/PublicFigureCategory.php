@@ -2,7 +2,9 @@
 
 namespace App\Enums;
 
-enum PublicFigureCategory: string
+use Filament\Support\Contracts\HasLabel;
+
+enum PublicFigureCategory: string implements HasLabel
 {
     use HasTranslatedLabel;
 

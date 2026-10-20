@@ -2,7 +2,9 @@
 
 namespace App\Enums;
 
-enum DeadlineNature: string
+use Filament\Support\Contracts\HasLabel;
+
+enum DeadlineNature: string implements HasLabel
 {
     use HasTranslatedLabel;
 

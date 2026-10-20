@@ -2,7 +2,10 @@
 
 namespace App\Enums;
 
-enum CardStatus: string
+use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasLabel;
+
+enum CardStatus: string implements HasColor, HasLabel
 {
     use HasTranslatedLabel;
 
@@ -21,6 +24,18 @@ enum CardStatus: string
     public static function public(): array
     {
         return [self::Published, self::VerdictProposed, self::Closed];
+    }
+
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::AwaitingEmail => 'gray',
+            self::InModeration => 'info',
+            self::Published => 'primary',
+            self::VerdictProposed => 'warning',
+            self::Closed => 'success',
+            self::Rejected => 'danger',
+        };
     }
 
     public function isPublic(): bool

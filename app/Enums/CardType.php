@@ -2,7 +2,9 @@
 
 namespace App\Enums;
 
-enum CardType: string
+use Filament\Support\Contracts\HasLabel;
+
+enum CardType: string implements HasLabel
 {
     use HasTranslatedLabel;
 

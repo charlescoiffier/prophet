@@ -11,7 +11,7 @@ return [
         'prediction' => 'Prédiction',
     ],
     'card_status' => [
-        'awaiting_email' => 'En attente de confirmation de l’e-mail',
+        'awaiting_email' => 'E-mail à confirmer',
         'in_moderation' => 'En modération',
         'published' => 'Publiée',
         'verdict_proposed' => 'Verdict proposé',

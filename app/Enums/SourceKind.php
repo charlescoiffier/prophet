@@ -2,7 +2,9 @@
 
 namespace App\Enums;
 
-enum SourceKind: string
+use Filament\Support\Contracts\HasLabel;
+
+enum SourceKind: string implements HasLabel
 {
     use HasTranslatedLabel;
 

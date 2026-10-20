@@ -2,7 +2,9 @@
 
 namespace App\Enums;
 
-enum Role: string
+use Filament\Support\Contracts\HasLabel;
+
+enum Role: string implements HasLabel
 {
     use HasTranslatedLabel;
 

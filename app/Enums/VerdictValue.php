@@ -2,7 +2,10 @@
 
 namespace App\Enums;
 
-enum VerdictValue: string
+use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasLabel;
+
+enum VerdictValue: string implements HasColor, HasLabel
 {
     use HasTranslatedLabel;
 
@@ -18,6 +21,19 @@ enum VerdictValue: string
     case PartiallyCorrect = 'partially_correct';
     case Wrong = 'wrong';
     case Unverifiable = 'unverifiable';
+
+    /**
+     * Couleur du rond d'état, comme dans les maquettes.
+     */
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::Kept, self::Correct => 'success',
+            self::PartiallyKept, self::PartiallyCorrect, self::Compromised => 'warning',
+            self::Abandoned, self::Wrong => 'danger',
+            self::Moot, self::Unverifiable => 'gray',
+        };
+    }
 
     public function cardType(): CardType
     {
