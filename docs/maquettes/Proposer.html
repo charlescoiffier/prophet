@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ajout rapide — Parole tenue</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#E7E6E2}
+a{color:#2552C6}a:hover{color:#1B3F99}
+</style>
+</head>
+<body>
+<div style="font-family: Inter, system-ui, sans-serif; font-size: 14px; color: #202020; background: #E7E6E2; min-height: 100vh; box-sizing: border-box; padding: 72px 20px 48px; display: flex; flex-direction: column; align-items: center; gap: 16px">
+  <form role="dialog" aria-label="Proposer une carte" style="width: 100%; max-width: 680px; background: #FFFFFF; border-radius: 12px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18); display: flex; flex-direction: column">
+
+    <div style="padding: 18px 20px 12px; display: flex; flex-direction: column; gap: 6px">
+      <label style="display: block">
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Citation exacte</span>
+        <textarea rows="2" placeholder="Citation exacte, mot pour mot" style="width: 100%; box-sizing: border-box; border: 0; outline: 0; resize: none; padding: 0; font: inherit; font-size: 19px; font-weight: 600; line-height: 1.4; color: #202020">« Nous ouvrirons 10 000 places en crèche d’ici 2025. »</textarea>
+      </label>
+      <label style="display: block">
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Contexte</span>
+        <input type="text" placeholder="Contexte : à quelle question répondait-elle ?" style="width: 100%; box-sizing: border-box; border: 0; outline: 0; padding: 0; min-height: 32px; font: inherit; font-size: 14px; color: #5C5C5C">
+      </label>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 14px">
+      <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #C9D6F5; background: #EAEFFB; font: inherit; font-size: 13px; font-weight: 600; color: #1B3F99">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8px; stroke-linecap: round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        Lucie Témoin
+      </button>
+      <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #C9D6F5; background: #EAEFFB; font: inherit; font-size: 13px; font-weight: 600; color: #1B3F99">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8px; stroke-linecap: round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+        Déclarée le 14 janv. 2023
+      </button>
+      <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #C9D6F5; background: #EAEFFB; font: inherit; font-size: 13px; font-weight: 600; color: #1B3F99">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8px; stroke-linecap: round; stroke-linejoin: round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>
+        Promesse
+      </button>
+      <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #E0E0E0; background: #FFFFFF; font: inherit; font-size: 13px; color: #5C5C5C">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8px; stroke-linecap: round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Échéance
+      </button>
+      <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #E0E0E0; background: #FFFFFF; font: inherit; font-size: 13px; color: #5C5C5C">
+        <span aria-hidden="true">#</span>
+        Thèmes
+      </button>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 6px">
+      <label style="flex: 4 1 280px; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #E0E0E0; border-radius: 6px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6F6F6F" aria-hidden="true" style="stroke-width: 2px; stroke-linecap: round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Lien vers la source</span>
+        <input type="url" placeholder="Lien vers la source" style="flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 14px">
+      </label>
+      <label style="flex: 1 1 120px; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #E0E0E0; border-radius: 6px">
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Horodatage dans la vidéo ou l'audio</span>
+        <input type="text" placeholder="à 12:34" style="flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 14px">
+      </label>
+    </div>
+    <p style="margin: 0; padding: 0 20px 16px; font-size: 12px; color: #6F6F6F">Une copie archivée de la page est créée à l’envoi.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 20px; border-top: 1px solid #EEEEEE; background: #FBFAF8">
+      <span style="font-size: 12px; font-weight: 600; color: #6F6F6F">Vous n’êtes pas connecté · <a href="#">Se connecter</a></span>
+      <label style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #E0E0E0; border-radius: 6px; background: #FFFFFF">
+        <span style="font-size: 13px; color: #5C5C5C; white-space: nowrap">Votre e-mail</span>
+        <input type="email" placeholder="vous@exemple.fr" style="flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 14px">
+      </label>
+      <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #6F6F6F">Un lien de confirmation vous sera envoyé. L’adresse sert seulement à vous informer du sort de la carte et à vous proposer un compte.</p>
+      <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5"><input type="checkbox" style="margin-top: 3px"> J’ai lu la <a href="#">charte du contributeur</a> et la citation est exacte.</label>
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px dashed #D6D6D6; border-radius: 6px; font-size: 12px; color: #6F6F6F">[Vérification anti-robot sans cookie]</div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid #EEEEEE">
+      <a href="index.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 6px; background: #F2F2F2; color: #202020; font-weight: 600; text-decoration: none">Annuler</a>
+      <button type="submit" style="min-height: 44px; padding: 0 16px; border: 0; border-radius: 6px; background: #2552C6; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600">Envoyer pour relecture</button>
+    </div>
+  </form>
+
+  <p style="margin: 0; max-width: 680px; font-size: 13px; line-height: 1.6; color: #4A4A4A; text-align: center">Raccourcis : <strong style="font-weight: 600">Q</strong> ouvre l’ajout rapide depuis n’importe quelle page ; dans le contexte, <strong style="font-weight: 600">@</strong> choisit une personnalité et <strong style="font-weight: 600">#</strong> un thème. La citation, elle, n’est jamais interprétée.</p>
+</div>
+</body>
+</html>
