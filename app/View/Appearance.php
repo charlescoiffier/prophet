@@ -69,7 +69,8 @@ class Appearance
 
     public static function figureColor(PublicFigure $figure): string
     {
-        return self::FIGURE_COLORS[crc32($figure->getKey()) % count(self::FIGURE_COLORS)];
+        // Tirée du slug, stable d'une base à l'autre (l'identifiant change à chaque import).
+        return self::FIGURE_COLORS[crc32($figure->slug) % count(self::FIGURE_COLORS)];
     }
 
     /**

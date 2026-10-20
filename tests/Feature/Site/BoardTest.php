@@ -6,6 +6,7 @@ use App\Models\Card;
 use App\Models\PublicFigure;
 use App\Models\Theme;
 use App\Models\Verdict;
+use App\View\Appearance;
 use Livewire\Livewire;
 
 it('affiche l’accueil groupé par sections, sans les cartes non publiques', function () {
@@ -69,4 +70,12 @@ it('cherche en français et filtre par type', function () {
 
 it('répond 404 pour une personnalité inconnue', function () {
     $this->get('/personnalites/inconnue')->assertNotFound();
+});
+
+it('donne à une personnalité la même pastille quel que soit son identifiant', function () {
+    $first = PublicFigure::factory()->create(['slug' => 'jeanne-exemple']);
+    $color = Appearance::figureColor($first);
+    $first->delete();
+
+    expect(Appearance::figureColor(PublicFigure::factory()->create(['slug' => 'jeanne-exemple'])))->toBe($color);
 });
