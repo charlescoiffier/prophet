@@ -81,7 +81,12 @@ Principes de Todoist (sobriété, barre latérale de vues, ajout rapide au clavi
    - les cartes jamais confirmées sont effacées après 8 jours (`cards:purge-unconfirmed`) ;
    - le texte d'un signalement reste privé ; l'historique public n'en montre que l'existence et la note du modérateur ;
    - les tests bloquent tout appel HTTP réel (`Http::preventStrayRequests()` dans `tests/TestCase.php`).
-4. API `/api/v1` + documentation Scramble. (À l'installation de Sanctum, passer `personal_access_tokens` en `uuidMorphs`.)
+4. API `/api/v1` + documentation Scramble. **Fait** : `routes/api.php`, contrôleurs minces dans `app/Http/Controllers/Api/V1`, Form Requests (forme des données) dans `app/Http/Requests/Api/V1`, ressources dans `app/Http/Resources/V1` (chaque enum exposé en `{value, label}`). Documentation publique sur `/docs/api`, groupes Scramble via `#[Group]`. Choix faits :
+   - jetons Sanctum (`Authorization: Bearer`) ; proposition de carte et signalement ouverts sans jeton, avec adresse e-mail ;
+   - carte ou proposition de verdict non publique : 404 (pas 403) pour ne pas révéler son existence ;
+   - l'adresse e-mail d'un auteur sans compte et le texte d'un signalement ne sortent jamais publiquement ;
+   - bilan d'une personnalité en décomptes de verdicts, jamais en pourcentages ;
+   - limites de débit : `api` (120/min), `proposals` (10/h par IP), `auth` ; confirmation de compte par la route web `verification.verify`, réinitialisation du mot de passe vers `/mot-de-passe/nouveau` (page à faire à l'étape 5).
 5. Site public Blade/Livewire d'après les maquettes.
 6. Ouverture des propositions publiques (confirmation e-mail, anti-spam, limitation de débit).
 
