@@ -66,5 +66,10 @@ return [
         'rejected' => 'Refus',
         'edited' => 'Modification',
         'reported' => 'Signalement',
+        'report_resolved' => 'Signalement traité',
+        'report_dismissed' => 'Signalement rejeté',
+        'source_added' => 'Ajout d’une source',
+        'source_removed' => 'Retrait d’une source',
+        'role_changed' => 'Changement de rôle',
     ],
 ];

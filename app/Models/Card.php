@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 
 /**
  * Une promesse ou une prédiction, citée mot pour mot, datée et sourcée.
@@ -109,6 +111,18 @@ class Card extends Model
     {
         return $this->author_id === $user->getKey()
             || ($this->author_email !== null && strcasecmp($this->author_email, $user->email) === 0);
+    }
+
+    /**
+     * Prévient l'auteur : son compte s'il en a un, sinon l'adresse e-mail laissée à la proposition.
+     */
+    public function notifyAuthor(Notification $notification): void
+    {
+        if ($this->author !== null) {
+            $this->author->notify($notification);
+        } elseif ($this->author_email !== null) {
+            NotificationFacade::route('mail', $this->author_email)->notify($notification);
+        }
     }
 
     /** @param Builder<self> $query */

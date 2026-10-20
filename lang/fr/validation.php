@@ -1,0 +1,101 @@
+<?php
+
+/*
+ * Messages de validation en français. Les règles absentes retombent sur l'anglais
+ * (APP_FALLBACK_LOCALE=en) : ajouter ici celles que l'interface finit par afficher.
+ */
+return [
+    'accepted' => 'Le champ :attribute doit être accepté.',
+    'active_url' => 'Le champ :attribute doit être une URL valide.',
+    'after' => 'Le champ :attribute doit être une date postérieure au :date.',
+    'after_or_equal' => 'Le champ :attribute doit être une date postérieure ou égale au :date.',
+    'array' => 'Le champ :attribute doit être une liste.',
+    'before' => 'Le champ :attribute doit être une date antérieure au :date.',
+    'before_or_equal' => 'Le champ :attribute doit être une date antérieure ou égale au :date.',
+    'between' => [
+        'array' => 'Le champ :attribute doit contenir entre :min et :max éléments.',
+        'numeric' => 'Le champ :attribute doit être compris entre :min et :max.',
+        'string' => 'Le champ :attribute doit contenir entre :min et :max caractères.',
+    ],
+    'boolean' => 'Le champ :attribute doit être vrai ou faux.',
+    'confirmed' => 'La confirmation du champ :attribute ne correspond pas.',
+    'current_password' => 'Le mot de passe est incorrect.',
+    'date' => 'Le champ :attribute doit être une date valide.',
+    'date_format' => 'Le champ :attribute doit respecter le format :format.',
+    'different' => 'Les champs :attribute et :other doivent être différents.',
+    'email' => 'Le champ :attribute doit être une adresse e-mail valide.',
+    'enum' => 'La valeur choisie pour :attribute n’est pas valide.',
+    'exists' => 'La valeur choisie pour :attribute n’est pas valide.',
+    'filled' => 'Le champ :attribute doit avoir une valeur.',
+    'in' => 'La valeur choisie pour :attribute n’est pas valide.',
+    'integer' => 'Le champ :attribute doit être un nombre entier.',
+    'max' => [
+        'array' => 'Le champ :attribute ne doit pas contenir plus de :max éléments.',
+        'file' => 'Le fichier :attribute ne doit pas dépasser :max kilo-octets.',
+        'numeric' => 'Le champ :attribute ne doit pas dépasser :max.',
+        'string' => 'Le champ :attribute ne doit pas dépasser :max caractères.',
+    ],
+    'min' => [
+        'array' => 'Le champ :attribute doit contenir au moins :min éléments.',
+        'file' => 'Le fichier :attribute doit faire au moins :min kilo-octets.',
+        'numeric' => 'Le champ :attribute doit être au moins égal à :min.',
+        'string' => 'Le champ :attribute doit contenir au moins :min caractères.',
+    ],
+    'numeric' => 'Le champ :attribute doit être un nombre.',
+    'password' => [
+        'letters' => 'Le champ :attribute doit contenir au moins une lettre.',
+        'mixed' => 'Le champ :attribute doit contenir au moins une majuscule et une minuscule.',
+        'numbers' => 'Le champ :attribute doit contenir au moins un chiffre.',
+        'symbols' => 'Le champ :attribute doit contenir au moins un symbole.',
+        'uncompromised' => 'Ce :attribute est apparu dans une fuite de données. Choisissez-en un autre.',
+    ],
+    'regex' => 'Le format du champ :attribute n’est pas valide.',
+    'required' => 'Le champ :attribute est obligatoire.',
+    'required_if' => 'Le champ :attribute est obligatoire quand :other vaut :value.',
+    'required_with' => 'Le champ :attribute est obligatoire quand :values est renseigné.',
+    'same' => 'Les champs :attribute et :other doivent être identiques.',
+    'string' => 'Le champ :attribute doit être une chaîne de caractères.',
+    'unique' => 'Cette valeur de :attribute est déjà utilisée.',
+    'url' => 'Le champ :attribute doit être une URL valide.',
+    'uuid' => 'Le champ :attribute doit être un UUID valide.',
+
+    'custom' => [
+        'sources' => [
+            'required' => 'Une carte doit avoir au moins une source.',
+            'last' => 'Impossible de retirer la dernière source : ajoutez-en une autre d’abord.',
+        ],
+        'reason' => [
+            'required' => 'Indiquez le motif du refus.',
+        ],
+        'value' => [
+            'type' => 'Cette valeur de verdict ne correspond pas au type de la carte.',
+        ],
+    ],
+
+    'attributes' => [
+        'email' => 'adresse e-mail',
+        'password' => 'mot de passe',
+        'username' => 'pseudo',
+        'name' => 'nom',
+        'slug' => 'identifiant d’URL',
+        'quote' => 'citation',
+        'context' => 'contexte',
+        'stated_on' => 'date de la déclaration',
+        'testable_statement' => 'énoncé vérifiable',
+        'verdict_criterion' => 'critère de verdict',
+        'deadline' => 'échéance',
+        'deadline_nature' => 'nature de l’échéance',
+        'public_figure_id' => 'personnalité',
+        'url' => 'lien',
+        'outlet' => 'média',
+        'published_on' => 'date de publication',
+        'timecode' => 'horodatage',
+        'reason' => 'motif',
+        'justification' => 'justification',
+        'value' => 'verdict',
+        'organization' => 'organisation',
+        'role' => 'rôle',
+        'started_on' => 'début',
+        'ended_on' => 'fin',
+    ],
+];

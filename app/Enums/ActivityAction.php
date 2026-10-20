@@ -12,4 +12,9 @@ enum ActivityAction: string
     case Rejected = 'rejected';
     case Edited = 'edited';
     case Reported = 'reported';
+    case ReportResolved = 'report_resolved';
+    case ReportDismissed = 'report_dismissed';
+    case SourceAdded = 'source_added';
+    case SourceRemoved = 'source_removed';
+    case RoleChanged = 'role_changed';
 }
