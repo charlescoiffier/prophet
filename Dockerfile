@@ -2,6 +2,13 @@
 # Construite par GitHub Actions (.github/workflows/deploy.yml), déployée sur le VPS derrière Traefik.
 # La même image sert l'application, le worker Horizon et le planificateur (deploy/docker-compose.yml).
 
+# --- Dépendances PHP, pour la compilation des assets ---
+# Le thème du panneau de modération importe la feuille de style de Filament depuis vendor/.
+FROM composer:2 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction --ignore-platform-reqs
+
 # --- Assets (Vite + Tailwind) ---
 FROM node:22-alpine AS assets
 WORKDIR /app
@@ -9,6 +16,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 # Tailwind analyse les vues et les classes PHP (app/View/Appearance.php…) : tout le code est utile.
 COPY . .
+COPY --from=vendor /app/vendor ./vendor
 RUN npm run build
 
 # --- Application ---
