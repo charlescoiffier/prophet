@@ -216,8 +216,13 @@ class DemoSeeder extends Seeder
             ]);
         }
 
+        // Comme ProposeVerdict et ApproveVerdict : une ligne sur le verdict et une sur la carte.
+        $proposedAt = Carbon::parse($decidedAt ?? now())->subDays(10)->toDateString();
+        $this->log($card, $proposer, ActivityAction::Proposed, $proposedAt, ['status' => 'published'], ['status' => 'verdict_proposed', 'verdict' => $value->value]);
+
         if ($decider !== null) {
             $this->log($verdict, $decider, ActivityAction::Approved, $decidedAt, ['status' => 'proposed'], ['status' => 'approved']);
+            $this->log($card, $decider, ActivityAction::Approved, $decidedAt, ['status' => 'verdict_proposed'], ['status' => 'closed', 'verdict' => $value->value]);
         }
 
         return $verdict;

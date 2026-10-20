@@ -1,25 +1,8 @@
-{{-- Page provisoire : le site public (étape 5) lui donnera la mise en page des maquettes. --}}
-<!doctype html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex">
-    <title>Adresse confirmée — {{ config('app.name') }}</title>
-    <style>
-        body { margin: 0; font-family: Inter, system-ui, sans-serif; color: #202020; background: #FBFAF8; }
-        main { max-width: 560px; margin: 15vh auto; padding: 0 16px; }
-        h1 { font-size: 22px; }
-        blockquote { margin: 16px 0; padding-left: 12px; border-left: 3px solid #2552C6; }
-        a { color: #2552C6; }
-    </style>
-</head>
-<body>
-<main>
-    <h1>Merci, votre adresse est confirmée.</h1>
-    <blockquote>{{ $card->quote }}</blockquote>
-    <p>Votre proposition est entre les mains des modérateurs. Vous recevrez un e-mail dès qu’elle sera publiée ou si elle n’est pas retenue.</p>
-    <p><a href="{{ url('/') }}">Retour au site</a></p>
-</main>
-</body>
-</html>
+<x-page title="Adresse confirmée" noindex>
+    <x-dialog-card title="Merci, votre adresse est confirmée.">
+        <blockquote class="border-l-[3px] border-accent pl-3 text-subtle">{{ $card->quote }}</blockquote>
+        <p class="leading-relaxed">Votre proposition est entre les mains des modérateurs. Vous recevrez un e-mail dès qu’elle sera publiée, ou si elle n’est pas retenue.</p>
+        <p class="text-[13px] leading-relaxed text-muted">Avec un compte créé sous la même adresse, vous pourrez suivre vos propositions et proposer des verdicts. <a href="{{ route('register') }}">Créer un compte</a></p>
+        <a href="{{ route('home') }}" class="text-[13px]">Retour aux cartes</a>
+    </x-dialog-card>
+</x-page>

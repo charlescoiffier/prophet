@@ -87,7 +87,13 @@ Principes de Todoist (sobriété, barre latérale de vues, ajout rapide au clavi
    - l'adresse e-mail d'un auteur sans compte et le texte d'un signalement ne sortent jamais publiquement ;
    - bilan d'une personnalité en décomptes de verdicts, jamais en pourcentages ;
    - limites de débit : `api` (120/min), `proposals` (10/h par IP), `auth` ; confirmation de compte par la route web `verification.verify`, réinitialisation du mot de passe vers `/mot-de-passe/nouveau` (page à faire à l'étape 5).
-5. Site public Blade/Livewire d'après les maquettes.
+5. Site public Blade/Livewire d'après les maquettes. **Fait** : composants Livewire à classe (`app/Livewire`, vues dans `resources/views/livewire`), mises en page `layouts/app` (barre latérale) et `layouts/dialog` (fenêtre sur fond gris). `Board` sert l'accueil, les vues, les pages personnalité, thème et recherche. Repères :
+   - palette des maquettes dans `resources/css/app.css` (`@theme`) ; ronds d'état et couleurs de verdict dans `App\View\Appearance` (classes Tailwind écrites en entier) : juste/tenue = bleu, partiel = ambre, fausse/abandonnée = orange, invérifiable/caduque = ardoise ; le sarcelle et le violet ne servent qu'aux pastilles des personnalités ;
+   - icônes : composant `<x-glyph>` (`<x-icon>` est pris par blade-icons, livré avec Filament) ;
+   - historique public en phrases : `ActivityLog::publicSentence()` + `lang/fr/history.php` ;
+   - touche Q : `resources/js/app.js` ; mêmes limites de débit que l'API pour les formulaires publics ;
+   - textes de la charte et de la page données personnelles : brouillons à relire par Charles ;
+   - pas encore faits : raccourcis @ et # dans le contexte, bouton « Afficher » de la maquette, création d'une personnalité par un visiteur (il choisit dans la liste existante).
 6. Ouverture des propositions publiques (confirmation e-mail, anti-spam, limitation de débit).
 
 ## Hors périmètre V1

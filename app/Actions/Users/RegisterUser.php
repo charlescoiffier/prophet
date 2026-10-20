@@ -18,7 +18,7 @@ class RegisterUser
     {
         $user = User::create([
             'username' => $data['username'],
-            'email' => $data['email'],
+            'email' => mb_strtolower($data['email']),
             'password' => $data['password'],
         ]);
 

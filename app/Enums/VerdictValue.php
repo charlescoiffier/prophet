@@ -28,10 +28,24 @@ enum VerdictValue: string implements HasColor, HasLabel
     public function getColor(): string
     {
         return match ($this) {
-            self::Kept, self::Correct => 'success',
+            self::Kept, self::Correct => 'primary',
             self::PartiallyKept, self::PartiallyCorrect, self::Compromised => 'warning',
             self::Abandoned, self::Wrong => 'danger',
             self::Moot, self::Unverifiable => 'gray',
+        };
+    }
+
+    /**
+     * Tonalité du rond d'état sur le site public : bleu, ambre, orange ou ardoise
+     * (voir les couleurs « positive », « partial »… de resources/css/app.css).
+     */
+    public function tone(): string
+    {
+        return match ($this) {
+            self::Kept, self::Correct => 'positive',
+            self::PartiallyKept, self::PartiallyCorrect, self::Compromised => 'partial',
+            self::Abandoned, self::Wrong => 'negative',
+            self::Moot, self::Unverifiable => 'neutral',
         };
     }
 

@@ -53,6 +53,36 @@ class ActivityLog extends Model
     }
 
     /**
+     * Phrase de l'historique public, comme dans la maquette de la fiche :
+     * « s.leroy » + « a validé le verdict « Partiellement tenue » ».
+     *
+     * @return array{actor: string|null, text: string}
+     */
+    public function publicSentence(): array
+    {
+        $actor = $this->actor?->username;
+        $verdict = isset($this->after['verdict']) ? VerdictValue::tryFrom($this->after['verdict'])?->label() : null;
+
+        $key = match ($this->action) {
+            ActivityAction::Proposed => $verdict !== null ? 'verdict_proposed' : 'card_proposed',
+            ActivityAction::Approved => $verdict !== null ? 'verdict_approved' : 'card_published',
+            ActivityAction::Rejected => ($this->before['status'] ?? null) === CardStatus::VerdictProposed->value ? 'verdict_rejected' : 'card_rejected',
+            default => $this->action->value,
+        };
+
+        $fields = collect(array_keys($this->after ?? []))
+            ->map(fn (string $field) => __("validation.attributes.{$field}"))
+            ->implode(', ');
+
+        $text = __('history.'.($actor === null ? 'anonymous' : 'by_actor').".{$key}", [
+            'verdict' => $verdict,
+            'fields' => $fields,
+        ]);
+
+        return ['actor' => $actor, 'text' => $text];
+    }
+
+    /**
      * Changements lisibles : « champ : avant → après », un par ligne.
      */
     public function describeChanges(): string
