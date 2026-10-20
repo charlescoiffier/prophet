@@ -36,7 +36,9 @@ COPY --chown=www-data:www-data . .
 COPY --chown=www-data:www-data --from=assets /app/public/build ./public/build
 
 RUN composer dump-autoload --optimize --no-dev \
-    && php artisan package:discover --ansi
+    && php artisan package:discover --ansi \
+    # Dossier des photos téléversées (volume « uploads ») : créé ici pour appartenir à www-data.
+    && mkdir -p storage/app/public/portraits
 
 # Au démarrage du conteneur « app » (AUTORUN_ENABLED) : migrations, lien de stockage,
 # caches de configuration, routes et vues. Le worker et le planificateur le désactivent.
