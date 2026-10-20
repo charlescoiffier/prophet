@@ -25,7 +25,8 @@ class SavePublicFigureRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'alpha_dash', 'max:255', Rule::unique('public_figures', 'slug')->ignore($figure)],
             'wikidata_id' => ['nullable', 'regex:/^Q\d+$/', Rule::unique('public_figures', 'wikidata_id')->ignore($figure)],
-            'photo_url' => ['nullable', 'url:http,https', 'max:2000'],
+            /** Lien direct vers le fichier image (.jpg, .png, .webp…), pas vers une page web. */
+            'photo_url' => ['nullable', 'url:http,https', 'max:2000', 'regex:'.PublicFigure::PHOTO_URL_PATTERN],
             /** Remplace toute la liste : renvoyer l'« id » des affiliations à conserver. */
             'affiliations' => ['sometimes', 'array'],
             'affiliations.*.id' => ['nullable', 'uuid'],

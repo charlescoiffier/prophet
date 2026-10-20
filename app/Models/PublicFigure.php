@@ -22,6 +22,12 @@ class PublicFigure extends Model
     /** @use HasFactory<PublicFigureFactory> */
     use HasFactory, HasUuids;
 
+    /**
+     * Un lien de photo doit viser le fichier image lui-même, pas une page web : l'extension doit
+     * terminer le chemin (avant d'éventuels paramètres), et il n'y a pas de fragment « # ».
+     */
+    public const PHOTO_URL_PATTERN = '/^[^#?]+\.(jpe?g|png|webp|gif|avif|svg)(\?[^#]*)?$/i';
+
     public function getRouteKeyName(): string
     {
         return 'slug';

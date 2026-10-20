@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PublicFigures\Schemas;
 
 use App\Actions\Categories\CreateCategory;
 use App\Models\Category;
+use App\Models\PublicFigure;
 use App\Rules\NotNearDuplicateOrganization;
 use App\Support\Organizations;
 use Filament\Forms\Components\Checkbox;
@@ -69,9 +70,11 @@ class PublicFigureForm
                             ->regex('/^Q\d+$/')
                             ->unique(ignoreRecord: true),
                         TextInput::make('photo_url')
-                            ->label('Ou lien vers une photo')
-                            ->helperText('Utilisé seulement s’il n’y a pas de photo téléversée.')
-                            ->url(),
+                            ->label('Ou lien direct vers une photo')
+                            ->helperText('Le fichier image lui-même (.jpg, .png, .webp), pas la page qui le montre. Utilisé seulement s’il n’y a pas de photo téléversée.')
+                            ->url()
+                            ->regex(PublicFigure::PHOTO_URL_PATTERN)
+                            ->validationMessages(['regex' => __('validation.custom.photo_url.image')]),
                     ]),
                 Section::make('Photo')
                     ->columnSpan(1)
@@ -82,8 +85,8 @@ class PublicFigureForm
                             ->disk('public')
                             ->directory('portraits')
                             ->visibility('public')
-                            ->imageEditor()
-                            ->imageEditorAspectRatioOptions(['1:1'])
+                            // Pas d'éditeur d'image : celui de Filament 5 plante à l'enregistrement
+                            // (getCroppedCanvas). Le recadrage au carré se fait automatiquement à l'envoi.
                             ->imageResizeMode('cover')
                             ->imageCropAspectRatio('1:1')
                             ->imageResizeTargetWidth('600')
