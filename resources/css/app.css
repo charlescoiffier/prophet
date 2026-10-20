@@ -51,3 +51,12 @@
 [x-cloak] {
     display: none !important;
 }
+
+/* Widget ALTCHA aux couleurs du site. */
+altcha-widget {
+    --altcha-border-radius: 6px;
+    --altcha-color-border: var(--color-line-strong);
+    --altcha-color-border-focus: var(--color-accent);
+    --altcha-color-checkbox: var(--color-accent);
+    --altcha-max-width: 100%;
+}

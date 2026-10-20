@@ -134,7 +134,9 @@
                     <span>J’ai lu la <a href="{{ route('pages.charter') }}" target="_blank">charte du contributeur</a> et la citation est exacte.</span>
                 </label>
                 @error('charter') <span class="text-xs text-negative-text">{{ $message }}</span> @enderror
-                {{-- Étape 6 : vérification anti-robot sans cookie (ALTCHA). --}}
+                @guest
+                    <x-altcha />
+                @endguest
             </div>
 
             <div class="flex justify-end gap-2 border-t border-line px-5 py-3">

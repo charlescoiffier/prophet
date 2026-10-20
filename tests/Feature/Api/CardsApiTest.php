@@ -104,7 +104,7 @@ describe('proposition', function () {
     }
 
     it('accepte la proposition d’un visiteur et lui envoie le lien de confirmation', function () {
-        $this->postJson('/api/v1/cards', apiProposal(['email' => 'visiteur@example.test']))
+        $this->postJson('/api/v1/cards', apiProposal(['email' => 'visiteur@example.test', 'altcha' => altchaSolution()]))
             ->assertCreated()
             ->assertJsonPath('data.status.value', 'awaiting_email');
 
@@ -114,7 +114,7 @@ describe('proposition', function () {
     it('exige l’adresse d’un visiteur et au moins une source', function () {
         $this->postJson('/api/v1/cards', apiProposal(['sources' => []]))
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['email', 'sources']);
+            ->assertJsonValidationErrors(['email', 'sources', 'altcha']);
     });
 
     it('envoie en modération la proposition d’un membre', function () {
@@ -128,17 +128,17 @@ describe('proposition', function () {
 
     it('limite le nombre de propositions par adresse IP', function () {
         foreach (range(1, 10) as $i) {
-            $this->postJson('/api/v1/cards', apiProposal(['email' => "v{$i}@example.test"]))->assertCreated();
+            $this->postJson('/api/v1/cards', apiProposal(['email' => "v{$i}@example.test", 'altcha' => altchaSolution()]))->assertCreated();
         }
 
-        $this->postJson('/api/v1/cards', apiProposal(['email' => 'v11@example.test']))->assertTooManyRequests();
+        $this->postJson('/api/v1/cards', apiProposal(['email' => 'v11@example.test', 'altcha' => altchaSolution()]))->assertTooManyRequests();
     });
 });
 
 it('enregistre le signalement d’un visiteur', function () {
     $card = Card::factory()->published()->create();
 
-    $this->postJson("/api/v1/cards/{$card->id}/reports", ['reason' => 'Mauvaise date.', 'email' => 'a@example.test'])
+    $this->postJson("/api/v1/cards/{$card->id}/reports", ['reason' => 'Mauvaise date.', 'email' => 'a@example.test', 'altcha' => altchaSolution()])
         ->assertCreated()
         ->assertJsonPath('message', 'Merci : votre signalement a été transmis aux modérateurs.');
 
@@ -153,4 +153,16 @@ it('liste les échéances dépassées en attente de verdict', function () {
         ->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $overdue->id);
+});
+
+it('exige la vérification anti-robot des visiteurs, pas des membres', function () {
+    Queue::fake();
+    $card = Card::factory()->published()->create();
+
+    $this->postJson("/api/v1/cards/{$card->id}/reports", ['reason' => 'Erreur.', 'email' => 'a@example.test', 'altcha' => 'faux'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['altcha' => 'La vérification anti-robot a échoué ou a expiré : recommencez-la.']);
+
+    Sanctum::actingAs(User::factory()->create());
+    $this->postJson("/api/v1/cards/{$card->id}/reports", ['reason' => 'Erreur.'])->assertCreated();
 });

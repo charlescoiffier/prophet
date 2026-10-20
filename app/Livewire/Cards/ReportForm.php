@@ -3,6 +3,7 @@
 namespace App\Livewire\Cards;
 
 use App\Actions\Reports\ReportCard;
+use App\Livewire\Concerns\VerifiesAltcha;
 use App\Models\Card;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\RateLimiter;
@@ -13,6 +14,8 @@ use Livewire\Component;
  */
 class ReportForm extends Component
 {
+    use VerifiesAltcha;
+
     public Card $card;
 
     public bool $open = false;
@@ -29,6 +32,10 @@ class ReportForm extends Component
             'reason' => ['required', 'string', 'max:2000'],
             'email' => [auth()->check() ? 'nullable' : 'required', 'email:rfc', 'max:255'],
         ]);
+
+        if (auth()->guest()) {
+            $this->verifyAltcha();
+        }
 
         // Même limite que l'API : 10 propositions ou signalements par heure et par adresse IP.
         $key = 'proposals:'.request()->ip();

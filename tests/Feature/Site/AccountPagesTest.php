@@ -45,6 +45,7 @@ it('crée un compte, connecte et envoie le lien de confirmation', function () {
         ->set('email', 'Nouveau@example.test')
         ->set('password', 'un mot de passe solide')
         ->set('password_confirmation', 'un mot de passe solide')
+        ->set('altcha', altchaSolution())
         ->call('register')
         ->assertRedirect(route('account.cards'));
 

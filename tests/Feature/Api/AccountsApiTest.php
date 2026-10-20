@@ -16,6 +16,7 @@ it('crée un compte membre et envoie le lien de confirmation', function () {
         'email' => 'nouveau@example.test',
         'password' => 'un mot de passe solide',
         'password_confirmation' => 'un mot de passe solide',
+        'altcha' => altchaSolution(),
     ])
         ->assertCreated()
         ->assertJsonPath('data.role.value', 'member')
@@ -103,6 +104,7 @@ it('ignore un rôle envoyé à l’inscription', function () {
         'email' => 'malin@example.test',
         'password' => 'un mot de passe solide',
         'password_confirmation' => 'un mot de passe solide',
+        'altcha' => altchaSolution(),
         'role' => 'admin',
     ])->assertCreated()->assertJsonPath('data.role.value', 'member');
 

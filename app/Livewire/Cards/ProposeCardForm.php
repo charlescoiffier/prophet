@@ -5,6 +5,7 @@ namespace App\Livewire\Cards;
 use App\Actions\Cards\ProposeCard;
 use App\Enums\CardType;
 use App\Enums\SourceKind;
+use App\Livewire\Concerns\VerifiesAltcha;
 use App\Models\Card;
 use App\Models\PublicFigure;
 use App\Models\Theme;
@@ -22,6 +23,8 @@ use Livewire\Component;
 #[Title('Proposer une carte')]
 class ProposeCardForm extends Component
 {
+    use VerifiesAltcha;
+
     public string $quote = '';
 
     public string $context = '';
@@ -77,6 +80,10 @@ class ProposeCardForm extends Component
             'sourceKind' => 'nature de la source',
             'charter' => 'charte du contributeur',
         ]);
+
+        if (auth()->guest()) {
+            $this->verifyAltcha();
+        }
 
         // Même limite que l'API : 10 propositions ou signalements par heure et par adresse IP.
         $key = 'proposals:'.request()->ip();

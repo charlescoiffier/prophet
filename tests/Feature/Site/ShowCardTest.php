@@ -49,6 +49,7 @@ it('enregistre un signalement de visiteur', function () {
         ->set('open', true)
         ->set('reason', 'Le lien est mort.')
         ->set('email', 'lecteur@example.test')
+        ->set('altcha', altchaSolution())
         ->call('submit')
         ->assertHasNoErrors()
         ->assertSee('votre signalement a été transmis');

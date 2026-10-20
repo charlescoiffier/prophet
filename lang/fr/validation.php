@@ -71,6 +71,9 @@ return [
         'email' => [
             'required_for_guest' => 'Indiquez votre adresse e-mail : nous vous enverrons un lien de confirmation.',
         ],
+        'altcha' => [
+            'invalid' => 'La vérification anti-robot a échoué ou a expiré : recommencez-la.',
+        ],
         'report' => [
             'reason' => 'Décrivez l’erreur que vous signalez.',
         ],
@@ -105,6 +108,7 @@ return [
         'role' => 'rôle',
         'started_on' => 'début',
         'ended_on' => 'fin',
+        'altcha' => 'vérification anti-robot',
         'status' => 'statut',
         'type' => 'type',
         'themes' => 'thèmes',

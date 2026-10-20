@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AltchaChallengeController;
 use App\Http\Controllers\ConfirmCardEmailController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\VerifyEmailController;
@@ -34,6 +35,9 @@ Route::get('/cartes/{card}', ShowCard::class)->whereUuid('card')->name('cards.sh
 Route::get('/confirmations/{card}', ConfirmCardEmailController::class)
     ->middleware(['signed', 'throttle:20,1'])
     ->name('cards.confirm-email');
+
+// Défi anti-robot ALTCHA pour les formulaires des visiteurs
+Route::get('/altcha', AltchaChallengeController::class)->middleware('throttle:30,1')->name('altcha.challenge');
 
 // Comptes
 Route::middleware('guest')->group(function () {

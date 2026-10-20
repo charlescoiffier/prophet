@@ -19,6 +19,7 @@
                     <input type="email" wire:model="email" required class="min-h-10 rounded-md border border-line-strong px-2 text-sm outline-none focus:border-accent">
                     @error('email') <span class="text-xs text-negative-text">{{ $message }}</span> @enderror
                 </label>
+                <x-altcha />
             @endguest
             <div class="flex gap-2">
                 <button type="button" wire:click="$set('open', false)" class="min-h-10 flex-1 cursor-pointer rounded-md bg-[#F2F2F2] font-semibold">Annuler</button>

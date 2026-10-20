@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Actions\Users\RegisterUser;
+use App\Livewire\Concerns\VerifiesAltcha;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -15,6 +16,8 @@ use Livewire\Component;
 #[Title('Créer un compte')]
 class Register extends Component
 {
+    use VerifiesAltcha;
+
     public string $username = '';
 
     public string $email = '';
@@ -30,6 +33,8 @@ class Register extends Component
             'email' => ['required', 'email:rfc', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
+
+        $this->verifyAltcha();
 
         $user = $registerUser->handle($data);
 

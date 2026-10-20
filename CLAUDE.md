@@ -94,7 +94,10 @@ Principes de Todoist (sobriété, barre latérale de vues, ajout rapide au clavi
    - touche Q : `resources/js/app.js` ; mêmes limites de débit que l'API pour les formulaires publics ;
    - textes de la charte et de la page données personnelles : brouillons à relire par Charles ;
    - pas encore faits : raccourcis @ et # dans le contexte, bouton « Afficher » de la maquette, création d'une personnalité par un visiteur (il choisit dans la liste existante).
-6. Ouverture des propositions publiques (confirmation e-mail, anti-spam, limitation de débit).
+6. Ouverture des propositions publiques (confirmation e-mail, anti-spam, limitation de débit). **Fait** : ALTCHA (`altcha-org/altcha` côté serveur, widget `altcha` côté navigateur), défi servi par `GET /altcha` et `GET /api/v1/altcha`, vérifié par la règle `App\Rules\Altcha` via `App\Support\AltchaGuard`. Repères :
+   - exigé des visiteurs sans compte pour proposer une carte, signaler une erreur et créer un compte (site et API) ; les membres connectés en sont dispensés ;
+   - une solution ne sert qu'une fois (mémorisée en cache jusqu'à l'expiration du défi) ; dans Livewire, `VerifiesAltcha` la vérifie après les autres champs pour ne pas la gâcher ;
+   - difficulté réglable dans `.env` (`ALTCHA_COST`, `ALTCHA_COUNTER_MIN/MAX`, environ une seconde pour un visiteur) ; réduite au minimum dans `phpunit.xml` ; les tests résolvent de vrais défis avec `altchaSolution()` (`tests/Pest.php`).
 
 ## Hors périmètre V1
 

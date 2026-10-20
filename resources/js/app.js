@@ -1,3 +1,7 @@
+// Anti-robot ALTCHA (preuve de travail, sans cookie), en français.
+import 'altcha';
+import 'altcha/i18n/fr-fr';
+
 /*
  * Raccourci Q : ouvre l'ajout rapide depuis n'importe quelle page,
  * sauf pendant la saisie dans un champ.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AltchaChallengeController;
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\CardController;
 use App\Http\Controllers\Api\V1\CardDecisionController;
@@ -31,6 +32,7 @@ Route::prefix('v1')->name('api.v1.')->middleware('throttle:api')->group(function
     Route::get('public-figures/{publicFigure:slug}', [PublicFigureController::class, 'show'])->name('public-figures.show');
     Route::get('themes', [ThemeController::class, 'index'])->name('themes.index');
     Route::get('deadlines', DeadlineController::class)->name('deadlines');
+    Route::get('altcha', AltchaChallengeController::class)->name('altcha');
 
     // Ouvert aux visiteurs (adresse e-mail obligatoire), limité par adresse IP
     Route::middleware('throttle:proposals')->group(function () {

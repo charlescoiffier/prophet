@@ -35,6 +35,7 @@ it('affiche l’ajout rapide', function () {
 it('envoie la proposition d’un visiteur et demande de confirmer l’adresse', function () {
     fillProposal(Livewire::test(ProposeCardForm::class))
         ->set('email', 'visiteur@example.test')
+        ->set('altcha', altchaSolution())
         ->call('submit')
         ->assertHasNoErrors()
         ->assertSee('Vérifiez votre boîte de réception');
@@ -64,11 +65,12 @@ it('exige la charte, la source et l’adresse d’un visiteur', function () {
 
 it('limite les propositions par adresse IP', function () {
     foreach (range(1, 10) as $i) {
-        fillProposal(Livewire::test(ProposeCardForm::class))->set('email', "v{$i}@example.test")->call('submit')->assertHasNoErrors();
+        fillProposal(Livewire::test(ProposeCardForm::class))->set('email', "v{$i}@example.test")->set('altcha', altchaSolution())->call('submit')->assertHasNoErrors();
     }
 
     fillProposal(Livewire::test(ProposeCardForm::class))
         ->set('email', 'v11@example.test')
+        ->set('altcha', altchaSolution())
         ->call('submit')
         ->assertHasErrors('quote');
 
