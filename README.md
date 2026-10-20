@@ -66,7 +66,8 @@ carte : qui a fait quoi, quand, et ce qui a changé.
 | Abandonnées ou fausses | abandonnée | fausse | rouge |
 | Caduques ou invérifiables | caduque | invérifiable | gris |
 
-Une carte en relecture est **bleu soutenu** ; une carte encore ouverte alterne jaune, bleu clair et gris.
+La couleur signifie toujours un verdict : une carte encore ouverte, ou dont le verdict est en relecture, garde le fond
+papier.
 Le critère de verdict est écrit sur la carte avant l’échéance : on sait d’avance avec quelle donnée elle sera tranchée.
 
 ## Utiliser le site

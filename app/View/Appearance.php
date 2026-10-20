@@ -27,23 +27,18 @@ class Appearance
         'caduques-ou-inverifiables' => ['tone' => 'neutral', 'label' => 'Caduques ou invérifiables', 'mark' => '?', 'icon' => 'verdict-neutral'],
     ];
 
-    /** Aplats des cartes encore ouvertes, en alternance comme dans la maquette. */
-    private const OPEN_SURFACES = ['bg-card-bright', 'bg-card-blue', 'bg-card-grey'];
-
     /**
-     * Fond d'une carte de la grille : couleur du verdict une fois tranchée, bleu soutenu
-     * en relecture, aplats en alternance tant qu'elle est ouverte.
+     * Fond d'une carte de la grille : la couleur signifie toujours un verdict. Une carte tranchée prend
+     * la couleur du sien ; une carte encore ouverte (ou en relecture) garde le fond papier.
      */
-    public static function surfaceClasses(Card $card, int $position = 0): string
+    public static function surfaceClasses(Card $card): string
     {
         return match (self::tone($card)) {
             'positive' => 'bg-card-blue',
             'partial' => 'bg-card-yellow',
             'negative' => 'bg-card-red',
             'neutral' => 'bg-card-grey',
-            default => $card->status === CardStatus::VerdictProposed
-                ? 'bg-card-review'
-                : self::OPEN_SURFACES[$position % count(self::OPEN_SURFACES)],
+            default => 'bg-field',
         };
     }
 

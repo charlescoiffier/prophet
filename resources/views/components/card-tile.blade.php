@@ -9,7 +9,7 @@
        'group flex flex-col overflow-hidden border border-ink text-ink no-underline transition-shadow duration-100 hover:text-ink hover:shadow-[8px_0_0_#000] motion-reduce:transition-none',
        'min-h-[330px] 2xl:min-h-[365px]' => ! $wide,
        'min-h-[258px] md:col-span-2' => $wide,
-       Appearance::surfaceClasses($card, $position),
+       Appearance::surfaceClasses($card),
    ])>
     <span class="flex items-start justify-between gap-3 p-4 text-[10px] leading-normal">
         <span class="flex flex-none items-center gap-1.5"><x-uicon :name="Appearance::typeIcon($card->type)" :size="14" /> {{ $card->type->label() }}</span>
