@@ -13,5 +13,8 @@ abstract class TestCase extends BaseTestCase
 
         // Aucun test ne doit appeler un service extérieur (Wayback Machine…) : simuler avec Http::fake().
         Http::preventStrayRequests();
+
+        // Les assets compilés (public/build) ne sont pas nécessaires aux tests, ni présents en CI.
+        $this->withoutVite();
     }
 }

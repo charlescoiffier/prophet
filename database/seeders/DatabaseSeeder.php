@@ -15,9 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            ThemeSeeder::class,
-            DemoSeeder::class,
-        ]);
+        // En production, seulement le vocabulaire des thèmes : jamais les données fictives.
+        $this->call(app()->isProduction()
+            ? [ThemeSeeder::class]
+            : [ThemeSeeder::class, DemoSeeder::class]);
     }
 }

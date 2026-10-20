@@ -20,3 +20,18 @@ php artisan migrate --seed
 ```
 
 Le seeder crée un jeu de démonstration entièrement fictif (repris des maquettes) et des comptes `admin`, `s.leroy` (modératrice), `m.durand` et `j.martin`, tous en `@example.test`, mot de passe `password`.
+
+## Mise en ligne
+
+Le site tourne sur le VPS dans Docker, derrière Traefik (voir `~/dev/vps-infra`), à l’adresse `https://paroletenue.charlescoiffier.fr`.
+Chaque poussée sur `main` lance les tests, construit l’image (`Dockerfile`) et la déploie (`.github/workflows/deploy.yml`).
+
+Les secrets sont dans `~/srv/paroletenue/.env` sur le VPS (modèle : `deploy/env.example`).
+
+Commandes utiles sur le VPS, depuis `~/srv/paroletenue` :
+
+```bash
+docker compose exec app php artisan db:seed --force                              # thèmes (une fois)
+docker compose exec -it app php artisan users:create-admin vous@exemple.fr pseudo   # compte admin
+docker compose logs -f app horizon                                              # journaux
+```

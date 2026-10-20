@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(10)->by($request->ip()),
             Limit::perMinute(5)->by(Str::lower((string) $request->input('email')).'|'.$request->ip()),
         ]);
+
+        Password::defaults(fn () => Password::min(10));
 
         Gate::define('moderate', fn (User $user) => $user->isModerator());
 

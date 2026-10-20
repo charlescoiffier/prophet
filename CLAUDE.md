@@ -19,7 +19,7 @@ Site qui recense les promesses et prédictions de personnalités publiques (poli
 - **Modération** : Filament.
 - **Tâches de fond** : files Laravel sur Redis (Horizon), planificateur pour les rappels d'échéance.
 - **E-mails** : notifications Laravel envoyées par le SMTP de l'offre e-mail OVH de Charles (volume faible, adresse dédiée, SPF/DKIM/DMARC).
-- **Hébergement** : VPS Hostinger (Nginx, PHP-FPM, Supervisor, Let's Encrypt). Sauvegardes hors du VPS (spatie/laravel-backup).
+- **Hébergement** : VPS Hostinger, selon l'infrastructure existante de Charles (`~/dev/vps-infra` : Docker derrière Traefik, HTTPS Let's Encrypt automatique). Adresse : `paroletenue.charlescoiffier.fr`, protégée par mot de passe pendant les tests. Image construite et déployée par GitHub Actions (`.github/workflows/deploy.yml`, tests d'abord) ; `deploy/docker-compose.yml` : app (serversideup/php, Nginx + FPM, migrations au démarrage), horizon, scheduler, postgres, redis, avec limites mémoire et CPU (VPS : 1 cœur, 3,8 Go partagés). Secrets dans `~/srv/paroletenue/.env` sur le VPS (modèle : `deploy/env.example`). Sauvegardes hors du VPS (spatie/laravel-backup) : à faire, destination à choisir.
 - **Anti-spam** : ALTCHA + limitation de débit Laravel. Pas de captcha à cookies.
 - **Base** : PostgreSQL (choisi le 20 octobre 2026). Plusieurs règles sont doublées en base (contraintes CHECK, index uniques partiels) et la recherche plein texte utilise la configuration `french`. Les tests tournent sur PostgreSQL (base `prophet_test`), pas sur SQLite.
 - **Clés primaires** : UUID (`HasUuids`). Statut, auteur, version, décideur et rôle ne sont jamais « fillable » : ils ne changent que par les classes d'action.

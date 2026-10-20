@@ -5,6 +5,7 @@ use App\Models\ActivityLog;
 use App\Models\Affiliation;
 use App\Models\Card;
 use App\Models\PublicFigure;
+use App\Models\Theme;
 use App\Models\User;
 use App\Models\Verdict;
 use Database\Seeders\DatabaseSeeder;
@@ -84,4 +85,14 @@ it('résume les changements du journal avec les libellés français', function (
         'citation : Avant → Après',
         'thèmes : ∅ → Santé, Emploi',
     ]));
+});
+
+it('ne charge que les thèmes en production', function () {
+    app()->detectEnvironment(fn () => 'production');
+
+    $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
+
+    expect(Theme::count())->toBeGreaterThan(0)
+        ->and(Card::count())->toBe(0)
+        ->and(User::count())->toBe(0);
 });
