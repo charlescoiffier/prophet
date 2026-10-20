@@ -2,7 +2,7 @@
 # Copié sur le VPS dans ~/srv/paroletenue/ à chaque déploiement par .github/workflows/deploy.yml.
 # Secrets et réglages propres au serveur : ~/srv/paroletenue/.env (jamais dans git, voir deploy/env.example).
 #
-# VPS : 1 cœur, 3,8 Go partagés avec d'autres sites. Limites : ~1,3 Go et 1,5 CPU au total.
+# VPS : 1 cœur, 3,8 Go partagés avec d'autres sites. Limites : ~1,4 Go et 1,5 CPU au total.
 
 x-app: &app
   image: ghcr.io/charlescoiffier/prophet:latest
@@ -65,7 +65,8 @@ services:
     healthcheck:
       test: ["CMD", "healthcheck-horizon"]
       start_period: 15s
-    mem_limit: 256m
+    # ~200 Mo au repos (maître + superviseur) ; chaque processus de travail ajoute ~60 Mo.
+    mem_limit: 384m
     cpus: 0.3
 
   # Planificateur : purge des cartes non confirmées, relance de l'archivage.
