@@ -13,7 +13,11 @@
         <nav aria-label="Fil d’Ariane" class="flex min-w-0 items-center gap-2 text-[11px] text-muted">
             <a href="{{ route('home') }}" wire:navigate class="text-muted no-underline hover:text-ink">← Toutes les cartes</a>
             <span aria-hidden="true">/</span>
-            <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="truncate text-muted no-underline hover:text-ink">{{ $card->publicFigure->name }}</a>
+            @if ($card->publicFigure)
+                <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="truncate text-muted no-underline hover:text-ink">{{ $card->publicFigure->name }}</a>
+            @else
+                <span class="truncate">{{ $card->requested_figure }}</span>
+            @endif
         </nav>
     </div>
 
@@ -37,6 +41,12 @@
                     @endif
                 </div>
                 <h1 class="mx-5 mt-2 mb-8 max-w-[95%] font-serif text-[clamp(34px,4vw,56px)] leading-[1.02] font-extrabold tracking-[-1.2px]">{{ $card->quote }}</h1>
+                @if (! $card->publicFigure)
+                    <p class="mx-5 mb-5 border-t border-ink pt-3 text-[13px]">
+                        <span class="font-semibold">Personnalité à ajouter :</span> {{ $card->requested_figure }}
+                        <span class="block text-xs text-muted">Un modérateur créera sa fiche avant de publier la carte.</span>
+                    </p>
+                @else
                 <div class="mt-auto flex items-end gap-4 overflow-hidden pl-4">
                     <x-portrait :figure="$card->publicFigure" class="translate-y-[3px]" />
                     <div class="pb-2">
@@ -48,6 +58,7 @@
                         @endif
                     </div>
                 </div>
+                @endif
                 <div class="flex flex-wrap justify-between gap-2 border-t border-ink px-5 py-3 text-xs">
                     <span>Déclarée le {{ $card->stated_on->translatedFormat('j F Y') }}@if ($card->deadline) · Échéance {{ $card->deadline->translatedFormat('j F Y') }}@endif</span>
                     <span class="font-bold">{{ Appearance::statusLabel($card) }}</span>

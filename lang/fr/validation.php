@@ -60,6 +60,10 @@ return [
     'uuid' => 'Le champ :attribute doit être un UUID valide.',
 
     'custom' => [
+        'public_figure_id' => [
+            'required_without' => 'Choisissez une personnalité, ou indiquez celle à ajouter.',
+            'before_publish' => 'Rattachez la carte à une personnalité avant de la publier (demandée : « :requested »).',
+        ],
         'sources' => [
             'required' => 'Une carte doit avoir au moins une source.',
             'verdict_required' => 'Un verdict doit citer au moins une source.',

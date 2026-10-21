@@ -29,6 +29,12 @@ class ProposeCardForm extends Component
 
     public string $publicFigureId = '';
 
+    /** Personnalité absente de la liste : son nom et sa fonction, pour qu'un modérateur crée sa fiche. */
+    public string $requestedFigure = '';
+
+    /** Champ « personnalité absente de la liste » ouvert. */
+    public bool $requestingFigure = false;
+
     public string $statedOn = '';
 
     public string $type = 'promise';
@@ -37,6 +43,9 @@ class ProposeCardForm extends Component
 
     /** @var list<string> */
     public array $themes = [];
+
+    /** Thèmes absents de la liste, séparés par des virgules. */
+    public string $requestedThemes = '';
 
     public string $sourceUrl = '';
 
@@ -60,7 +69,9 @@ class ProposeCardForm extends Component
         $this->validate([
             'quote' => ['required', 'string', 'max:2000'],
             'context' => ['nullable', 'string', 'max:5000'],
-            'publicFigureId' => ['required', 'uuid', Rule::exists('public_figures', 'id')],
+            'publicFigureId' => [$this->requestingFigure ? 'nullable' : 'required', 'uuid', Rule::exists('public_figures', 'id')],
+            'requestedFigure' => [$this->requestingFigure ? 'required' : 'nullable', 'string', 'max:255'],
+            'requestedThemes' => ['nullable', 'string', 'max:500'],
             'statedOn' => ['required', 'date', 'before_or_equal:today'],
             'type' => ['required', Rule::enum(CardType::class)],
             'deadline' => ['nullable', 'date'],
@@ -73,6 +84,8 @@ class ProposeCardForm extends Component
             'charter' => ['accepted'],
         ], attributes: [
             'publicFigureId' => 'personnalité',
+            'requestedFigure' => 'personnalité à ajouter',
+            'requestedThemes' => 'thèmes à ajouter',
             'statedOn' => 'date de la déclaration',
             'sourceUrl' => 'lien vers la source',
             'sourceKind' => 'nature de la source',
@@ -93,7 +106,9 @@ class ProposeCardForm extends Component
         RateLimiter::hit($key, 3600);
 
         $this->sent = $proposeCard->handle(auth()->user(), [
-            'public_figure_id' => $this->publicFigureId,
+            'public_figure_id' => $this->requestingFigure ? null : $this->publicFigureId,
+            'requested_figure' => $this->requestingFigure ? $this->requestedFigure : null,
+            'requested_themes' => $this->requestedThemes ?: null,
             'type' => $this->type,
             'quote' => $this->quote,
             'context' => $this->context ?: null,

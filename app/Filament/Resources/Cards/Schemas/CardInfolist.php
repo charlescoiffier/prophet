@@ -53,7 +53,11 @@ class CardInfolist
                             ->badge(),
                         TextEntry::make('publicFigure.name')
                             ->label('Personnalité')
+                            ->placeholder(fn (Card $record) => 'À créer : '.$record->requested_figure)
                             ->helperText(fn (Card $record) => self::affiliation($record)),
+                        TextEntry::make('requested_themes')
+                            ->label('Thèmes demandés par l’auteur')
+                            ->visible(fn (Card $record) => filled($record->requested_themes)),
                         TextEntry::make('type')
                             ->label('Type')
                             ->badge()
@@ -82,7 +86,7 @@ class CardInfolist
 
     private static function affiliation(Card $record): ?string
     {
-        $affiliation = $record->publicFigure->affiliationOn($record->stated_on);
+        $affiliation = $record->publicFigure?->affiliationOn($record->stated_on);
 
         return $affiliation === null ? null
             : trim("{$affiliation->role}, {$affiliation->organization}", ', ').', au moment de la déclaration';

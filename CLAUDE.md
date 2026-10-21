@@ -95,9 +95,11 @@ Charte éditoriale (21 octobre 2026), référence `docs/maquettes/editoriale/ind
    - en haut du site : version (`config/prophet.php`) et commit de construction (`APP_COMMIT`, posé par le workflow) ;
    - historique public en phrases : `ActivityLog::publicSentence()` + `lang/fr/history.php` ;
    - grille : recherche dans la citation seulement ; filtres à choix multiples (états, verdicts, personnalités, thèmes) dans `Board`, combinés entre eux et gardés dans l'adresse ; menu du membre regroupé sous son pseudo dans la barre latérale ;
+   - proposition : personnalité ou thèmes absents de la liste demandés en texte libre (`requested_figure`, `requested_themes`) ; la carte reste sans personnalité (`public_figure_id` nul, contraintes `cards_figure_or_request` et `cards_public_has_figure`) jusqu'à ce qu'un modérateur crée la fiche et la rattache ; `PublishCard` refuse avant ;
+   - personnalités rangées par nom de famille puis prénom (`PublicFigure::alphabetical()`) ;
    - touche Q : `resources/js/app.js` ; mêmes limites de débit que l'API pour les formulaires publics ;
    - textes de la charte et de la page données personnelles : brouillons à relire par Charles ;
-   - pas encore faits : raccourcis @ et # dans le contexte, bouton « Afficher » de la maquette, création d'une personnalité par un visiteur (il choisit dans la liste existante).
+   - pas encore faits : raccourcis @ et # dans le contexte, bouton « Afficher » de la maquette.
 6. Ouverture des propositions publiques (confirmation e-mail, anti-spam, limitation de débit). **Fait** : ALTCHA (`altcha-org/altcha` côté serveur, widget `altcha` côté navigateur), défi servi par `GET /altcha` et `GET /api/v1/altcha`, vérifié par la règle `App\Rules\Altcha` via `App\Support\AltchaGuard`. Repères :
    - exigé des visiteurs sans compte pour proposer une carte, signaler une erreur et créer un compte (site et API) ; les membres connectés en sont dispensés ;
    - une solution ne sert qu'une fois (mémorisée en cache jusqu'à l'expiration du défi) ; dans Livewire, `VerifiesAltcha` la vérifie après les autres champs pour ne pas la gâcher ;

@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Notification as NotificationFacade;
  */
 #[Fillable([
     'type', 'quote', 'context', 'stated_on', 'testable_statement',
-    'verdict_criterion', 'deadline', 'deadline_nature',
+    'verdict_criterion', 'deadline', 'deadline_nature', 'requested_figure', 'requested_themes',
 ])]
 class Card extends Model
 {

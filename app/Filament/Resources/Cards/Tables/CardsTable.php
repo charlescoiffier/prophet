@@ -37,6 +37,7 @@ class CardsTable
                         : null),
                 TextColumn::make('publicFigure.name')
                     ->label('Personnalité')
+                    ->placeholder(fn (Card $record) => 'À créer : '.$record->requested_figure)
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('type')

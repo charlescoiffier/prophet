@@ -19,7 +19,7 @@ class CardResource extends JsonResource
     public function toArray(Request $request): array
     {
         $viewer = $request->user('sanctum');
-        $affiliation = $this->resource->relationLoaded('publicFigure') && $this->publicFigure->relationLoaded('affiliations')
+        $affiliation = $this->resource->relationLoaded('publicFigure') && $this->publicFigure?->relationLoaded('affiliations')
             ? $this->publicFigure->affiliationOn($this->stated_on)
             : null;
 
@@ -37,6 +37,9 @@ class CardResource extends JsonResource
             'version' => $this->version,
             'published_at' => $this->published_at?->toIso8601String(),
             'public_figure' => PublicFigureResource::make($this->whenLoaded('publicFigure')),
+            /** Personnalité et thèmes demandés par l'auteur, à créer par la modération (propositions non publiées). */
+            'requested_figure' => $this->when(! $this->status->isPublic(), $this->requested_figure),
+            'requested_themes' => $this->when(! $this->status->isPublic(), $this->requested_themes),
             /** Affiliation de la personnalité au moment de la déclaration. */
             'affiliation_at_statement' => $affiliation ? AffiliationResource::make($affiliation) : null,
             'themes' => ThemeResource::collection($this->whenLoaded('themes')),

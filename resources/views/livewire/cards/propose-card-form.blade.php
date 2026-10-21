@@ -63,15 +63,22 @@
                     </div>
 
                     <div class="mb-5">
-                        <label for="figure" class="{{ $label }}">Personnalité *</label>
-                        <select id="figure" wire:model="publicFigureId" class="{{ $field }}">
-                            <option value="">Choisir une personnalité</option>
-                            @foreach ($figures as $figure)
-                                <option value="{{ $figure->id }}">{{ $figure->name }}</option>
-                            @endforeach
-                        </select>
-                        <p class="{{ $hint }}">Elle n’est pas dans la liste ? Indiquez son nom et sa fonction dans le contexte : un modérateur créera sa fiche.</p>
-                        @error('publicFigureId') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                        @if ($requestingFigure)
+                            <label for="requested-figure" class="{{ $label }}">Personnalité à ajouter *</label>
+                            <input id="requested-figure" type="text" wire:model="requestedFigure" placeholder="Prénom Nom, fonction (ex. : Jeanne Exemple, députée du Parti A)" class="{{ $field }}">
+                            <p class="{{ $hint }}">Un modérateur créera sa fiche avant de publier la carte. <button type="button" wire:click="$set('requestingFigure', false)" class="cursor-pointer underline">Choisir dans la liste</button></p>
+                            @error('requestedFigure') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                        @else
+                            <label for="figure" class="{{ $label }}">Personnalité *</label>
+                            <select id="figure" wire:model="publicFigureId" class="{{ $field }}">
+                                <option value="">Choisir une personnalité</option>
+                                @foreach ($figures as $figure)
+                                    <option value="{{ $figure->id }}">{{ $figure->name }}</option>
+                                @endforeach
+                            </select>
+                            <p class="{{ $hint }}">Elle n’est pas dans la liste ? <button type="button" wire:click="$set('requestingFigure', true)" class="cursor-pointer underline">Demander son ajout</button></p>
+                            @error('publicFigureId') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                        @endif
                     </div>
 
                     <div>
@@ -139,6 +146,12 @@
                         </div>
                         @error('themes') <span class="{{ $error }}">{{ $message }}</span> @enderror
                     </fieldset>
+                    <div class="mt-5">
+                        <label for="requested-themes" class="{{ $label }}">Un thème manque ?</label>
+                        <input id="requested-themes" type="text" wire:model="requestedThemes" placeholder="Ex. : Agriculture, Numérique" class="{{ $field }}">
+                        <p class="{{ $hint }}">Séparez-les par des virgules : un modérateur les créera s’ils sont utiles à d’autres cartes.</p>
+                        @error('requestedThemes') <span class="{{ $error }}">{{ $message }}</span> @enderror
+                    </div>
                 </section>
 
                 <section class="{{ $section }}">

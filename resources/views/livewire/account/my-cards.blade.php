@@ -26,7 +26,7 @@
                 <x-status-ring :card="$card" />
                 <span class="min-w-0 flex-1">
                     <span class="font-medium">{{ $card->quote }}</span>
-                    <span class="block text-xs text-muted">{{ $card->publicFigure->name }} · {{ $card->type->label() }}</span>
+                    <span class="block text-xs text-muted">{{ $card->publicFigure?->name ?? $card->requested_figure.' (à ajouter)' }} · {{ $card->type->label() }}</span>
                 </span>
                 <span class="rounded bg-tag px-2 py-0.5 text-xs text-ink-soft">{{ $card->status->label() }}</span>
             </a>

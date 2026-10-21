@@ -20,7 +20,11 @@ class CardRules
         $required = $partial ? 'sometimes' : 'required';
 
         return [
-            'public_figure_id' => [$required, 'uuid', Rule::exists('public_figures', 'id')],
+            'public_figure_id' => [$partial ? 'sometimes' : 'required_without:requested_figure', 'nullable', 'uuid', Rule::exists('public_figures', 'id')],
+            /** Personnalité absente de la liste : son nom et sa fonction, pour qu'un modérateur crée sa fiche. */
+            'requested_figure' => ['nullable', 'string', 'max:255'],
+            /** Thèmes absents de la liste, séparés par des virgules. */
+            'requested_themes' => ['nullable', 'string', 'max:500'],
             'type' => [$required, Rule::enum(CardType::class)],
             'quote' => [$required, 'string', 'max:2000'],
             'context' => ['nullable', 'string', 'max:5000'],

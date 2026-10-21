@@ -6,6 +6,7 @@ use App\Actions\PublicFigures\SavePublicFigure;
 use App\Enums\CardType;
 use App\Enums\DeadlineNature;
 use App\Enums\SourceKind;
+use App\Models\Card;
 use App\Models\Category;
 use App\Models\PublicFigure;
 use App\Models\Theme;
@@ -65,6 +66,9 @@ class CardForm
                             ->options(fn () => PublicFigure::alphabetical()->pluck('name', 'id'))
                             ->searchable()
                             ->required()
+                            ->helperText(fn (?Card $record) => filled($record?->requested_figure) && $record->public_figure_id === null
+                                ? 'Demandée par l’auteur : « '.$record->requested_figure.' ». Créez sa fiche avec « + », puis choisissez-la.'
+                                : null)
                             ->createOptionForm([
                                 TextInput::make('first_name')->label('Prénom')->maxLength(100),
                                 TextInput::make('last_name')->label('Nom')->required()->maxLength(155),
@@ -91,7 +95,10 @@ class CardForm
                         Select::make('themes')
                             ->label('Thèmes')
                             ->multiple()
-                            ->options(fn () => Theme::orderBy('name')->pluck('name', 'id')),
+                            ->options(fn () => Theme::orderBy('name')->pluck('name', 'id'))
+                            ->helperText(fn (?Card $record) => filled($record?->requested_themes)
+                                ? 'Demandés par l’auteur : « '.$record->requested_themes.' » (à créer dans Thèmes s’ils sont utiles).'
+                                : null),
                     ]),
                 Repeater::make('sources')
                     ->label('Sources de la citation')

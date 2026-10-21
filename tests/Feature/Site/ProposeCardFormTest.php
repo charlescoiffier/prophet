@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Cards\PublishCard;
 use App\Enums\CardStatus;
 use App\Livewire\Cards\ProposeCardForm;
 use App\Models\Card;
@@ -8,6 +9,7 @@ use App\Models\User;
 use App\Notifications\ConfirmCardEmail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -80,4 +82,37 @@ it('limite les propositions par adresse IP', function () {
         ->assertHasErrors('quote');
 
     expect(Card::count())->toBe(10);
+});
+
+it('laisse demander une personnalité et des thèmes absents de la liste ; la carte attend sa personnalité pour être publiée', function () {
+    $member = User::factory()->create();
+
+    fillProposal(Livewire::actingAs($member)->test(ProposeCardForm::class))
+        ->set('publicFigureId', '')
+        ->set('requestingFigure', true)
+        ->set('requestedFigure', 'Zoé Nouvelle, maire de Ville H')
+        ->set('requestedThemes', 'Agriculture, Numérique')
+        ->call('submit')
+        ->assertHasNoErrors();
+
+    $card = Card::sole();
+    expect($card)
+        ->public_figure_id->toBeNull()
+        ->requested_figure->toBe('Zoé Nouvelle, maire de Ville H')
+        ->requested_themes->toBe('Agriculture, Numérique')
+        ->status->toBe(CardStatus::InModeration);
+
+    $this->actingAs($member)->get(route('cards.show', $card))->assertOk()->assertSee('Zoé Nouvelle, maire de Ville H');
+    $this->actingAs($member)->get(route('account.cards'))->assertOk()->assertSee('(à ajouter)');
+
+    expect(fn () => app(PublishCard::class)->handle($card, User::factory()->moderator()->create()))
+        ->toThrow(ValidationException::class);
+});
+
+it('exige le nom de la personnalité demandée', function () {
+    fillProposal(Livewire::actingAs(User::factory()->create())->test(ProposeCardForm::class))
+        ->set('publicFigureId', '')
+        ->set('requestingFigure', true)
+        ->call('submit')
+        ->assertHasErrors(['requestedFigure' => 'required']);
 });

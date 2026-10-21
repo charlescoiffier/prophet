@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\CardPublished;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class PublishCard
 {
@@ -21,6 +22,11 @@ class PublishCard
 
         // Seul l'admin peut publier sa propre carte (CardPolicy) : l'historique public le dit.
         $selfPublished = $card->isAuthoredBy($actor);
+
+        // Personnalité demandée par l'auteur : le modérateur crée sa fiche et la rattache d'abord.
+        if ($card->public_figure_id === null) {
+            throw ValidationException::withMessages(['public_figure_id' => __('validation.custom.public_figure_id.before_publish', ['requested' => $card->requested_figure])]);
+        }
 
         DB::transaction(function () use ($card, $actor, $selfPublished) {
             $before = $card->status;

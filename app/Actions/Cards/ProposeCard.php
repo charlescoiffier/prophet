@@ -28,7 +28,10 @@ class ProposeCard
     ) {}
 
     /**
-     * @param  array{public_figure_id: string, type: mixed, quote: string, stated_on: mixed, themes?: list<string>, sources?: list<array<string, mixed>>, email?: string}&array<string, mixed>  $data
+     * Personnalité ou thèmes absents de la liste : l'auteur les demande en texte libre
+     * (requested_figure, requested_themes) et un modérateur les crée avant de publier.
+     *
+     * @param  array{public_figure_id?: string|null, requested_figure?: string|null, requested_themes?: string|null, type: mixed, quote: string, stated_on: mixed, themes?: list<string>, sources?: list<array<string, mixed>>, email?: string}&array<string, mixed>  $data
      */
     public function handle(?User $actor, array $data): Card
     {
@@ -40,13 +43,19 @@ class ProposeCard
             throw ValidationException::withMessages(['email' => __('validation.custom.email.required_for_guest')]);
         }
 
+        if (blank($data['public_figure_id'] ?? null) && blank($data['requested_figure'] ?? null)) {
+            throw ValidationException::withMessages(['public_figure_id' => __('validation.custom.public_figure_id.required_without')]);
+        }
+
         if (empty($data['sources'])) {
             throw ValidationException::withMessages(['sources' => __('validation.custom.sources.required')]);
         }
 
         $card = DB::transaction(function () use ($actor, $email, $data) {
             $card = new Card($data);
-            $card->public_figure_id = $data['public_figure_id'];
+            $card->public_figure_id = filled($data['public_figure_id'] ?? null) ? $data['public_figure_id'] : null;
+            $card->requested_figure = $card->public_figure_id === null ? trim($data['requested_figure']) : null;
+            $card->requested_themes = filled($data['requested_themes'] ?? null) ? trim($data['requested_themes']) : null;
 
             if ($actor !== null) {
                 $card->author()->associate($actor);

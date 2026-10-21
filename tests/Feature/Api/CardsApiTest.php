@@ -166,3 +166,22 @@ it('exige la vérification anti-robot des visiteurs, pas des membres', function 
     Sanctum::actingAs(User::factory()->create());
     $this->postJson("/api/v1/cards/{$card->id}/reports", ['reason' => 'Erreur.'])->assertCreated();
 });
+
+it('accepte par l’API une proposition dont la personnalité est à créer', function () {
+    Queue::fake();
+    Sanctum::actingAs(User::factory()->create());
+
+    $this->postJson('/api/v1/cards', [
+        'requested_figure' => 'Zoé Nouvelle',
+        'type' => 'promise',
+        'quote' => '« Nous ferons X. »',
+        'stated_on' => '2026-10-01',
+        'sources' => [['url' => 'https://example.org/a', 'kind' => 'article']],
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.requested_figure', 'Zoé Nouvelle');
+
+    $this->postJson('/api/v1/cards', ['type' => 'promise', 'quote' => '« Y. »', 'stated_on' => '2026-10-01', 'sources' => [['url' => 'https://example.org/b', 'kind' => 'article']]])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('public_figure_id');
+});

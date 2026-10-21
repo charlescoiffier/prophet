@@ -43,12 +43,20 @@ class ShowCard extends Component
         ]);
 
         return view('livewire.cards.show-card', [
-            'affiliation' => $this->card->publicFigure->affiliationOn($this->card->stated_on),
+            'affiliation' => $this->card->publicFigure?->affiliationOn($this->card->stated_on),
         ])
-            ->title($this->card->publicFigure->name.' : '.Str::limit(trim($this->card->quote, '«» '), 70))
+            ->title($this->figureName().' : '.Str::limit(trim($this->card->quote, '«» '), 70))
             ->layoutData([
-                'description' => Str::limit($this->card->quote, 160).' — '.$this->card->publicFigure->name.', '.$this->card->stated_on->translatedFormat('j F Y'),
+                'description' => Str::limit($this->card->quote, 160).' — '.$this->figureName().', '.$this->card->stated_on->translatedFormat('j F Y'),
                 'noindex' => ! $this->card->status->isPublic(),
             ]);
+    }
+
+    /**
+     * Une proposition peut attendre la création de sa personnalité (requested_figure).
+     */
+    private function figureName(): string
+    {
+        return $this->card->publicFigure?->name ?? (string) $this->card->requested_figure;
     }
 }
