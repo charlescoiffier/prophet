@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\PublicFigures\Tables;
 
+use App\Models\PublicFigure;
+use App\View\Appearance;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -17,6 +20,19 @@ class PublicFiguresTable
             ->modifyQueryUsing(fn (Builder $query) => $query->with('category')->withCount('cards'))
             ->defaultSort('name')
             ->columns([
+                // Petit portrait : la photo, ou le monogramme du site à défaut.
+                ImageColumn::make('photo')
+                    ->label('')
+                    ->state(fn (PublicFigure $record): ?string => $record->photoUrl())
+                    ->defaultImageUrl(fn (PublicFigure $record): string => self::monogramImage($record))
+                    ->imageSize(36)
+                    // Lien cassé ou fichier disparu : le monogramme prend le relais, comme sur le site.
+                    ->extraImgAttributes(fn (PublicFigure $record): array => [
+                        'loading' => 'lazy',
+                        'class' => 'object-cover',
+                        'x-data' => '',
+                        'x-on:error' => "\$el.src = '".self::monogramImage($record)."'",
+                    ]),
                 TextColumn::make('name')
                     ->label('Nom')
                     ->searchable()
@@ -39,5 +55,19 @@ class PublicFiguresTable
                 EditAction::make(),
                 DeleteAction::make(),
             ]);
+    }
+
+    /**
+     * Monogramme en SVG (initiales en serif dans un carré tracé à l'encre), comme sur le site.
+     */
+    private static function monogramImage(PublicFigure $figure): string
+    {
+        $initials = e(Appearance::monogram($figure));
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">'
+            .'<rect x="0.5" y="0.5" width="35" height="35" fill="#F7F4EA" stroke="#20212B"/>'
+            .'<text x="18" y="24" text-anchor="middle" font-family="Georgia, serif" font-weight="800" font-size="15" fill="#20212B">'.$initials.'</text>'
+            .'</svg>';
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 }

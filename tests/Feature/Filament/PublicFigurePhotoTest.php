@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Resources\PublicFigures\Pages\EditPublicFigure;
+use App\Filament\Resources\PublicFigures\Pages\ListPublicFigures;
 use App\Models\PublicFigure;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -179,4 +180,15 @@ it('ignore un chemin de fichier envoyé par le navigateur', function () {
         ->photo_path->toBe('portraits/p.png')
         ->photo_original_path->toBe('portraits/originals/o.jpg');
     Storage::disk('public')->assertExists('portraits/autre.png');
+});
+
+it('montre dans la liste la photo de chaque personnalité, ou son monogramme', function () {
+    $withPhoto = PublicFigure::factory()->create(['photo_url' => 'https://images.example.test/portrait.jpg']);
+    $withoutPhoto = PublicFigure::factory()->create();
+
+    Livewire::actingAs(User::factory()->moderator()->create())
+        ->test(ListPublicFigures::class)
+        ->assertTableColumnStateSet('photo', 'https://images.example.test/portrait.jpg', $withPhoto)
+        ->assertTableColumnStateNotSet('photo', 'https://images.example.test/portrait.jpg', $withoutPhoto)
+        ->assertSeeHtml('data:image/svg+xml;base64,');
 });
