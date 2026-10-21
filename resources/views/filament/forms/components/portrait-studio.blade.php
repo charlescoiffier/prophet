@@ -46,9 +46,9 @@
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-base font-semibold text-gray-950 dark:text-white">Atelier portrait</h2>
                         <div class="flex gap-1" role="tablist">
-                            <button type="button" role="tab" x-on:click="goTo('crop')" x-bind:aria-selected="step === 'crop'" x-bind:class="step === 'crop' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'" class="rounded-md px-2 py-1 text-xs font-medium">1. Recadrer</button>
-                            <button type="button" role="tab" x-on:click="goTo('cut')" x-bind:aria-selected="step === 'cut'" x-bind:class="step === 'cut' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'" class="rounded-md px-2 py-1 text-xs font-medium">2. Découper</button>
-                            <button type="button" role="tab" x-on:click="goTo('tones')" x-bind:aria-selected="step === 'tones'" x-bind:class="step === 'tones' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'" class="rounded-md px-2 py-1 text-xs font-medium">3. Tons</button>
+                            <button type="button" role="tab" x-on:click="goTo('crop')" x-bind:disabled="! canOpen('crop')" x-bind:aria-selected="step === 'crop'" x-bind:class="step === 'crop' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'" class="rounded-md px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40">1. Recadrer</button>
+                            <button type="button" role="tab" x-on:click="goTo('cut')" x-bind:disabled="! canOpen('cut')" x-bind:aria-selected="step === 'cut'" x-bind:class="step === 'cut' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'" class="rounded-md px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40">2. Découper</button>
+                            <button type="button" role="tab" x-on:click="goTo('tones')" x-bind:disabled="! canOpen('tones')" x-bind:aria-selected="step === 'tones'" x-bind:class="step === 'tones' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'" class="rounded-md px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40">3. Tons</button>
                         </div>
                     </div>
 
@@ -95,6 +95,18 @@
                             <input type="range" min="0" max="255" class="flex-1" x-model.number="settings.threshold">
                         </label>
                         <label class="flex items-center gap-3">
+                            <span class="w-24">Nuances</span>
+                            <select class="rounded-md border-gray-300 py-0.5 text-sm dark:bg-gray-800" x-model.number="settings.shades">
+                                <option value="0">Aucune (deux tons)</option>
+                                <option value="1">Une nuance</option>
+                                <option value="2">Deux nuances</option>
+                            </select>
+                        </label>
+                        <label x-show="settings.shades > 0" class="flex items-center gap-3">
+                            <span class="w-24">Écart</span>
+                            <input type="range" min="10" max="80" class="flex-1" x-model.number="settings.spread">
+                        </label>
+                        <label class="flex items-center gap-3">
                             <input type="checkbox" x-model="settings.halo.enabled">
                             <span>Liseré clair</span>
                         </label>
@@ -108,7 +120,9 @@
 
                     <div class="flex justify-end gap-2">
                         <x-filament::button color="gray" x-on:click="cancel()">Annuler</x-filament::button>
-                        <x-filament::button x-on:click="validate()" x-bind:disabled="busy">Valider</x-filament::button>
+                        <x-filament::button x-on:click="next()" x-bind:disabled="busy">
+                            <span x-text="isLastStep ? 'Valider' : 'Suivant'"></span>
+                        </x-filament::button>
                     </div>
                 </div>
             </div>

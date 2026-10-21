@@ -16,6 +16,8 @@ import {
 
 const INK = '#20212B';
 
+const STEPS = ['crop', 'cut', 'tones'];
+
 /** Demi-côté des poignées du cadre, en pixels du canevas. */
 const HANDLE = 9;
 
@@ -52,6 +54,8 @@ function portraitStudio({ statePath, originalUrl, studio }) {
     return {
         open: false,
         step: 'crop',
+        /** Dernière étape atteinte : on ne valide qu'après être passé par les trois. */
+        reached: 0,
         error: null,
         hint: null,
         busy: false,
@@ -108,6 +112,7 @@ function portraitStudio({ statePath, originalUrl, studio }) {
                 y: Math.round((this.source.height - size) / 2),
                 size,
             };
+            this.reached = 0;
             this.show('crop');
         },
 
@@ -122,7 +127,10 @@ function portraitStudio({ statePath, originalUrl, studio }) {
                     return;
                 }
             }
-            this.settings = copy(state.settings);
+            // Réglages d'avant les nuances : deux tons, comme à l'enregistrement.
+            this.settings = { shades: 0, spread: 40, ...copy(state.settings) };
+            // Photo déjà passée par les trois étapes : toutes restent accessibles.
+            this.reached = STEPS.length - 1;
             this.show('cut');
         },
 
@@ -137,7 +145,27 @@ function portraitStudio({ statePath, originalUrl, studio }) {
             this.goTo(step);
         },
 
+        canOpen(step) {
+            return STEPS.indexOf(step) <= this.reached;
+        },
+
+        get isLastStep() {
+            return this.step === STEPS[STEPS.length - 1];
+        },
+
+        /** Bouton principal : étape suivante, puis Valider à la dernière. */
+        next() {
+            if (this.isLastStep) {
+                this.validate();
+                return;
+            }
+            const index = STEPS.indexOf(this.step) + 1;
+            this.reached = Math.max(this.reached, index);
+            this.goTo(STEPS[index]);
+        },
+
         goTo(step) {
+            if (!this.canOpen(step)) return;
             this.step = step;
             this.currentCut = [];
             this.pendingCut = null;
