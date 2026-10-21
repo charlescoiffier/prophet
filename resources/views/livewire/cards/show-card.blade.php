@@ -1,23 +1,24 @@
+{{-- Fiche d’une carte : une page du site, la carte en grand, puis les faits. --}}
 @php
     use App\Enums\CardStatus;
     use App\View\Appearance;
     $verdict = $card->approvedVerdict;
+    $themes = $card->themes->map(fn ($theme) => '# '.$theme->name)->implode(' / ');
+    $section = 'border-t border-ink py-6';
+    $heading = 'mb-4 font-serif text-[27px] leading-none font-extrabold';
+    $label = 'text-[11px] font-semibold text-muted';
 @endphp
-<div role="dialog" aria-label="Carte : {{ $card->publicFigure->name }}" class="mx-auto max-w-[1000px] overflow-hidden border border-ink bg-field">
-    <div class="flex items-center justify-between gap-3 border-b border-line py-1.5 pr-2 pl-5">
-        <nav aria-label="Fil d’Ariane" class="flex min-w-0 items-center gap-2 text-[13px] text-muted">
-            <x-uicon name="list" :size="16" />
-            <a href="{{ route('home') }}" wire:navigate class="text-muted no-underline">Toutes les cartes</a>
+<div class="flex flex-col">
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-7 pb-6">
+        <nav aria-label="Fil d’Ariane" class="flex min-w-0 items-center gap-2 text-[11px] text-muted">
+            <a href="{{ route('home') }}" wire:navigate class="text-muted no-underline hover:text-ink">← Toutes les cartes</a>
             <span aria-hidden="true">/</span>
-            <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="truncate text-muted no-underline">{{ $card->publicFigure->name }}</a>
+            <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="truncate text-muted no-underline hover:text-ink">{{ $card->publicFigure->name }}</a>
         </nav>
-        <a href="{{ route('home') }}" wire:navigate aria-label="Fermer" class="flex size-11 items-center justify-center text-muted hover:bg-sidebar">
-            <x-uicon name="close" :size="20" />
-        </a>
     </div>
 
     @unless ($card->status->isPublic())
-        <p class="border-b border-line bg-accent-soft px-5 py-2.5 text-[13px] text-accent-dark">
+        <p class="mb-6 border border-ink bg-signal-yellow px-4 py-3 text-[13px]">
             Cette carte n’est pas publique : {{ mb_strtolower($card->status->label()) }}.
             @if ($card->rejection_reason)
                 Motif : {{ $card->rejection_reason }}
@@ -25,163 +26,188 @@
         </p>
     @endunless
 
-    <div class="flex flex-wrap">
-        <div class="flex min-w-0 flex-[999_1_520px] flex-col gap-[22px] px-5 pt-6 pb-8 sm:px-8">
-            <div class="flex items-start gap-3">
-                <x-status-ring :card="$card" size="lg" />
-                <div class="flex flex-col gap-2">
-                    <h1 class="font-serif text-[30px] leading-[1.08] font-extrabold tracking-[-0.6px] sm:text-[38px]">{{ $card->quote }}</h1>
-                    @if ($card->context)
-                        <p class="leading-relaxed text-subtle">{{ $card->context }}</p>
+    <div class="grid grid-cols-1 gap-[38px] lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div class="flex min-w-0 flex-col">
+            {{-- La carte en grand, comme dans la grille --}}
+            <article class="flex flex-col border border-ink {{ Appearance::surfaceClasses($card) }}">
+                <div class="flex items-start justify-between gap-3 p-5 text-xs">
+                    <span class="flex items-center gap-1.5"><x-uicon :name="Appearance::typeIcon($card->type)" :size="16" /> {{ $card->type->label() }}</span>
+                    @if ($themes)
+                        <span class="text-right">{{ $themes }}</span>
                     @endif
                 </div>
-            </div>
-
-            <div class="flex flex-col gap-[18px] sm:pl-8">
-                @if ($card->testable_statement)
-                    <div class="flex flex-col gap-1">
-                        <h2 class="text-xs font-semibold text-muted">Ce qui est vérifié</h2>
-                        <p class="text-[15px] leading-normal">{{ $card->testable_statement }}</p>
+                <h1 class="mx-5 mt-2 mb-8 max-w-[95%] font-serif text-[clamp(34px,4vw,56px)] leading-[1.02] font-extrabold tracking-[-1.2px]">{{ $card->quote }}</h1>
+                <div class="mt-auto flex items-end gap-4 overflow-hidden pl-4">
+                    <x-portrait :figure="$card->publicFigure" class="translate-y-[3px]" />
+                    <div class="pb-2">
+                        <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="text-[26px] leading-none font-bold tracking-[-0.5px] text-ink no-underline hover:underline">{{ $card->publicFigure->name }}</a>
+                        @if ($affiliation)
+                            <span class="mt-1 block text-xs">{{ trim($affiliation->role.', '.$affiliation->organization, ', ') }}, au moment de la déclaration</span>
+                        @elseif ($card->publicFigure->description)
+                            <span class="mt-1 block text-xs">{{ $card->publicFigure->description }}</span>
+                        @endif
                     </div>
-                @endif
-                @if ($card->verdict_criterion)
-                    <div class="flex flex-col gap-1">
-                        <h2 class="text-xs font-semibold text-muted">Critère de verdict</h2>
-                        <p class="text-[15px] leading-normal text-ink-soft">{{ $card->verdict_criterion }}</p>
-                    </div>
+                </div>
+                <div class="flex flex-wrap justify-between gap-2 border-t border-ink px-5 py-3 text-xs">
+                    <span>Déclarée le {{ $card->stated_on->translatedFormat('j F Y') }}@if ($card->deadline) · Échéance {{ $card->deadline->translatedFormat('j F Y') }}@endif</span>
+                    <span class="font-bold">{{ Appearance::statusLabel($card) }}</span>
+                </div>
+            </article>
+
+            <div class="mt-8 flex flex-col">
+                @if ($card->context)
+                    <section class="{{ $section }}">
+                        <h2 class="{{ $heading }}">Le contexte</h2>
+                        <p class="max-w-[760px] text-[15px] leading-relaxed">{{ $card->context }}</p>
+                    </section>
                 @endif
 
-                @if ($verdict)
-                    <section class="flex flex-col gap-2.5 border p-4 {{ Appearance::verdictPanelClasses($card) }}">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <h2 class="flex items-center gap-2 text-[15px] font-bold {{ Appearance::verdictTextClasses($card) }}">
-                                <x-uicon name="flag" :size="16" />
-                                Verdict : {{ mb_strtolower($verdict->value->label()) }}
-                            </h2>
-                            @if ($verdict->decided_at)
-                                <span class="text-xs text-muted">validé le {{ $verdict->decided_at->translatedFormat('j M Y') }}</span>
+                @if ($card->testable_statement || $card->verdict_criterion)
+                    <section class="{{ $section }}">
+                        <h2 class="{{ $heading }}">Ce qui sera vérifié</h2>
+                        <div class="grid max-w-[760px] grid-cols-1 gap-6 sm:grid-cols-2">
+                            @if ($card->testable_statement)
+                                <div>
+                                    <h3 class="{{ $label }} mb-1.5">L’énoncé vérifiable</h3>
+                                    <p class="text-[15px] leading-relaxed">{{ $card->testable_statement }}</p>
+                                </div>
+                            @endif
+                            @if ($card->verdict_criterion)
+                                <div>
+                                    <h3 class="{{ $label }} mb-1.5">Le critère de verdict</h3>
+                                    <p class="text-[15px] leading-relaxed">{{ $card->verdict_criterion }}</p>
+                                </div>
                             @endif
                         </div>
-                        <p class="leading-relaxed">{{ $verdict->justification }}</p>
-                        <div class="flex flex-col gap-0.5 text-[13px]">
-                            @foreach ($verdict->sources as $source)
-                                <x-source-link :source="$source" />
+                    </section>
+                @endif
+
+                <section class="{{ $section }}">
+                    <h2 class="{{ $heading }}">Le verdict</h2>
+                    @if ($verdict)
+                        <div class="max-w-[760px] border border-ink p-5 {{ Appearance::verdictPanelClasses($card) }}">
+                            <div class="flex flex-wrap items-baseline justify-between gap-2">
+                                <p class="font-serif text-[30px] leading-none font-extrabold">{{ Appearance::markFor($verdict->value->tone()) }} {{ $verdict->value->label() }}</p>
+                                @if ($verdict->decided_at)
+                                    <span class="text-xs">validé le {{ $verdict->decided_at->translatedFormat('j F Y') }}</span>
+                                @endif
+                            </div>
+                            <p class="mt-4 text-[15px] leading-relaxed">{{ $verdict->justification }}</p>
+                            @if ($verdict->sources->isNotEmpty())
+                                <div class="mt-4 flex flex-col gap-1 border-t border-ink/40 pt-3 text-[13px]">
+                                    @foreach ($verdict->sources as $source)
+                                        <x-source-link :source="$source" />
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @elseif ($card->status === CardStatus::VerdictProposed)
+                        <p class="max-w-[760px] text-[15px] leading-relaxed">Un verdict a été proposé : les modérateurs vérifient ses sources avant de le publier.</p>
+                    @else
+                        <p class="max-w-[760px] text-[15px] leading-relaxed text-subtle">
+                            {{ Appearance::isOverdue($card) ? 'L’échéance est passée : il reste à confronter la parole aux faits.' : 'Pas encore : la carte sera tranchée à son échéance, sources à l’appui.' }}
+                        </p>
+                        @can('propose', [\App\Models\Verdict::class, $card])
+                            <div class="mt-4 max-w-[760px]">
+                                <livewire:cards.propose-verdict-form :card="$card" />
+                            </div>
+                        @else
+                            @guest
+                                @if ($card->status === CardStatus::Published)
+                                    <p class="mt-3 text-[13px] text-muted"><a href="{{ route('login') }}" wire:navigate>Connectez-vous</a> pour proposer un verdict sourcé.</p>
+                                @endif
+                            @endguest
+                        @endcan
+                    @endif
+                </section>
+
+                @if ($card->sources->isNotEmpty())
+                    <section class="{{ $section }}">
+                        <h2 class="{{ $heading }}">{{ $card->sources->count() > 1 ? 'Les sources' : 'La source' }}</h2>
+                        <div class="flex max-w-[760px] flex-col gap-2">
+                            @foreach ($card->sources as $source)
+                                <x-source-link :source="$source" class="text-[15px]" />
                             @endforeach
                         </div>
                     </section>
-                @elseif ($card->status === CardStatus::VerdictProposed)
-                    <p class="border border-line bg-sidebar p-4 text-[13px] text-subtle">
-                        Un verdict a été proposé : il est en cours de relecture par les modérateurs.
-                    </p>
                 @endif
 
-                @if ($card->sources->isNotEmpty())
-                    <section class="flex flex-col gap-1">
-                        <h2 class="mb-1 text-xs font-semibold text-muted">{{ $card->sources->count() > 1 ? 'Sources de la citation' : 'Source de la citation' }}</h2>
-                        @foreach ($card->sources as $source)
-                            <x-source-link :source="$source" class="text-sm" />
-                        @endforeach
-                    </section>
-                @endif
-
-                @can('propose', [\App\Models\Verdict::class, $card])
-                    <livewire:cards.propose-verdict-form :card="$card" />
-                @else
-                    @guest
-                        @if ($card->status === CardStatus::Published)
-                            <p class="text-[13px] text-muted">
-                                L’échéance est passée ou la promesse a été tenue ? <a href="{{ route('login') }}" wire:navigate>Connectez-vous</a> pour proposer un verdict sourcé.
-                            </p>
-                        @endif
-                    @endguest
-                @endcan
-
-                <section class="flex flex-col gap-3 border-t border-line pt-4">
-                    <h2 class="text-xs font-semibold text-muted">Historique</h2>
-                    @foreach ($card->activityLogs as $log)
-                        @php($sentence = $log->publicSentence())
-                        <div class="flex items-start gap-2.5" wire:key="log-{{ $log->id }}">
-                            <span aria-hidden="true" @class([
-                                'flex size-7 flex-none items-center justify-center rounded-full text-[11px] font-bold',
-                                'bg-accent-soft text-accent-dark' => $sentence['actor'] !== null,
-                                'bg-[#F0F0F0] text-subtle' => $sentence['actor'] === null,
-                            ])>{{ Appearance::initials($sentence['actor']) }}</span>
-                            <div class="flex flex-col gap-0.5">
-                                <span>
-                                    @if ($sentence['actor'])
-                                        <strong class="font-semibold">{{ $sentence['actor'] }}</strong>
+                <section class="{{ $section }}">
+                    <h2 class="{{ $heading }}">L’historique</h2>
+                    <ol class="flex max-w-[760px] flex-col">
+                        @foreach ($card->activityLogs as $log)
+                            @php($sentence = $log->publicSentence())
+                            <li class="flex items-start gap-3 border-b border-line py-3 last:border-b-0" wire:key="log-{{ $log->id }}">
+                                <span aria-hidden="true" class="flex size-8 flex-none items-center justify-center border border-ink bg-field font-serif text-[12px] font-extrabold">{{ Appearance::initials($sentence['actor']) }}</span>
+                                <div class="flex flex-1 flex-col gap-0.5">
+                                    <span class="text-[14px]">
+                                        @if ($sentence['actor'])
+                                            <strong class="font-semibold">{{ $sentence['actor'] }}</strong>
+                                        @endif
+                                        {{ $sentence['text'] }}
+                                    </span>
+                                    @if ($log->comment)
+                                        <span class="text-[13px] text-subtle italic">{{ $log->comment }}</span>
                                     @endif
-                                    {{ $sentence['text'] }}
-                                </span>
-                                @if ($log->comment)
-                                    <span class="text-[13px] text-subtle">{{ $log->comment }}</span>
-                                @endif
-                                <time datetime="{{ $log->created_at->toIso8601String() }}" class="text-xs text-muted">{{ $log->created_at->translatedFormat('j M Y') }}</time>
-                            </div>
-                        </div>
-                    @endforeach
+                                </div>
+                                <time datetime="{{ $log->created_at->toIso8601String() }}" class="flex-none text-xs text-muted">{{ $log->created_at->translatedFormat('j M Y') }}</time>
+                            </li>
+                        @endforeach
+                    </ol>
                 </section>
             </div>
         </div>
 
-        <aside class="flex flex-[1_1_260px] flex-col gap-1 border-t border-line bg-sidebar p-5 md:border-t-0 md:border-l">
-            <div class="flex flex-col gap-1.5 border-b border-line py-2.5">
-                <span class="text-xs font-semibold text-muted">Personnalité</span>
-                <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="flex items-center gap-2 font-semibold text-ink no-underline">
-                    <x-portrait :figure="$card->publicFigure" size="avatar" />{{ $card->publicFigure->name }}
-                </a>
-                @if ($affiliation)
-                    <span class="text-xs text-muted">{{ trim($affiliation->role.', '.$affiliation->organization, ', ') }}, au moment de la déclaration</span>
-                @endif
-            </div>
-            <div class="flex flex-col gap-1.5 border-b border-line py-2.5">
-                <span class="text-xs font-semibold text-muted">Type</span>
-                <span>{{ $card->type->label() }}</span>
-            </div>
-            <div class="flex flex-col gap-1.5 border-b border-line py-2.5">
-                <span class="text-xs font-semibold text-muted">Déclarée le</span>
-                <time datetime="{{ $card->stated_on->toDateString() }}">{{ $card->stated_on->translatedFormat('j M Y') }}</time>
-            </div>
-            @if ($card->deadline)
-                <div class="flex flex-col gap-1.5 border-b border-line py-2.5">
-                    <span class="text-xs font-semibold text-muted">Échéance</span>
-                    <span @class(['flex items-center gap-1.5', 'font-semibold text-negative-text' => Appearance::isOverdue($card)])>
-                        <x-uicon name="calendar" :size="14" />
-                        {{ $card->deadline->translatedFormat('j M Y') }}
-                        @if ($card->deadline_nature)
-                            ({{ mb_strtolower($card->deadline_nature->label()) }})
-                        @endif
-                    </span>
-                </div>
-            @endif
-            <div class="flex flex-col gap-1.5 border-b border-line py-2.5">
-                <span class="text-xs font-semibold text-muted">Verdict</span>
-                @if ($verdict)
-                    <span class="flex items-center gap-1.5 font-semibold {{ Appearance::verdictTextClasses($card) }}">
-                        <x-uicon name="flag" :size="14" />
-                        {{ $verdict->value->label() }}
-                    </span>
-                @else
-                    <span class="text-muted">{{ Appearance::isOverdue($card) ? 'Attendu' : 'Pas encore' }}</span>
-                @endif
-            </div>
-            @if ($card->themes->isNotEmpty())
-                <div class="flex flex-col gap-2 pt-2.5 pb-4">
-                    <span class="text-xs font-semibold text-muted">Thèmes</span>
-                    <div class="flex flex-wrap gap-1.5">
-                        @foreach ($card->themes as $theme)
-                            <a href="{{ route('themes.show', $theme) }}" wire:navigate class="rounded bg-tag px-2 py-0.5 text-xs text-ink-soft no-underline"># {{ $theme->name }}</a>
-                        @endforeach
+        <aside class="flex flex-col gap-4 self-start lg:sticky lg:top-6">
+            <div class="border border-ink bg-field">
+                <h2 class="border-b border-ink px-5 py-4 font-serif text-[24px] leading-none font-extrabold">Les faits</h2>
+                <dl class="flex flex-col px-5 text-[13px] [&>div]:flex [&>div]:flex-col [&>div]:gap-1 [&>div]:border-b [&>div]:border-line [&>div]:py-3 [&>div:last-child]:border-b-0">
+                    <div>
+                        <dt class="{{ $label }}">Statut</dt>
+                        <dd class="font-semibold">{{ $card->status->label() }}</dd>
                     </div>
-                </div>
-            @endif
+                    <div>
+                        <dt class="{{ $label }}">Type</dt>
+                        <dd class="flex items-center gap-1.5"><x-uicon :name="Appearance::typeIcon($card->type)" :size="14" /> {{ $card->type->label() }}</dd>
+                    </div>
+                    <div>
+                        <dt class="{{ $label }}">Déclarée le</dt>
+                        <dd><time datetime="{{ $card->stated_on->toDateString() }}">{{ $card->stated_on->translatedFormat('j F Y') }}</time></dd>
+                    </div>
+                    @if ($card->deadline)
+                        <div>
+                            <dt class="{{ $label }}">Échéance</dt>
+                            <dd @class(['font-semibold text-negative-text' => Appearance::isOverdue($card)])>
+                                {{ $card->deadline->translatedFormat('j F Y') }}
+                                @if ($card->deadline_nature)
+                                    <span class="font-normal text-muted">({{ mb_strtolower($card->deadline_nature->label()) }})</span>
+                                @endif
+                            </dd>
+                        </div>
+                    @endif
+                    <div>
+                        <dt class="{{ $label }}">Verdict</dt>
+                        <dd class="font-semibold">{{ $verdict ? Appearance::markFor($verdict->value->tone()).' '.$verdict->value->label() : (Appearance::isOverdue($card) ? 'Attendu' : 'Pas encore') }}</dd>
+                    </div>
+                    @if ($card->themes->isNotEmpty())
+                        <div>
+                            <dt class="{{ $label }}">Thèmes</dt>
+                            <dd class="flex flex-wrap gap-1.5 pt-1">
+                                @foreach ($card->themes as $theme)
+                                    <a href="{{ route('themes.show', $theme) }}" wire:navigate class="border border-ink px-2 py-0.5 text-xs text-ink no-underline hover:bg-ink hover:text-paper"># {{ $theme->name }}</a>
+                                @endforeach
+                            </dd>
+                        </div>
+                    @endif
+                </dl>
+            </div>
 
             @if ($card->status->isPublic())
                 <livewire:cards.report-form :card="$card" />
-                <div x-data="{ copied: false }" class="mt-2">
+                <div x-data="{ copied: false }">
                     <button type="button"
                             @click="navigator.share ? navigator.share({ title: document.title, url: '{{ route('cards.show', $card) }}' }) : navigator.clipboard.writeText('{{ route('cards.show', $card) }}').then(() => { copied = true; setTimeout(() => copied = false, 2000) })"
-                            class="min-h-11 w-full cursor-pointer border border-ink bg-field font-semibold hover:border-accent-line">
+                            class="min-h-11 w-full cursor-pointer bg-ink font-semibold text-paper hover:bg-black">
                         <span x-show="! copied">Partager la carte</span>
                         <span x-show="copied" x-cloak>Lien copié</span>
                     </button>
