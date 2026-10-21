@@ -10,6 +10,8 @@ import {
     resizeCrop,
     snapToEdge,
     splitByCut,
+    toneColors,
+    toneThresholds,
     toneValue,
 } from './pipeline.js';
 
@@ -64,7 +66,7 @@ test('toneValue applique luminosité et contraste', () => {
 });
 
 test('renderPortrait rend le morceau jeté transparent et le reste en deux tons', () => {
-    const settings = { ...defaultSettings(studio), cuts: [horizontalCut] };
+    const settings = { ...defaultSettings(studio), shades: 0, cuts: [horizontalCut] };
 
     const dark = renderPortrait(grayImage(100), { ...settings, threshold: 128 });
     assert.equal(pixel(dark, 300, 100)[3], 0);
@@ -82,16 +84,39 @@ test('renderPortrait trace le liseré le long de la coupe', () => {
     assert.equal(pixel(image, 300, 280)[3], 0);
 });
 
-test('studio.json donne la taille finale et trois couleurs #RRGGBB', () => {
+test('studio.json donne la taille finale, les nuances et trois couleurs #RRGGBB', () => {
     assert.ok(Number.isInteger(studio.size) && studio.size >= 100);
+    assert.ok([0, 1, 2].includes(studio.shades));
     assert.deepEqual(Object.keys(studio.palette).sort(), ['dark', 'halo', 'light']);
     Object.values(studio.palette).forEach((color) => assert.match(color, /^#[0-9A-Fa-f]{6}$/));
 });
 
-test('defaultSettings reprend la taille et les couleurs du fichier', () => {
-    const settings = defaultSettings({ size: 800, palette });
+test('defaultSettings reprend la taille, les couleurs et les nuances du fichier', () => {
+    const settings = defaultSettings({ size: 800, shades: 2, palette });
     assert.equal(settings.size, 800);
+    assert.equal(settings.shades, 2);
     assert.deepEqual(settings.palette, palette);
+});
+
+test('toneColors ajoute les nuances en dégradé entre le ton foncé et le ton clair', () => {
+    const blackWhite = { dark: '#000000', light: '#FFFFFF', halo: '#FFFFFF' };
+    assert.deepEqual(toneColors(blackWhite, 0), [[0, 0, 0], [255, 255, 255]]);
+    assert.deepEqual(toneColors(blackWhite, 1), [[0, 0, 0], [128, 128, 128], [255, 255, 255]]);
+    assert.deepEqual(toneColors(blackWhite, 2), [[0, 0, 0], [85, 85, 85], [170, 170, 170], [255, 255, 255]]);
+});
+
+test('toneThresholds espace les seuils autour du seuil principal', () => {
+    assert.deepEqual(toneThresholds({ threshold: 128, spread: 40, shades: 0 }), [128]);
+    assert.deepEqual(toneThresholds({ threshold: 128, spread: 40, shades: 1 }), [108, 148]);
+    assert.deepEqual(toneThresholds({ threshold: 128, spread: 40, shades: 2 }), [88, 128, 168]);
+    assert.deepEqual(toneThresholds({ threshold: 128 }), [128]);
+});
+
+test('renderPortrait place un gris moyen dans la nuance intermédiaire', () => {
+    const settings = { ...defaultSettings({ size: SIZE, shades: 1, palette }), spread: 40 };
+    const image = renderPortrait(grayImage(128), settings);
+
+    assert.deepEqual(pixel(image, 300, 300), [...toneColors(palette, 1)[1], 255]);
 });
 
 test('renderPortrait rend à la taille demandée, coupes notées sur 600', () => {

@@ -159,9 +159,9 @@ class PortraitStudio extends Field
     }
 
     /**
-     * Taille finale et couleurs pour une nouvelle photo (une photo retouchée garde les siennes).
+     * Taille finale, nuances et couleurs pour une nouvelle photo (une photo retouchée garde les siennes).
      *
-     * @return array{size: int, palette: array{dark: string, light: string, halo: string}}
+     * @return array{size: int, shades: int, palette: array{dark: string, light: string, halo: string}}
      */
     public function getStudioDefaults(): array
     {

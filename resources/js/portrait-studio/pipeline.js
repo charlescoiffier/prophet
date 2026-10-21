@@ -22,6 +22,8 @@ export function defaultSettings(studio) {
     return {
         version: 1,
         size: studio.size,
+        shades: studio.shades ?? 0,
+        spread: 40,
         crop: null,
         cuts: [],
         brightness: 0,
@@ -161,6 +163,28 @@ export function discardedPolygon(cut) {
     return pieces.find((piece) => contains(piece, cut.discard)) ?? null;
 }
 
+/**
+ * Couleurs de l'image, du foncé au clair : ton foncé, nuances en dégradé (0 à 2), ton clair.
+ */
+export function toneColors(palette, shades = 0) {
+    const dark = rgb(palette.dark);
+    const light = rgb(palette.light);
+
+    return Array.from({ length: shades + 2 }, (_, i) => {
+        const t = i / (shades + 1);
+
+        return dark.map((channel, c) => Math.round(channel + (light[c] - channel) * t));
+    });
+}
+
+/**
+ * Seuils entre les couleurs, espacés de spread autour du seuil principal.
+ * Les réglages d'avant les nuances n'ont qu'un seuil.
+ */
+export function toneThresholds({ threshold, spread = 40, shades = 0 }) {
+    return Array.from({ length: shades + 1 }, (_, i) => threshold + (i - shades / 2) * spread);
+}
+
 export function toneValue(r, g, b, { brightness, contrast }) {
     const gray = 0.299 * r + 0.587 * g + 0.114 * b;
     const value = (gray - 128) * (1 + contrast / 100) + 128 + brightness * 1.28;
@@ -233,8 +257,8 @@ export function renderPortrait(source, settings) {
     });
     const halo = settings.halo.enabled ? dilate(mask, Math.round(settings.halo.width * scale), size) : null;
 
-    const dark = rgb(settings.palette.dark);
-    const light = rgb(settings.palette.light);
+    const colors = toneColors(settings.palette, settings.shades ?? 0);
+    const thresholds = toneThresholds(settings);
     const haloColor = rgb(settings.palette.halo);
     const data = new Uint8ClampedArray(size * size * 4);
 
@@ -242,7 +266,8 @@ export function renderPortrait(source, settings) {
         const o = i * 4;
         if (mask[i] === 1) {
             const value = toneValue(source.data[o], source.data[o + 1], source.data[o + 2], settings);
-            data.set([...(value < settings.threshold ? dark : light), 255], o);
+            const level = thresholds.findIndex((threshold) => value < threshold);
+            data.set([...colors[level === -1 ? colors.length - 1 : level], 255], o);
         } else if (halo !== null && halo[i] === 1) {
             data.set([...haloColor, 255], o);
         }
