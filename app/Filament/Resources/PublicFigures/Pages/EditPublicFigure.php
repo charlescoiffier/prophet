@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PublicFigures\Pages;
 
 use App\Actions\PublicFigures\SavePublicFigure;
+use App\Filament\Forms\Components\PortraitStudio;
 use App\Filament\Resources\PublicFigures\PublicFigureResource;
 use App\Filament\Support\DomainAction;
 use App\Models\PublicFigure;
@@ -28,6 +29,7 @@ class EditPublicFigure extends EditRecord
 
         return [
             ...$data,
+            'photo' => PortraitStudio::stateFromRecord($figure),
             'affiliations' => $figure->affiliations()->get()
                 ->map(fn ($affiliation) => $affiliation->only(['id', 'organization', 'role', 'started_on', 'ended_on']))
                 ->all(),
@@ -37,6 +39,6 @@ class EditPublicFigure extends EditRecord
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         /** @var PublicFigure $record */
-        return DomainAction::inForm(fn () => app(SavePublicFigure::class)->handle($record, auth()->user(), $data));
+        return DomainAction::inForm(fn () => app(SavePublicFigure::class)->handle($record, auth()->user(), PortraitStudio::mergeInto($data)));
     }
 }

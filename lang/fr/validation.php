@@ -71,6 +71,9 @@ return [
         'email' => [
             'required_for_guest' => 'Indiquez votre adresse e-mail : nous vous enverrons un lien de confirmation.',
         ],
+        'photo' => [
+            'image' => 'Ce fichier n’est pas une photo JPEG, PNG ou WebP.',
+        ],
         'photo_path' => [
             'incomplete' => 'La photo traitée doit être enregistrée avec sa photo d’origine et ses réglages.',
         ],

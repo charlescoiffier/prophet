@@ -3,13 +3,13 @@
 namespace App\Filament\Resources\PublicFigures\Schemas;
 
 use App\Actions\Categories\CreateCategory;
+use App\Filament\Forms\Components\PortraitStudio;
 use App\Models\Category;
 use App\Models\PublicFigure;
 use App\Rules\NotNearDuplicateOrganization;
 use App\Support\Organizations;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -79,28 +79,9 @@ class PublicFigureForm
                 Section::make('Photo')
                     ->columnSpan(1)
                     ->components([
-                        FileUpload::make('photo_path')
+                        PortraitStudio::make('photo')
                             ->hiddenLabel()
-                            ->image()
-                            ->disk('public')
-                            ->directory('portraits')
-                            ->visibility('public')
-                            // Pas d'éditeur d'image : celui de Filament 5 plante à l'enregistrement
-                            // (getCroppedCanvas). Le recadrage au carré se fait automatiquement à l'envoi.
-                            ->imageResizeMode('cover')
-                            ->imageCropAspectRatio('1:1')
-                            ->imageResizeTargetWidth('600')
-                            ->imageResizeTargetHeight('600')
-                            ->maxSize(5120)
-                            // La photo téléversée remplace le lien : on le vide, pour qu'un ancien lien
-                            // invalide ne bloque pas l'enregistrement.
-                            ->live()
-                            ->afterStateUpdated(function (Set $set, $state) {
-                                if (filled($state)) {
-                                    $set('photo_url', null);
-                                }
-                            })
-                            ->helperText('Photo libre de droits uniquement (crédit et licence vérifiés). Recadrée au carré, affichée en noir et blanc.'),
+                            ->helperText('Photo libre de droits uniquement (crédit et licence vérifiés). Recadrée, découpée et passée en deux tons dans l’atelier.'),
                     ]),
                 Repeater::make('affiliations')
                     ->label('Affiliations successives')
