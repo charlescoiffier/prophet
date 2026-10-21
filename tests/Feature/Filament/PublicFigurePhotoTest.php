@@ -143,3 +143,40 @@ it('remplace un ancien lien invalide quand on téléverse une photo', function (
 
     expect($figure->refresh())->photo_url->toBeNull()->photo_path->toStartWith('portraits/');
 });
+
+it('ne recopie pas la photo quand on enregistre à nouveau la même page', function () {
+    Storage::fake('public');
+    $figure = PublicFigure::factory()->create();
+
+    $page = editFigure($figure)
+        ->set('data.photo.image', UploadedFile::fake()->image('portrait.png', 600, 600))
+        ->set('data.photo.original', UploadedFile::fake()->image('o.jpg', 1200, 900))
+        ->set('data.photo.settings', studioSettings())
+        ->call('save')
+        ->assertHasNoFormErrors();
+    $first = $figure->refresh()->only(['photo_path', 'photo_original_path']);
+
+    $page->fillForm(['description' => 'Députée'])->call('save')->assertHasNoFormErrors();
+
+    expect($figure->refresh()->only(['photo_path', 'photo_original_path']))->toBe($first)
+        ->and(Storage::disk('public')->allFiles())->toHaveCount(2);
+});
+
+it('ignore un chemin de fichier envoyé par le navigateur', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('portraits/autre.png', 'x');
+    $figure = PublicFigure::factory()->create([
+        'photo_path' => 'portraits/p.png', 'photo_original_path' => 'portraits/originals/o.jpg', 'photo_settings' => studioSettings(),
+    ]);
+
+    editFigure($figure)
+        ->set('data.photo.path', 'portraits/autre.png')
+        ->set('data.photo.original_path', 'portraits/autre.png')
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($figure->refresh())
+        ->photo_path->toBe('portraits/p.png')
+        ->photo_original_path->toBe('portraits/originals/o.jpg');
+    Storage::disk('public')->assertExists('portraits/autre.png');
+});

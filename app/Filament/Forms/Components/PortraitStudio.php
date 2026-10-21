@@ -55,7 +55,12 @@ class PortraitStudio extends Field
             }
         }]);
 
-        $this->dehydrateStateUsing(fn (?array $state): array => self::store($state ?? self::stateFromRecord(null)));
+        // Avant la lecture des données : les fichiers sont rangés et l'état réécrit, pour qu'un nouvel
+        // enregistrement de la même page ne les range pas une seconde fois.
+        $this->beforeStateDehydrated(function (PortraitStudio $component, ?array $state): void {
+            $record = $component->getRecord();
+            $component->state(self::store($state ?? [], $record instanceof PublicFigure ? $record : null));
+        }, shouldUpdateValidatedStateAfter: true);
     }
 
     /**
@@ -100,25 +105,38 @@ class PortraitStudio extends Field
     }
 
     /**
-     * Range les fichiers remis par le navigateur et remplace les chemins correspondants.
+     * Range les fichiers remis par le navigateur. Les chemins ne viennent jamais du navigateur :
+     * ce sont les fichiers qu'on vient de ranger, rien si la photo a été retirée, sinon ceux de la fiche.
+     * Un original ou des réglages sans nouvelle image ne changent rien.
      *
      * @param  array<string, mixed>  $state
      * @return PortraitState
      */
-    private static function store(array $state): array
+    private static function store(array $state, ?PublicFigure $figure): array
     {
+        $current = self::stateFromRecord($figure);
         $image = $state['image'] ?? null;
         $original = $state['original'] ?? null;
 
-        if ($image instanceof TemporaryUploadedFile) {
-            $state['path'] = $image->storeAs(self::DIRECTORY, Str::random(40).'.png', 'public');
-        }
-        if ($original instanceof TemporaryUploadedFile) {
-            $extension = self::ORIGINAL_TYPES[$original->getMimeType()];
-            $state['original_path'] = $original->storeAs(self::ORIGINALS_DIRECTORY, Str::random(40).'.'.$extension, 'public');
+        if (! $image instanceof TemporaryUploadedFile) {
+            $removed = array_key_exists('path', $state) && $state['path'] === null;
+
+            return $removed ? self::stateFromRecord(null) : $current;
         }
 
-        return [...$state, 'image' => null, 'original' => null];
+        $originalPath = $current['original_path'];
+        if ($original instanceof TemporaryUploadedFile) {
+            $extension = self::ORIGINAL_TYPES[$original->getMimeType()];
+            $originalPath = $original->storeAs(self::ORIGINALS_DIRECTORY, Str::random(40).'.'.$extension, 'public');
+        }
+
+        return [
+            'path' => $image->storeAs(self::DIRECTORY, Str::random(40).'.png', 'public'),
+            'original_path' => $originalPath,
+            'settings' => is_array($state['settings'] ?? null) ? $state['settings'] : null,
+            'image' => null,
+            'original' => null,
+        ];
     }
 
     public function getImageUrl(): ?string
