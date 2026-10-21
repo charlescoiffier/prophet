@@ -99,7 +99,7 @@ Charte éditoriale (21 octobre 2026), référence `docs/maquettes/editoriale/ind
    - en haut du site : version (`config/prophet.php`) et commit de construction (`APP_COMMIT`, posé par le workflow) ;
    - historique public en phrases : `ActivityLog::publicSentence()` + `lang/fr/history.php` ;
    - grille : recherche dans la citation seulement ; filtres à choix multiples (états, verdicts, personnalités, thèmes) dans `Board`, combinés entre eux et gardés dans l'adresse ; menu du membre regroupé sous son pseudo dans la barre latérale ;
-   - proposition : personnalité ou thèmes absents de la liste demandés en texte libre (`requested_figure`, `requested_themes`) ; la carte reste sans personnalité (`public_figure_id` nul, contraintes `cards_figure_or_request` et `cards_public_has_figure`) jusqu'à ce qu'un modérateur crée la fiche et la rattache ; `PublishCard` refuse avant ;
+   - proposition : personnalité ou thèmes absents de la liste demandés en texte libre (`requested_figure`, `requested_themes`) ; la carte reste sans personnalité (`public_figure_id` nul, contraintes `cards_figure_or_request` et `cards_public_has_figure`) jusqu'à ce qu'un modérateur crée la fiche et la rattache ; `PublishCard` refuse avant ; en modération, une personnalité ou un thème tapé dans la carte est créé à l'enregistrement (`App\Filament\Forms\CardReferenceFields`, `CreateTheme` ; personnalité en catégorie « Autre », à compléter dans sa fiche) ; les modérateurs peuvent créer des thèmes ;
    - personnalités rangées par nom de famille puis prénom (`PublicFigure::alphabetical()`) ;
    - touche Q : `resources/js/app.js` ; mêmes limites de débit que l'API pour les formulaires publics ;
    - textes de la charte et de la page données personnelles : brouillons à relire par Charles ;

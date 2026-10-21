@@ -22,4 +22,5 @@ enum ActivityAction: string implements HasLabel
     case AccountDeleted = 'account_deleted';
     case AccountRestored = 'account_restored';
     case CategoryCreated = 'category_created';
+    case ThemeCreated = 'theme_created';
 }

@@ -67,5 +67,6 @@ return [
         'account_deleted' => 'Suppression du compte',
         'account_restored' => 'Restauration du compte',
         'category_created' => 'Création d’une catégorie',
+        'theme_created' => 'Création d’un thème',
     ],
 ];

@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\Cards\Pages;
 
 use App\Actions\Cards\UpdateCard;
+use App\Filament\Forms\CardReferenceFields;
 use App\Filament\Resources\Cards\CardResource;
 use App\Filament\Support\DomainAction;
 use App\Models\Card;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class EditCard extends EditRecord
 {
@@ -37,7 +39,9 @@ class EditCard extends EditRecord
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         /** @var Card $record */
-        return DomainAction::inForm(fn () => app(UpdateCard::class)->handle($record, auth()->user(), $data));
+        // Personnalité et thèmes tapés : créés avec la modification (même transaction).
+        return DomainAction::inForm(fn () => DB::transaction(fn () => app(UpdateCard::class)
+            ->handle($record, auth()->user(), CardReferenceFields::resolve($data, auth()->user()))));
     }
 
     protected function getRedirectUrl(): string

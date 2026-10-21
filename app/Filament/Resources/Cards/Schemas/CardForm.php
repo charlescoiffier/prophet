@@ -6,10 +6,9 @@ use App\Actions\PublicFigures\SavePublicFigure;
 use App\Enums\CardType;
 use App\Enums\DeadlineNature;
 use App\Enums\SourceKind;
+use App\Filament\Forms\CardReferenceFields;
 use App\Filament\Forms\CategoryField;
 use App\Models\Card;
-use App\Models\PublicFigure;
-use App\Models\Theme;
 use App\Support\Organizations;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -65,14 +64,11 @@ class CardForm
                 Section::make('Métadonnées')
                     ->columnSpan(1)
                     ->components([
-                        Select::make('public_figure_id')
-                            ->label('Personnalité')
-                            ->options(fn () => PublicFigure::alphabetical()->pluck('name', 'id'))
-                            ->searchable()
+                        CardReferenceFields::figure()
                             ->required()
                             ->helperText(fn (?Card $record) => filled($record?->requested_figure) && $record->public_figure_id === null
-                                ? 'Demandée par l’auteur : « '.$record->requested_figure.' ». Créez sa fiche avec « + », puis choisissez-la.'
-                                : null)
+                                ? 'Demandée par l’auteur : « '.$record->requested_figure.' ». Tapez son nom pour la créer (fiche à compléter ensuite), ou « + » pour la fiche complète.'
+                                : 'Un nom absent de la liste crée la personnalité, à compléter ensuite dans sa fiche.')
                             ->createOptionForm([
                                 TextInput::make('first_name')->label('Prénom')->maxLength(100),
                                 TextInput::make('last_name')->label('Nom')->required()->maxLength(155),
@@ -100,13 +96,10 @@ class CardForm
                             ->label('Nature de l’échéance')
                             ->options(DeadlineNature::class)
                             ->requiredWith('deadline'),
-                        Select::make('themes')
-                            ->label('Thèmes')
-                            ->multiple()
-                            ->options(fn () => Theme::orderBy('name')->pluck('name', 'id'))
+                        CardReferenceFields::themes()
                             ->helperText(fn (?Card $record) => filled($record?->requested_themes)
-                                ? 'Demandés par l’auteur : « '.$record->requested_themes.' » (à créer dans Thèmes s’ils sont utiles).'
-                                : null),
+                                ? 'Demandés par l’auteur : « '.$record->requested_themes.' ». Tapez un thème absent de la liste pour le créer.'
+                                : 'Un thème absent de la liste est créé à l’enregistrement.'),
                     ]),
                 Repeater::make('sources')
                     ->label('Sources de la citation')

@@ -6,7 +6,7 @@ use App\Models\Theme;
 use App\Models\User;
 
 /**
- * Vocabulaire fermé, géré par l'administrateur.
+ * Vocabulaire géré par l'administrateur ; un modérateur peut ajouter un thème en saisissant une carte.
  */
 class ThemePolicy
 {
@@ -22,7 +22,7 @@ class ThemePolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isModerator();
     }
 
     public function update(User $user, Theme $theme): bool

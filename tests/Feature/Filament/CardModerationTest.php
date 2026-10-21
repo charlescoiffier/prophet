@@ -9,6 +9,7 @@ use App\Filament\Resources\Cards\RelationManagers\SourcesRelationManager;
 use App\Models\Card;
 use App\Models\PublicFigure;
 use App\Models\Source;
+use App\Models\Theme;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Notification;
@@ -102,4 +103,20 @@ it('affiche l’erreur quand on retire la dernière source', function () {
         ->assertNotified('Impossible de retirer la dernière source : ajoutez-en une autre d’abord.');
 
     expect($card->sources()->count())->toBe(1);
+});
+
+it('crée la personnalité et les thèmes tapés en rattachant une carte proposée', function () {
+    $card = Card::factory()->create(['public_figure_id' => null, 'requested_figure' => 'Zoé Nouvelle', 'requested_themes' => 'Agriculture']);
+    $existing = Theme::factory()->create(['name' => 'Logement']);
+
+    Livewire::test(EditCard::class, ['record' => $card->getRouteKey()])
+        ->fillForm(['public_figure_id' => 'nouveau:Zoé Nouvelle', 'themes' => [$existing->id, 'nouveau:Agriculture', 'nouveau:logement']])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $figure = PublicFigure::where('name', 'Zoé Nouvelle')->sole();
+    expect($card->refresh()->public_figure_id)->toBe($figure->id)
+        ->and($figure)->first_name->toBe('Zoé')->last_name->toBe('Nouvelle')
+        ->and($figure->category->slug)->toBe('autre')
+        ->and($card->themes()->pluck('name')->sort()->values()->all())->toBe(['Agriculture', 'Logement']);
 });

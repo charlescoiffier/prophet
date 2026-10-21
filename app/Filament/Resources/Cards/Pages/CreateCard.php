@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\Cards\Pages;
 
 use App\Actions\Cards\CreateCard as CreateCardAction;
+use App\Filament\Forms\CardReferenceFields;
 use App\Filament\Resources\Cards\CardResource;
 use App\Filament\Support\DomainAction;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class CreateCard extends CreateRecord
 {
@@ -21,7 +23,9 @@ class CreateCard extends CreateRecord
 
     protected function handleRecordCreation(array $data): Model
     {
-        return DomainAction::inForm(fn () => app(CreateCardAction::class)->handle(auth()->user(), $data));
+        // Personnalité et thèmes tapés : créés avec la carte (même transaction).
+        return DomainAction::inForm(fn () => DB::transaction(fn () => app(CreateCardAction::class)
+            ->handle(auth()->user(), CardReferenceFields::resolve($data, auth()->user()))));
     }
 
     protected function getRedirectUrl(): string
