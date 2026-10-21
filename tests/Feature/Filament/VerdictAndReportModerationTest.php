@@ -48,14 +48,36 @@ it('traite un signalement', function () {
     expect($report->refresh()->status)->toBe(ReportStatus::Resolved);
 });
 
-it('laisse l’administrateur nommer un modérateur', function () {
+it('laisse l’administrateur modifier la fiche d’un compte et nommer un modérateur', function () {
+    $member = User::factory()->create(['username' => 'lecteur', 'email' => 'lecteur@example.test']);
+
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(ManageUsers::class)
+        ->callAction(TestAction::make('editAccount')->table($member), [
+            'first_name' => 'Léa',
+            'last_name' => 'Martin',
+            'username' => 'lecteur',
+            'email' => 'lecteur@example.test',
+            'role' => 'moderator',
+        ])
+        ->assertHasNoFormErrors()
+        ->assertNotified('Compte enregistré');
+
+    expect($member->refresh())
+        ->first_name->toBe('Léa')
+        ->last_name->toBe('Martin')
+        ->role->toBe(Role::Moderator)
+        ->hasVerifiedEmail()->toBeTrue();
+});
+
+it('refuse dans la fiche d’un compte un pseudo déjà pris', function () {
+    User::factory()->create(['username' => 'pris']);
     $member = User::factory()->create();
 
     Livewire::actingAs(User::factory()->admin()->create())
         ->test(ManageUsers::class)
-        ->callAction(TestAction::make('changeRole')->table($member), ['role' => 'moderator']);
-
-    expect($member->refresh()->role)->toBe(Role::Moderator);
+        ->callAction(TestAction::make('editAccount')->table($member), ['username' => 'pris'])
+        ->assertHasFormErrors(['username' => 'unique']);
 });
 
 it('fait suivre l’identifiant d’URL au nom tant qu’il n’a pas été retouché', function () {

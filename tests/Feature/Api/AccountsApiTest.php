@@ -4,6 +4,7 @@ use App\Models\Card;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
@@ -109,4 +110,26 @@ it('ignore un rôle envoyé à l’inscription', function () {
     ])->assertCreated()->assertJsonPath('data.role.value', 'member');
 
     expect(User::sole()->isModerator())->toBeFalse();
+});
+
+it('modifie mon compte et mon mot de passe par l’API', function () {
+    $user = User::factory()->create(['username' => 'lecteur']);
+    $token = $user->createToken('tests')->plainTextToken;
+
+    $this->withToken($token)
+        ->patchJson('/api/v1/accounts/me', ['first_name' => 'Léa', 'username' => 'lectrice', 'email' => $user->email])
+        ->assertOk()
+        ->assertJsonPath('data.first_name', 'Léa')
+        ->assertJsonPath('data.username', 'lectrice');
+
+    $this->withToken($token)
+        ->putJson('/api/v1/accounts/me/password', ['current_password' => 'faux', 'password' => 'un nouveau mot de passe', 'password_confirmation' => 'un nouveau mot de passe'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('current_password');
+
+    $this->withToken($token)
+        ->putJson('/api/v1/accounts/me/password', ['current_password' => 'password', 'password' => 'un nouveau mot de passe', 'password_confirmation' => 'un nouveau mot de passe'])
+        ->assertOk();
+
+    expect(Hash::check('un nouveau mot de passe', $user->refresh()->password))->toBeTrue();
 });

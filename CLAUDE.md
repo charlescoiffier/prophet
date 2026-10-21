@@ -63,7 +63,7 @@ Rôles : `member`, `moderator`, `admin`.
 
 Les enums sont dans `app/Enums` ; leurs libellés français dans `lang/fr/enums.php` (`$enum->label()`, `Enum::options()`).
 
-Catégorie d'une personnalité : table `categories` (enrichissable par les modérateurs via `CreateCategory`), plus l'ancien enum. Organisations : `App\Support\Organizations` fusionne les variantes d'écriture et signale les quasi-doublons (`NotNearDuplicateOrganization`). Comptes : suppression douce par l'admin (`DeleteUser`, `RestoreUser`).
+Catégorie d'une personnalité : table `categories` (enrichissable par les modérateurs via `CreateCategory`), plus l'ancien enum. Organisations : `App\Support\Organizations` fusionne les variantes d'écriture et signale les quasi-doublons (`NotNearDuplicateOrganization`). Comptes : prénom et nom facultatifs, pseudo et adresse uniques (`AccountRules`), modifiables par le titulaire (« Mon compte », `/mon-compte`, et `PATCH /api/v1/accounts/me`) ou par l'admin (`UpdateAccount`, fiche du compte en modération) ; une nouvelle adresse doit être reconfirmée ; suppression douce par l'admin (`DeleteUser`, `RestoreUser`).
 
 Champs renommés par rapport à la spécification : `reformulation` → `testable_statement`, `critere_verdict` → `verdict_criterion`, `pseudo` → `username`, `media` → `outlet`, `horodatage` → `timecode`, `valide_par`/`valide_le` → `decided_by`/`decided_at`.
 
@@ -94,6 +94,7 @@ Charte éditoriale (21 octobre 2026), référence `docs/maquettes/editoriale/ind
    - icônes : UIcons de Flaticon, style Regular Rounded uniquement, extraites en SVG dans `resources/icons/` par `scripts/extract-uicons.py` (ajouter une icône : l'inscrire dans la liste du script) et affichées par `<x-uicon name>` (`<x-icon>` est pris par blade-icons, livré avec Filament) ; mention « UIcons par Flaticon » obligatoire (pied de page) ; logo `public/logo.svg`, favicons régénérés par `npm run build:favicons` ;
    - en haut du site : version (`config/prophet.php`) et commit de construction (`APP_COMMIT`, posé par le workflow) ;
    - historique public en phrases : `ActivityLog::publicSentence()` + `lang/fr/history.php` ;
+   - grille : recherche dans la citation seulement ; filtres à choix multiples (états, verdicts, personnalités, thèmes) dans `Board`, combinés entre eux et gardés dans l'adresse ; menu du membre regroupé sous son pseudo dans la barre latérale ;
    - touche Q : `resources/js/app.js` ; mêmes limites de débit que l'API pour les formulaires publics ;
    - textes de la charte et de la page données personnelles : brouillons à relire par Charles ;
    - pas encore faits : raccourcis @ et # dans le contexte, bouton « Afficher » de la maquette, création d'une personnalité par un visiteur (il choisit dans la liste existante).

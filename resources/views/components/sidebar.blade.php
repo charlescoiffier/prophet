@@ -110,23 +110,30 @@
 
         <div class="mt-[25px] flex flex-col border-t border-line pt-4 md:mt-auto">
             @auth
-                <a href="{{ route('account.cards') }}" wire:navigate @class([$item, $active => request()->routeIs('account.cards')])>
-                    <span class="{{ $icon }}"><x-uicon name="account" :size="18" /></span>
-                    <span class="flex-1">{{ auth()->user()->username }} · mes propositions</span>
-                </a>
-                @if (auth()->user()->isModerator())
-                    <a href="{{ url('/moderation') }}" class="{{ $item }}">
-                        <span class="{{ $icon }}"><x-uicon name="moderation" :size="18" /></span>
-                        Modération
+                <section class="flex flex-col" aria-label="Votre compte">
+                    <h2 class="{{ $label }} truncate">{{ auth()->user()->username }}</h2>
+                    <a href="{{ route('account.cards') }}" wire:navigate class="{{ $item }}" @if (request()->routeIs('account.cards')) aria-current="page" @endif>
+                        <span class="{{ $icon }}"><x-uicon name="list" :size="18" /></span>
+                        <span @class(['flex-1', $active => request()->routeIs('account.cards')])>Mes propositions</span>
                     </a>
-                @endif
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="{{ $item }} w-full cursor-pointer text-left">
-                        <span class="{{ $icon }}"><x-uicon name="logout" :size="18" /></span>
-                        Se déconnecter
-                    </button>
-                </form>
+                    <a href="{{ route('account.settings') }}" wire:navigate class="{{ $item }}" @if (request()->routeIs('account.settings')) aria-current="page" @endif>
+                        <span class="{{ $icon }}"><x-uicon name="account" :size="18" /></span>
+                        <span @class(['flex-1', $active => request()->routeIs('account.settings')])>Mon compte</span>
+                    </a>
+                    @if (auth()->user()->isModerator())
+                        <a href="{{ url('/moderation') }}" class="{{ $item }}">
+                            <span class="{{ $icon }}"><x-uicon name="moderation" :size="18" /></span>
+                            Modération
+                        </a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="{{ $item }} w-full cursor-pointer text-left">
+                            <span class="{{ $icon }}"><x-uicon name="logout" :size="18" /></span>
+                            Me déconnecter
+                        </button>
+                    </form>
+                </section>
             @else
                 <a href="{{ route('login') }}" wire:navigate class="{{ $item }}">
                     <span class="{{ $icon }}"><x-uicon name="login" :size="18" /></span>

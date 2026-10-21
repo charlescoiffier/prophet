@@ -56,6 +56,38 @@ class Board extends Component
     /** Champ de recherche ouvert dans la barre d'outils (il filtre les cartes de la vue en direct). */
     public bool $searching = false;
 
+    /**
+     * Filtres à choix multiples, combinés entre eux : états (sections de SECTIONS), tonalités de
+     * verdict (clés de Appearance::VERDICT_TONES), personnalités et thèmes (slugs).
+     *
+     * @var list<string>
+     */
+    #[Url(as: 'etats', except: [])]
+    public array $states = [];
+
+    /** @var list<string> */
+    #[Url(except: [])]
+    public array $verdicts = [];
+
+    /** @var list<string> */
+    #[Url(as: 'personnalites', except: [])]
+    public array $figures = [];
+
+    /** @var list<string> */
+    #[Url(except: [])]
+    public array $themes = [];
+
+    /** Rangée des filtres ouverte dans la barre d'outils. */
+    public bool $filtering = false;
+
+    /** Libellés des états proposés au filtre, dans l'ordre de la barre latérale. */
+    public const STATE_LABELS = [
+        'awaiting' => 'Verdict attendu',
+        'upcoming' => 'Échéances à venir',
+        'review' => 'En relecture',
+        'closed' => 'Tranchées',
+    ];
+
     /** Cartes affichées par section ; « Afficher plus » l'augmente. */
     public int $limit = 12;
 
@@ -71,6 +103,7 @@ class Board extends Component
         }
 
         $this->searching = $this->searching || trim($this->q) !== '';
+        $this->filtering = $this->activeFilterCount() > 0;
         abort_if($view === 'verdict' && ! isset(Appearance::VERDICT_TONES[$tone]), 404);
 
         $this->view = $view;
@@ -84,6 +117,16 @@ class Board extends Component
     {
         $this->q = '';
         $this->searching = false;
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset('states', 'verdicts', 'figures', 'themes');
+    }
+
+    public function activeFilterCount(): int
+    {
+        return count($this->states) + count($this->verdicts) + count($this->figures) + count($this->themes);
     }
 
     public function showMore(): void
@@ -109,6 +152,7 @@ class Board extends Component
                 CardType::Prediction->value => (int) ($counts[CardType::Prediction->value] ?? 0),
             ],
             'sections' => $this->sections(),
+            'filterOptions' => $this->filterOptions(),
             'record' => $this->figure?->record(),
             'currentAffiliation' => $this->figure?->affiliationOn(now()),
         ])
@@ -130,8 +174,8 @@ class Board extends Component
                 ->orderByRaw('deadline asc nulls last'),
             'closed' => fn (Builder $query) => $query
                 ->where('status', CardStatus::Closed)
-                ->when($this->tone, fn (Builder $closed) => $closed->whereHas('approvedVerdict', fn (Builder $verdict) => $verdict
-                    ->whereIn('value', VerdictValue::withTone(Appearance::VERDICT_TONES[$this->tone]['tone']))))
+                ->when($this->tone, fn (Builder $closed) => $this->withVerdictTones($closed, [$this->tone]))
+                ->when($this->selectedTones(), fn (Builder $closed, array $tones) => $this->withVerdictTones($closed, $tones))
                 ->latest('updated_at'),
         ];
 
@@ -142,6 +186,11 @@ class Board extends Component
             'closed', 'verdict' => ['closed'],
             default => array_keys($scopes),
         };
+
+        // Un état choisi garde sa section ; un verdict choisi ne laisse que les cartes tranchées.
+        $states = array_intersect($this->states, array_keys($scopes));
+        $keys = array_values(array_filter($keys, fn (string $key) => ($states === [] || in_array($key, $states, true))
+            && ($this->selectedTones() === [] || $key === 'closed')));
 
         return collect($keys)
             ->map(function (string $key) use ($scopes) {
@@ -172,7 +221,51 @@ class Board extends Component
             ->when($this->figure, fn (Builder $query) => $query->where('public_figure_id', $this->figure->getKey()))
             ->when($this->theme, fn (Builder $query) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereKey($this->theme->getKey())))
             ->when($withType ? CardType::tryFrom($this->type) : null, fn (Builder $query, CardType $type) => $query->where('type', $type))
+            ->when($this->figures !== [], fn (Builder $query) => $query->whereHas('publicFigure', fn (Builder $figure) => $figure->whereIn('slug', $this->figures)))
+            ->when($this->themes !== [], fn (Builder $query) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereIn('slug', $this->themes)))
             ->when(trim($this->q) !== '', fn (Builder $query) => $query->matching($this->q));
+    }
+
+    /**
+     * @param  Builder<Card>  $query
+     * @param  list<string>  $tones  clés de Appearance::VERDICT_TONES
+     */
+    private function withVerdictTones(Builder $query, array $tones): void
+    {
+        $values = collect($tones)
+            ->flatMap(fn (string $tone) => VerdictValue::withTone(Appearance::VERDICT_TONES[$tone]['tone']))
+            ->all();
+
+        $query->whereHas('approvedVerdict', fn (Builder $verdict) => $verdict->whereIn('value', $values));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function selectedTones(): array
+    {
+        return array_values(array_intersect($this->verdicts, array_keys(Appearance::VERDICT_TONES)));
+    }
+
+    /**
+     * Choix des quatre menus de filtre : seules les personnalités et thèmes qui ont une carte publique.
+     *
+     * @return array<string, array{label: string, options: array<string, string>}>
+     */
+    private function filterOptions(): array
+    {
+        if (! $this->filtering) {
+            return [];
+        }
+
+        return [
+            'states' => ['label' => 'États', 'options' => self::STATE_LABELS],
+            'verdicts' => ['label' => 'Verdicts', 'options' => array_map(fn (array $tone) => $tone['label'], Appearance::VERDICT_TONES)],
+            'figures' => ['label' => 'Personnalités', 'options' => PublicFigure::whereHas('cards', fn (Builder $query) => $query->visible())
+                ->orderBy('name')->pluck('name', 'slug')->all()],
+            'themes' => ['label' => 'Thèmes', 'options' => Theme::whereHas('cards', fn (Builder $query) => $query->visible())
+                ->orderBy('name')->pluck('name', 'slug')->all()],
+        ];
     }
 
     private function title(): string

@@ -21,9 +21,12 @@ class UserPolicy
         return false;
     }
 
+    /**
+     * Prénom, nom, pseudo et adresse : le titulaire du compte, ou l'administrateur.
+     */
     public function update(User $user, User $model): bool
     {
-        return false;
+        return ! $model->trashed() && ($user->isAdmin() || $user->is($model));
     }
 
     /**

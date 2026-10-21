@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Account\AccountSettings;
 use App\Livewire\Auth\ForgotPassword;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
@@ -8,6 +9,7 @@ use App\Models\Card;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Livewire\Livewire;
@@ -107,3 +109,49 @@ it('affiche les pages de texte', function (string $url, string $text) {
     ['/charte', 'Charte du contributeur'],
     ['/donnees-personnelles', 'Données personnelles'],
 ]);
+
+it('montre et enregistre les informations de Mon compte', function () {
+    $user = User::factory()->create(['username' => 'lecteur']);
+
+    $this->actingAs($user)->get(route('account.settings'))->assertOk()->assertSee('Mon compte')->assertSee('Membre');
+
+    Livewire::actingAs($user)
+        ->test(AccountSettings::class)
+        ->set('first_name', 'Léa')
+        ->set('username', 'lectrice')
+        ->call('saveProfile')
+        ->assertHasNoErrors();
+
+    expect($user->refresh())->first_name->toBe('Léa')->username->toBe('lectrice');
+});
+
+it('refuse dans Mon compte un pseudo déjà pris', function () {
+    User::factory()->create(['username' => 'pris']);
+
+    Livewire::actingAs(User::factory()->create())
+        ->test(AccountSettings::class)
+        ->set('username', 'pris')
+        ->call('saveProfile')
+        ->assertHasErrors(['username' => 'unique']);
+});
+
+it('change le mot de passe seulement avec l’ancien', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(AccountSettings::class)
+        ->set('current_password', 'faux')
+        ->set('password', 'un nouveau mot de passe')
+        ->set('password_confirmation', 'un nouveau mot de passe')
+        ->call('savePassword')
+        ->assertHasErrors(['current_password'])
+        ->set('current_password', 'password')
+        ->call('savePassword')
+        ->assertHasNoErrors();
+
+    expect(Hash::check('un nouveau mot de passe', $user->refresh()->password))->toBeTrue();
+});
+
+it('renvoie vers la connexion pour Mon compte sans être connecté', function () {
+    $this->get(route('account.settings'))->assertRedirect(route('login'));
+});

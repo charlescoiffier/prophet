@@ -4,6 +4,7 @@ use App\Http\Controllers\AltchaChallengeController;
 use App\Http\Controllers\ConfirmCardEmailController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\VerifyEmailController;
+use App\Livewire\Account\AccountSettings;
 use App\Livewire\Account\MyCards;
 use App\Livewire\Auth\ForgotPassword;
 use App\Livewire\Auth\Login;
@@ -55,6 +56,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/mes-propositions', MyCards::class)->name('account.cards');
+    Route::get('/mon-compte', AccountSettings::class)->name('account.settings');
     Route::post('/deconnexion', LogoutController::class)->name('logout');
 });
 

@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Users;
 use App\Actions\Users\DeleteUser;
 use App\Actions\Users\RestoreUser;
 use App\Enums\Role;
-use App\Filament\Actions\ChangeUserRoleAction;
+use App\Filament\Actions\EditUserAction;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Models\User;
 use BackedEnum;
@@ -42,7 +42,8 @@ class UserResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('username')->label('Pseudo')->searchable(),
+                TextColumn::make('username')->label('Pseudo')->searchable(['username', 'first_name', 'last_name'])
+                    ->description(fn (User $record) => trim($record->first_name.' '.$record->last_name) ?: null),
                 TextColumn::make('email')->label('E-mail')->searchable(),
                 TextColumn::make('role')->label('Rôle')->badge()->color(fn (Role $state) => $state === Role::Member ? 'gray' : 'primary'),
                 TextColumn::make('email_verified_at')->label('E-mail confirmé')->date('j M Y')->placeholder('Non'),
@@ -54,7 +55,7 @@ class UserResource extends Resource
                 TrashedFilter::make()->label('Comptes supprimés'),
             ])
             ->recordActions([
-                ChangeUserRoleAction::make(),
+                EditUserAction::make(),
                 Action::make('deleteAccount')
                     ->label('Supprimer')
                     ->icon(Heroicon::OutlinedTrash)

@@ -18,7 +18,7 @@ class ListCardsRequest extends FormRequest
         $sorts = collect(SearchCards::SORTS)->flatMap(fn (string $sort) => [$sort, "-{$sort}"])->all();
 
         return [
-            /** Filtre : chaque mot doit figurer dans la citation ou le nom de la personnalité (sans accents ni majuscules). */
+            /** Filtre : chaque mot doit figurer dans la citation (sans accents ni majuscules). */
             'q' => ['nullable', 'string', 'max:200'],
             /** Slug de la personnalité. */
             'public_figure' => ['nullable', 'string', 'max:255'],

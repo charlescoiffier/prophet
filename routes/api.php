@@ -50,6 +50,8 @@ Route::prefix('v1')->name('api.v1.')->middleware('throttle:api')->group(function
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('accounts/me', [AccountController::class, 'show'])->name('accounts.me');
+        Route::patch('accounts/me', [AccountController::class, 'update'])->name('accounts.update');
+        Route::put('accounts/me/password', [AccountController::class, 'updatePassword'])->middleware('throttle:auth')->name('accounts.password');
         Route::delete('sessions/current', [SessionController::class, 'destroy'])->name('sessions.destroy');
 
         // Membres

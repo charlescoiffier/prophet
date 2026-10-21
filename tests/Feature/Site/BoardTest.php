@@ -142,7 +142,7 @@ it('affiche dans la barre latérale le nombre de verdicts de chaque tonalité', 
     ]);
 });
 
-it('filtre par citation ou par nom de personnalité, sans accents ni majuscules, mot par mot', function () {
+it('cherche dans la citation seulement, sans accents ni majuscules, mot par mot', function () {
     $ebauche = PublicFigure::factory()->create(['name' => 'Thomas Ébauche']);
     Card::factory()->published()->for($ebauche)->create(['quote' => '« Les prix de l’électricité baisseront. »']);
     Card::factory()->published()->for($ebauche)->create(['quote' => '« Le déficit repassera sous 3 %. »']);
@@ -150,16 +150,42 @@ it('filtre par citation ou par nom de personnalité, sans accents ni majuscules,
 
     Livewire::test(Board::class)
         ->set('q', 'EBAUCHE')
-        ->assertSee('« Les prix de l’électricité baisseront. »')
-        ->assertSee('« Le déficit repassera sous 3 %. »')
-        ->assertDontSee('« Les prix du métro augmenteront. »')
+        ->assertDontSee('« Les prix de l’électricité baisseront. »')
         ->set('q', 'electricite')
         ->assertSee('« Les prix de l’électricité baisseront. »')
         ->assertDontSee('« Le déficit repassera sous 3 %. »')
-        ->set('q', 'ébauche prix')
+        ->set('q', 'prix BAISSERONT')
         ->assertSee('« Les prix de l’électricité baisseront. »')
-        ->assertDontSee('« Le déficit repassera sous 3 %. »')
         ->assertDontSee('« Les prix du métro augmenteront. »');
+});
+
+it('filtre les cartes par état, verdict, personnalité et thème, plusieurs choix à la fois', function () {
+    $ada = PublicFigure::factory()->create(['name' => 'Ada Filtre']);
+    $logement = Theme::factory()->create(['name' => 'Logement']);
+    Card::factory()->published()->for($ada)->hasAttached($logement)->create(['quote' => '« À venir. »', 'deadline' => now()->addYear()]);
+    Card::factory()->overdue()->create(['quote' => '« Échue. »']);
+    $kept = Card::factory()->overdue()->for($ada)->create(['status' => CardStatus::Closed, 'quote' => '« Tenue. »']);
+    Verdict::factory()->approved()->create(['card_id' => $kept->id, 'value' => 'kept']);
+    $abandoned = Card::factory()->overdue()->create(['status' => CardStatus::Closed, 'quote' => '« Abandonnée. »']);
+    Verdict::factory()->approved()->create(['card_id' => $abandoned->id, 'value' => 'abandoned']);
+
+    Livewire::test(Board::class)
+        ->set('states', ['upcoming', 'awaiting'])
+        ->assertSee(['« À venir. »', '« Échue. »'])
+        ->assertDontSee('« Tenue. »')
+        ->set('states', [])
+        ->set('verdicts', ['tenues-ou-justes'])
+        ->assertSee('« Tenue. »')
+        ->assertDontSee(['« Abandonnée. »', '« À venir. »'])
+        ->set('verdicts', [])
+        ->set('figures', [$ada->slug])
+        ->assertSee(['« À venir. »', '« Tenue. »'])
+        ->assertDontSee(['« Échue. »', '« Abandonnée. »'])
+        ->set('themes', [$logement->slug])
+        ->assertSee('« À venir. »')
+        ->assertDontSee('« Tenue. »')
+        ->call('clearFilters')
+        ->assertSee(['« Échue. »', '« Abandonnée. »']);
 });
 
 it('liste dans la barre latérale les personnalités les plus fournies, puis les plus récemment modifiées, avec un lien vers toutes', function () {

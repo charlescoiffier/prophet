@@ -21,7 +21,7 @@ use Laravel\Sanctum\HasApiTokens;
 /**
  * MustVerifyEmail : une adresse confirmée est requise pour proposer (règle 3) et déclenche le rattachement des cartes (règle 8).
  */
-#[Fillable(['username', 'email', 'password'])]
+#[Fillable(['username', 'first_name', 'last_name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasName, MustVerifyEmail
 {

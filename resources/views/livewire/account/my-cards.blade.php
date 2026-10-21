@@ -1,8 +1,8 @@
 <div class="flex flex-col gap-8">
-    <div class="flex flex-col gap-0.5">
-        <h1 class="pt-7 font-serif text-[clamp(40px,4.4vw,64px)] leading-[0.97] font-extrabold tracking-[-2px]">Mes propositions</h1>
-        <span class="text-xs text-muted">{{ auth()->user()->username }} · {{ auth()->user()->email }}</span>
-    </div>
+    <header class="flex flex-col gap-4 pt-7 lg:pt-[35px]">
+        <h1 class="font-serif text-[clamp(40px,4.4vw,64px)] leading-[0.97] font-extrabold tracking-[-2px]">Mes propositions</h1>
+        <p class="text-[13px] text-muted">Vos cartes et vos verdicts, avec leur statut. <a href="{{ route('account.settings') }}" wire:navigate>Mon compte</a></p>
+    </header>
 
     @if (session('status'))
         <p role="status" class="bg-accent-soft px-3 py-2.5 text-[13px] text-accent-dark">{{ session('status') }}</p>

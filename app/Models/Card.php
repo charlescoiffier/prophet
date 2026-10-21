@@ -133,8 +133,8 @@ class Card extends Model
     }
 
     /**
-     * Filtre de recherche : chaque mot tapé doit figurer dans la citation ou dans le nom de la
-     * personnalité, sans tenir compte des majuscules ni des accents (« ébauche prix »).
+     * Recherche dans la citation : chaque mot tapé doit y figurer, sans tenir compte des majuscules
+     * ni des accents (« electricite prix »). Les personnalités se choisissent par les filtres.
      *
      * @param  Builder<self>  $query
      */
@@ -146,9 +146,7 @@ class Card extends Model
         foreach ($terms as $term) {
             $pattern = '%'.addcslashes(mb_strtolower($term), '%_\\').'%';
 
-            $query->where(fn (Builder $card) => $card
-                ->whereRaw('unaccent(lower(quote)) like unaccent(?)', [$pattern])
-                ->orWhereHas('publicFigure', fn (Builder $figure) => $figure->whereRaw('unaccent(lower(name)) like unaccent(?)', [$pattern])));
+            $query->whereRaw('unaccent(lower(quote)) like unaccent(?)', [$pattern]);
         }
     }
 

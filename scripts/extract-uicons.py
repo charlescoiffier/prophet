@@ -18,10 +18,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PACKAGE = os.path.join(ROOT, 'node_modules', '@flaticon', 'flaticon-uicons', 'css')
 OUT = os.path.join(ROOT, 'resources', 'icons')
 
-# Nom dans le site => (série, nom UIcons). « rr » : Regular Rounded ; « brands » : GitHub ; « sr » : Solid Rounded (logo).
+# Nom dans le site => (série, nom UIcons). « rr » : Regular Rounded ; « brands » : marques ; « sr » : Solid Rounded (logo).
 ICONS = {
     'propose': ('rr', 'add'),
     'search': ('rr', 'search'),
+    'filter': ('rr', 'filter'),
     'all-cards': ('rr', 'apps'),
     'awaiting': ('rr', 'hourglass-end'),
     'upcoming': ('rr', 'calendar-clock'),
