@@ -305,12 +305,12 @@ class Board extends Component
             ->when($this->theme, fn (Builder $card) => $card->whereHas('themes', fn (Builder $theme) => $theme->whereKey($this->theme->getKey())));
 
         $menus = [
-            'states' => ['label' => 'États', 'options' => self::STATE_LABELS],
-            'verdicts' => ['label' => 'Verdicts', 'options' => array_map(fn (array $tone) => $tone['label'], Appearance::VERDICT_TONES)],
             'figures' => ['label' => 'Personnalités', 'options' => isset($fixed['figures']) ? [] : PublicFigure::whereHas('cards', $onPage)
                 ->orderBy('name')->pluck('name', 'slug')->all()],
             'themes' => ['label' => 'Thèmes', 'options' => isset($fixed['themes']) ? [] : Theme::whereHas('cards', $onPage)
                 ->orderBy('name')->pluck('name', 'slug')->all()],
+            'states' => ['label' => 'États', 'options' => self::STATE_LABELS],
+            'verdicts' => ['label' => 'Verdicts', 'options' => array_map(fn (array $tone) => $tone['label'], Appearance::VERDICT_TONES)],
         ];
 
         foreach ($menus as $filter => $menu) {
