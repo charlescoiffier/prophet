@@ -6,7 +6,8 @@
         "build": "vite build",
         "dev": "vite",
         "capture:readme": "node scripts/capture-readme.mjs",
-        "build:favicons": "node scripts/build-favicons.mjs"
+        "build:favicons": "node scripts/build-favicons.mjs",
+        "test:js": "node --test \"resources/js/**/*.test.js\""
     },
     "devDependencies": {
         "@flaticon/flaticon-uicons": "^3.3.1",

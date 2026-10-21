@@ -71,6 +71,12 @@ return [
         'email' => [
             'required_for_guest' => 'Indiquez votre adresse e-mail : nous vous enverrons un lien de confirmation.',
         ],
+        'photo' => [
+            'image' => 'Ce fichier n’est pas une photo JPEG, PNG ou WebP.',
+        ],
+        'photo_path' => [
+            'incomplete' => 'La photo traitée doit être enregistrée avec sa photo d’origine et ses réglages.',
+        ],
         'photo_url' => [
             'image' => 'Indiquez le lien du fichier image lui-même (se terminant par .jpg, .png, .webp…), pas celui de la page qui l’affiche. Sur Wikimedia Commons : clic droit sur l’image, « Copier l’adresse de l’image ».',
             'regex' => 'Indiquez le lien du fichier image lui-même (se terminant par .jpg, .png, .webp…), pas celui de la page qui l’affiche.',
