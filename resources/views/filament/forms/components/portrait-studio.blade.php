@@ -97,9 +97,9 @@
                         <label class="flex items-center gap-3">
                             <span class="w-24">Nuances</span>
                             <select class="rounded-md border-gray-300 py-0.5 text-sm dark:bg-gray-800" x-model.number="settings.shades">
-                                <option value="0">Aucune (deux tons)</option>
-                                <option value="1">Une nuance</option>
-                                <option value="2">Deux nuances</option>
+                                <option value="0">0 nuance (deux tons)</option>
+                                <option value="1">1 nuance</option>
+                                <option value="2">2 nuances</option>
                             </select>
                         </label>
                         <label x-show="settings.shades > 0" class="flex items-center gap-3">
