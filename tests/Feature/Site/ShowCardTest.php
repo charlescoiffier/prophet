@@ -20,7 +20,7 @@ it('affiche la fiche publique avec verdict, sources, historique et aperçu de pa
     $this->get(route('cards.show', $card))
         ->assertOk()
         ->assertSee('<meta property="og:title"', escape: false)
-        ->assertSee('Verdict : partiellement tenue')
+        ->assertSee('Partiellement tenue')
         ->assertSee('Audio, Radio E')
         ->assertSee('à 12:34')
         ->assertSee('Copie archivée')
