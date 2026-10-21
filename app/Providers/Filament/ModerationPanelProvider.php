@@ -33,6 +33,8 @@ class ModerationPanelProvider extends PanelProvider
             // Atelier portrait (fiche d'une personnalité) : chargé dans la modération seulement.
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => Blade::render("@vite('resources/js/portrait-studio/index.js')"))
             ->login()
+            // Avertit avant de quitter une page de création ou de modification, ou une fenêtre d'action, non enregistrée.
+            ->unsavedChangesAlerts()
             ->brandName('Parole tenue · Modération')
             ->font('Inter')
             // Couleurs des maquettes (docs/maquettes) : accent bleu et ronds d'état des verdicts.
