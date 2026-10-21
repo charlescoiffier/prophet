@@ -75,8 +75,8 @@ Le critère de verdict est écrit sur la carte avant l’échéance : on sait d�
 - **La barre latérale** classe les cartes par **état** (toutes, verdict attendu, échéances à venir, en relecture,
   tranchées), par **verdict**, par **personnalité** et par **thème**. Sur téléphone, elle se replie derrière « Menu ».
 - **Les onglets** Promesses et Prédictions filtrent chaque vue.
-- **Rechercher** : recherche plein texte en français dans les citations et leur contexte (« logement » trouve
-  « logements »).
+- **Rechercher** : ouvre un filtre au-dessus des cartes ; chaque mot tapé doit figurer dans la citation ou dans le nom
+  de la personnalité, sans tenir compte des majuscules ni des accents (« ébauche prix »).
 - **La page d’une personnalité** montre son affiliation au moment de chaque déclaration et son bilan.
 - **Proposer une carte** : touche `Q` depuis n’importe quelle page. Sans compte, il faut laisser son adresse e-mail et
   passer une vérification anti-robot (sans cookie). La citation n’est jamais réécrite automatiquement.

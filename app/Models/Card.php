@@ -133,6 +133,26 @@ class Card extends Model
     }
 
     /**
+     * Filtre de recherche : chaque mot tapé doit figurer dans la citation ou dans le nom de la
+     * personnalité, sans tenir compte des majuscules ni des accents (« ébauche prix »).
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function matching(Builder $query, string $search): void
+    {
+        $terms = preg_split('/\s+/u', trim($search), -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($terms as $term) {
+            $pattern = '%'.addcslashes(mb_strtolower($term), '%_\\').'%';
+
+            $query->where(fn (Builder $card) => $card
+                ->whereRaw('unaccent(lower(quote)) like unaccent(?)', [$pattern])
+                ->orWhereHas('publicFigure', fn (Builder $figure) => $figure->whereRaw('unaccent(lower(name)) like unaccent(?)', [$pattern])));
+        }
+    }
+
+    /**
      * Cartes publiées dont l'échéance est passée et qui attendent encore un verdict.
      *
      * @param  Builder<self>  $query

@@ -25,11 +25,7 @@ class SearchCards
             ->visible();
 
         if (filled($filters['q'] ?? null)) {
-            // Même expression que l'index cards_search_fr, pour qu'il serve.
-            $query->whereRaw(
-                "to_tsvector('french', quote || ' ' || coalesce(context, '')) @@ websearch_to_tsquery('french', ?)",
-                [$filters['q']],
-            );
+            $query->matching($filters['q']);
         }
 
         if (filled($filters['public_figure'] ?? null)) {

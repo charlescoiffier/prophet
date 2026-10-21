@@ -29,9 +29,9 @@
         @if ($searching)
             <label class="flex min-h-10 w-full items-center gap-2 border border-ink bg-field px-3 sm:w-auto sm:min-w-[420px] lg:min-w-[520px]">
                 <x-uicon name="search" :size="20" />
-                <span class="sr-only">Rechercher dans les citations et leur contexte</span>
+                <span class="sr-only">Filtrer les cartes par citation ou par personnalité</span>
                 <input type="text" enterkeyhint="search" wire:model.live.debounce.300ms="q" x-init="$el.focus()" @keydown.escape="$wire.closeSearch()"
-                       placeholder="Rechercher dans les citations et leur contexte"
+                       placeholder="Filtrer par citation ou par personnalité"
                        class="min-w-0 flex-1 bg-transparent text-sm outline-none">
                 <button type="button" wire:click="closeSearch" class="cursor-pointer px-1 text-lg leading-none text-muted hover:text-ink" aria-label="Fermer la recherche">×</button>
             </label>

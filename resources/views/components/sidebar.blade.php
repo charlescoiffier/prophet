@@ -26,7 +26,8 @@
     </div>
     <p class="mt-3 hidden text-[11px] text-muted md:block">Les paroles passent, les promesses restent.</p>
 
-    <div id="sidebar-menu" :class="open ? 'flex' : 'hidden md:flex'" class="hidden flex-1 flex-col md:flex">
+    {{-- Ouvert sur téléphone par le bouton Menu (data-open), toujours visible sur grand écran. --}}
+    <div id="sidebar-menu" :data-open="open" class="hidden flex-1 flex-col data-[open=true]:flex md:flex">
         <div class="mt-5 flex flex-col gap-2 md:mt-9">
             <a href="{{ route('cards.propose') }}" wire:navigate class="flex items-center gap-2.5 bg-ink px-2.5 py-3 text-sm font-semibold whitespace-nowrap text-white no-underline hover:bg-black hover:text-white">
                 <x-uicon name="propose" :size="18" />

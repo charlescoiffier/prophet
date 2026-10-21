@@ -141,3 +141,23 @@ it('affiche dans la barre latérale le nombre de verdicts de chaque tonalité', 
         'caduques-ou-inverifiables' => 0,
     ]);
 });
+
+it('filtre par citation ou par nom de personnalité, sans accents ni majuscules, mot par mot', function () {
+    $ebauche = PublicFigure::factory()->create(['name' => 'Thomas Ébauche']);
+    Card::factory()->published()->for($ebauche)->create(['quote' => '« Les prix de l’électricité baisseront. »']);
+    Card::factory()->published()->for($ebauche)->create(['quote' => '« Le déficit repassera sous 3 %. »']);
+    Card::factory()->published()->create(['quote' => '« Les prix du métro augmenteront. »']);
+
+    Livewire::test(Board::class)
+        ->set('q', 'EBAUCHE')
+        ->assertSee('« Les prix de l’électricité baisseront. »')
+        ->assertSee('« Le déficit repassera sous 3 %. »')
+        ->assertDontSee('« Les prix du métro augmenteront. »')
+        ->set('q', 'electricite')
+        ->assertSee('« Les prix de l’électricité baisseront. »')
+        ->assertDontSee('« Le déficit repassera sous 3 %. »')
+        ->set('q', 'ébauche prix')
+        ->assertSee('« Les prix de l’électricité baisseront. »')
+        ->assertDontSee('« Le déficit repassera sous 3 %. »')
+        ->assertDontSee('« Les prix du métro augmenteront. »');
+});

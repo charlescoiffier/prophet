@@ -172,10 +172,7 @@ class Board extends Component
             ->when($this->figure, fn (Builder $query) => $query->where('public_figure_id', $this->figure->getKey()))
             ->when($this->theme, fn (Builder $query) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereKey($this->theme->getKey())))
             ->when($withType ? CardType::tryFrom($this->type) : null, fn (Builder $query, CardType $type) => $query->where('type', $type))
-            ->when(trim($this->q) !== '', fn (Builder $query) => $query->whereRaw(
-                "to_tsvector('french', quote || ' ' || coalesce(context, '')) @@ websearch_to_tsquery('french', ?)",
-                [trim($this->q)],
-            ));
+            ->when(trim($this->q) !== '', fn (Builder $query) => $query->matching($this->q));
     }
 
     private function title(): string

@@ -18,7 +18,7 @@ class ListCardsRequest extends FormRequest
         $sorts = collect(SearchCards::SORTS)->flatMap(fn (string $sort) => [$sort, "-{$sort}"])->all();
 
         return [
-            /** Recherche plein texte (français) dans la citation et son contexte. */
+            /** Filtre : chaque mot doit figurer dans la citation ou le nom de la personnalité (sans accents ni majuscules). */
             'q' => ['nullable', 'string', 'max:200'],
             /** Slug de la personnalité. */
             'public_figure' => ['nullable', 'string', 'max:255'],
