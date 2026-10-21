@@ -44,7 +44,6 @@ ICONS = {
     'flag': ('rr', 'flag'),
     'calendar': ('rr', 'calendar'),
     'link': ('rr', 'link-alt'),
-    'github': ('brands', 'github'),
     'logo-quote': ('sr', 'quote-right'),
 }
 

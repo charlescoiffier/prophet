@@ -13,15 +13,14 @@
         <div class="mx-auto flex max-w-[1700px] flex-col">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-ink pb-[18px] text-[10px] sm:text-xs">
                 <span>Un observatoire de la parole publique.</span>
-                <span class="flex items-center gap-3 text-muted">
-                    @php($commit = config('prophet.commit'))
-                    <a href="{{ config('prophet.repository').($commit ? '/commit/'.$commit : '/releases') }}" class="text-muted hover:text-ink" rel="noopener">
-                        Version {{ config('prophet.version') }}@if ($commit) · {{ substr($commit, 0, 7) }}@endif
+                @php($commit = config('prophet.commit'))
+                @if ($commit)
+                    <a href="{{ config('prophet.repository').'/commit/'.$commit }}" class="text-muted hover:text-ink" rel="noopener">
+                        Version {{ config('prophet.version') }} · {{ substr($commit, 0, 7) }}
                     </a>
-                    <a href="{{ config('prophet.repository') }}" class="flex items-center gap-1 text-muted hover:text-ink" rel="noopener">
-                        <x-uicon name="github" :size="14" /> GitHub
-                    </a>
-                </span>
+                @else
+                    <span class="text-muted">Version {{ config('prophet.version') }}</span>
+                @endif
             </div>
 
             {{ $slot }}

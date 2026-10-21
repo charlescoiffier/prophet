@@ -187,3 +187,12 @@ it('liste toutes les personnalités et tous les thèmes qui ont une carte publiq
     $this->get(route('figures.index'))->assertOk()->assertSee('Ada Visible')->assertDontSee('Bob Caché');
     $this->get(route('themes.index'))->assertOk()->assertSee('# Logement');
 });
+
+it('affiche en haut la version et le commit de construction, avec un lien vers ce commit', function () {
+    config(['prophet.commit' => 'abc1234def5678']);
+
+    $this->get('/')
+        ->assertSee('Version '.config('prophet.version').' · abc1234')
+        ->assertSee(config('prophet.repository').'/commit/abc1234def5678', escape: false)
+        ->assertDontSee('GitHub');
+});
