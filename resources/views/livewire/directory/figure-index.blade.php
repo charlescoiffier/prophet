@@ -1,7 +1,7 @@
 <div class="flex flex-col">
     <header class="flex flex-col gap-6 pt-7 pb-6 lg:flex-row lg:items-end lg:justify-between lg:pt-[35px] lg:pb-[30px]">
         <h1 class="max-w-[760px] font-serif text-[clamp(40px,4.4vw,72px)] leading-[0.97] font-extrabold tracking-[-2.5px] text-balance">Toutes les personnalités</h1>
-        <p class="max-w-[450px] text-[13px] leading-relaxed lg:max-w-[255px]">Celles dont au moins une parole est au registre, par ordre alphabétique.</p>
+        <p class="max-w-[450px] text-[13px] leading-relaxed lg:max-w-[255px]">Celles dont au moins une parole est au registre, par ordre alphabétique des noms.</p>
     </header>
 
     <div class="grid grid-cols-1 gap-[18px] border-t border-ink pt-6 sm:grid-cols-2 xl:grid-cols-3">

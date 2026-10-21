@@ -8,6 +8,8 @@ use App\Enums\VerdictValue;
 use App\Support\Names;
 use Database\Factories\PublicFigureFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -54,6 +56,17 @@ class PublicFigure extends Model
                 [$figure->first_name, $figure->last_name] = Names::split($figure->name);
             }
         });
+    }
+
+    /**
+     * Ordre alphabétique par nom de famille, puis prénom, sans tenir compte des accents ni de la casse.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function alphabetical(Builder $query): void
+    {
+        $query->orderByRaw('unaccent(lower(last_name)), unaccent(lower(coalesce(first_name, \'\')))');
     }
 
     public function getRouteKeyName(): string

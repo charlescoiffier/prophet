@@ -18,7 +18,7 @@ class PublicFiguresTable
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with('category')->withCount('cards'))
-            ->defaultSort('name')
+            ->defaultSort(fn (Builder $query) => $query->alphabetical())
             ->columns([
                 // Petit portrait : la photo, ou le monogramme du site à défaut.
                 ImageColumn::make('photo')
@@ -36,7 +36,9 @@ class PublicFiguresTable
                 TextColumn::make('name')
                     ->label('Nom')
                     ->searchable()
-                    ->sortable()
+                    ->sortable(query: fn (Builder $query, string $direction) => $query
+                        ->orderByRaw('unaccent(lower(last_name)) '.($direction === 'desc' ? 'desc' : 'asc'))
+                        ->orderByRaw('unaccent(lower(coalesce(first_name, \'\'))) '.($direction === 'desc' ? 'desc' : 'asc')))
                     ->description(fn ($record) => $record->description),
                 TextColumn::make('category.name')
                     ->label('Catégorie')

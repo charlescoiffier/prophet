@@ -8,7 +8,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
- * Toutes les personnalités qui ont au moins une carte publique, par ordre alphabétique.
+ * Toutes les personnalités qui ont au moins une carte publique, par ordre alphabétique des noms de famille.
  */
 #[Title('Toutes les personnalités')]
 class FigureIndex extends Component
@@ -21,7 +21,7 @@ class FigureIndex extends Component
             'figures' => PublicFigure::whereHas('cards', fn ($query) => $query->visible())
                 ->withCount($visible)
                 ->with(['category', 'affiliations'])
-                ->orderBy('name')
+                ->alphabetical()
                 ->get(),
         ]);
     }

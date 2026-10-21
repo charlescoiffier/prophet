@@ -86,7 +86,7 @@ class Sidebar extends Component
             ->withMax($visible, 'updated_at')
             ->orderByDesc('cards_count')
             ->orderByDesc('cards_max_updated_at')
-            ->orderBy('name')
+            ->when($query->getModel() instanceof PublicFigure, fn (Builder $figures) => $figures->alphabetical(), fn (Builder $themes) => $themes->orderBy('name'))
             ->limit(self::LIMIT)
             ->get();
     }

@@ -306,7 +306,7 @@ class Board extends Component
 
         $menus = [
             'figures' => ['label' => 'Personnalités', 'options' => isset($fixed['figures']) ? [] : PublicFigure::whereHas('cards', $onPage)
-                ->orderBy('name')->pluck('name', 'slug')->all()],
+                ->alphabetical()->pluck('name', 'slug')->all()],
             'themes' => ['label' => 'Thèmes', 'options' => isset($fixed['themes']) ? [] : Theme::whereHas('cards', $onPage)
                 ->orderBy('name')->pluck('name', 'slug')->all()],
             'states' => ['label' => 'États', 'options' => self::STATE_LABELS],

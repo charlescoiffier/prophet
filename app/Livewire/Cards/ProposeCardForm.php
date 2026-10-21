@@ -113,7 +113,7 @@ class ProposeCardForm extends Component
     public function render(): View
     {
         return view('livewire.cards.propose-card-form', [
-            'figures' => PublicFigure::orderBy('name')->get(['id', 'name']),
+            'figures' => PublicFigure::alphabetical()->get(['id', 'name']),
             'allThemes' => Theme::orderBy('name')->get(['id', 'name']),
         ]);
     }

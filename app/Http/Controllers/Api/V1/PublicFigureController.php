@@ -26,7 +26,7 @@ class PublicFigureController extends Controller
             ->with('category')
             ->withCount(['cards' => fn ($query) => $query->visible()])
             ->when($request->string('q')->isNotEmpty(), fn ($query) => $query->where('name', 'ilike', '%'.$request->string('q').'%'))
-            ->orderBy('name')
+            ->alphabetical()
             ->orderBy('id')
             ->paginate(50)
             ->withQueryString();

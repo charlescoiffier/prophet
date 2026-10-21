@@ -62,7 +62,7 @@ class CardForm
                     ->components([
                         Select::make('public_figure_id')
                             ->label('Personnalité')
-                            ->options(fn () => PublicFigure::orderBy('name')->pluck('name', 'id'))
+                            ->options(fn () => PublicFigure::alphabetical()->pluck('name', 'id'))
                             ->searchable()
                             ->required()
                             ->createOptionForm([

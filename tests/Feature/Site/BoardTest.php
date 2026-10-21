@@ -245,3 +245,11 @@ it('grise les filtres que la page fixe déjà et ne propose que les choix de la 
 
     expect(Livewire::test(Board::class, ['view' => 'awaiting'])->instance()->fixedFilters())->toHaveKeys(['states', 'verdicts']);
 });
+
+it('range les personnalités par nom de famille, sans tenir compte des accents', function () {
+    foreach (['Zoé Ancre', 'Alain Zèbre', 'Bruno Élan'] as $name) {
+        Card::factory()->published()->for(PublicFigure::factory()->state(['name' => $name]))->create();
+    }
+
+    $this->get(route('figures.index'))->assertSeeInOrder(['Zoé Ancre', 'Bruno Élan', 'Alain Zèbre']);
+});
