@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Crée ou corrige une fiche de personnalité et son historique d'affiliations.
@@ -25,6 +26,7 @@ class SavePublicFigure
     public function handle(?PublicFigure $figure, User $actor, array $data): PublicFigure
     {
         Gate::forUser($actor)->authorize($figure === null ? 'create' : 'update', $figure ?? PublicFigure::class);
+        $this->ensurePhotoIsComplete($data);
 
         return DB::transaction(function () use ($figure, $actor, $data) {
             $isNew = $figure === null;
@@ -32,6 +34,7 @@ class SavePublicFigure
             $before = $isNew ? [] : $this->snapshot($figure);
 
             $previousPhoto = $figure->photo_path;
+            $previousOriginal = $figure->photo_original_path;
 
             $figure->fill($data);
             $figure->slug = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['name']);
@@ -40,6 +43,9 @@ class SavePublicFigure
             // Photo remplacée ou retirée : l'ancien fichier ne sert plus.
             if ($previousPhoto !== null && $previousPhoto !== $figure->photo_path) {
                 DB::afterCommit(fn () => Storage::disk('public')->delete($previousPhoto));
+            }
+            if ($previousOriginal !== null && $previousOriginal !== $figure->photo_original_path) {
+                DB::afterCommit(fn () => Storage::disk('public')->delete($previousOriginal));
             }
 
             if (array_key_exists('affiliations', $data)) {
@@ -57,6 +63,22 @@ class SavePublicFigure
 
             return $figure;
         });
+    }
+
+    /**
+     * Une photo de l'atelier va avec son original et ses réglages ; une photo seule (téléversée
+     * avant l'atelier) reste acceptée.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function ensurePhotoIsComplete(array $data): void
+    {
+        $fromStudio = filled($data['photo_original_path'] ?? null) || filled($data['photo_settings'] ?? null);
+        $complete = filled($data['photo_path'] ?? null) && filled($data['photo_original_path'] ?? null) && filled($data['photo_settings'] ?? null);
+
+        if ($fromStudio && ! $complete) {
+            throw ValidationException::withMessages(['photo_path' => __('validation.custom.photo_path.incomplete')]);
+        }
     }
 
     /**

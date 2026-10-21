@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'slug', 'category_id', 'description', 'photo_url', 'photo_path', 'wikidata_id'])]
+#[Fillable(['name', 'slug', 'category_id', 'description', 'photo_url', 'photo_path', 'photo_original_path', 'photo_settings', 'wikidata_id'])]
 class PublicFigure extends Model
 {
     /** @use HasFactory<PublicFigureFactory> */
@@ -27,6 +27,16 @@ class PublicFigure extends Model
      * terminer le chemin (avant d'éventuels paramètres), et il n'y a pas de fragment « # ».
      */
     public const PHOTO_URL_PATTERN = '/^[^#?]+\.(jpe?g|png|webp|gif|avif|svg)(\?[^#]*)?$/i';
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'photo_settings' => 'array',
+        ];
+    }
 
     public function getRouteKeyName(): string
     {
@@ -47,6 +57,14 @@ class PublicFigure extends Model
         return $this->photo_path !== null
             ? Storage::disk('public')->url($this->photo_path)
             : $this->photo_url;
+    }
+
+    /**
+     * Photo passée par l'atelier portrait : déjà en deux tons, sur fond transparent.
+     */
+    public function hasProcessedPhoto(): bool
+    {
+        return $this->photo_path !== null && $this->photo_settings !== null;
     }
 
     /** @return HasMany<Card, $this> */
