@@ -92,6 +92,14 @@ class PublicFigureForm
                             ->imageResizeTargetWidth('600')
                             ->imageResizeTargetHeight('600')
                             ->maxSize(5120)
+                            // La photo téléversée remplace le lien : on le vide, pour qu'un ancien lien
+                            // invalide ne bloque pas l'enregistrement.
+                            ->live()
+                            ->afterStateUpdated(function (Set $set, $state) {
+                                if (filled($state)) {
+                                    $set('photo_url', null);
+                                }
+                            })
                             ->helperText('Photo libre de droits uniquement (crédit et licence vérifiés). Recadrée au carré, affichée en noir et blanc.'),
                     ]),
                 Repeater::make('affiliations')

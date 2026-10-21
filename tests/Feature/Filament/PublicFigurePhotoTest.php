@@ -36,3 +36,17 @@ it('refuse un lien vers une page web au lieu du fichier image', function (string
     'fichier image' => ['https://upload.wikimedia.org/wikipedia/commons/a/ab/Exemple.jpg', true],
     'fichier image avec paramètres' => ['https://example.org/portrait.webp?width=600', true],
 ]);
+
+it('remplace un ancien lien invalide quand on téléverse une photo', function () {
+    Storage::fake('public');
+    $figure = PublicFigure::factory()->create(['photo_url' => 'https://fr.wikipedia.org/wiki/Exemple#/media/Fichier:Exemple.jpg']);
+
+    Livewire::actingAs(User::factory()->moderator()->create())
+        ->test(EditPublicFigure::class, ['record' => $figure->getRouteKey()])
+        ->fillForm(['photo_path' => UploadedFile::fake()->image('portrait.png', 800, 800)])
+        ->assertSchemaStateSet(['photo_url' => null])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($figure->refresh())->photo_url->toBeNull()->photo_path->toStartWith('portraits/');
+});
