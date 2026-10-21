@@ -103,6 +103,11 @@ class Board extends Component
         }
 
         $this->searching = $this->searching || trim($this->q) !== '';
+        // Un filtre déjà fixé par la page (personnalité, thème, vue) est ignoré, même passé dans l'adresse.
+        foreach (array_keys($this->fixedFilters()) as $filter) {
+            $this->{$filter} = [];
+        }
+
         $this->filtering = $this->activeFilterCount() > 0;
         abort_if($view === 'verdict' && ! isset(Appearance::VERDICT_TONES[$tone]), 404);
 
@@ -126,7 +131,42 @@ class Board extends Component
 
     public function activeFilterCount(): int
     {
-        return count($this->states) + count($this->verdicts) + count($this->figures) + count($this->themes);
+        return collect(['states', 'verdicts', 'figures', 'themes'])->sum(fn (string $filter) => count($this->selected($filter)));
+    }
+
+    /**
+     * Filtres que la page fixe déjà, avec la raison affichée sur le menu grisé.
+     *
+     * @return array<string, string>
+     */
+    public function fixedFilters(): array
+    {
+        $viewLabel = self::STATE_LABELS[$this->view] ?? null;
+
+        return array_filter([
+            'figures' => $this->figure ? 'Vous êtes sur la page de '.$this->figure->name.'.' : null,
+            'themes' => $this->theme ? 'Vous êtes sur la page du thème '.$this->theme->name.'.' : null,
+            'states' => match (true) {
+                $this->view === 'verdict' => 'Cette vue ne montre que des cartes tranchées.',
+                $viewLabel !== null => 'Cette vue ne montre que l’état « '.$viewLabel.' ».',
+                default => null,
+            },
+            'verdicts' => match (true) {
+                $this->view === 'verdict' => 'Cette vue montre déjà un seul verdict.',
+                in_array($this->view, ['awaiting', 'upcoming', 'review'], true) => 'Cette vue ne montre pas de carte tranchée.',
+                default => null,
+            },
+        ]);
+    }
+
+    /**
+     * Choix effectifs d'un filtre : rien quand la page le fixe déjà.
+     *
+     * @return list<string>
+     */
+    private function selected(string $filter): array
+    {
+        return isset($this->fixedFilters()[$filter]) ? [] : array_values($this->{$filter});
     }
 
     public function showMore(): void
@@ -188,7 +228,7 @@ class Board extends Component
         };
 
         // Un état choisi garde sa section ; un verdict choisi ne laisse que les cartes tranchées.
-        $states = array_intersect($this->states, array_keys($scopes));
+        $states = array_intersect($this->selected('states'), array_keys($scopes));
         $keys = array_values(array_filter($keys, fn (string $key) => ($states === [] || in_array($key, $states, true))
             && ($this->selectedTones() === [] || $key === 'closed')));
 
@@ -221,8 +261,8 @@ class Board extends Component
             ->when($this->figure, fn (Builder $query) => $query->where('public_figure_id', $this->figure->getKey()))
             ->when($this->theme, fn (Builder $query) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereKey($this->theme->getKey())))
             ->when($withType ? CardType::tryFrom($this->type) : null, fn (Builder $query, CardType $type) => $query->where('type', $type))
-            ->when($this->figures !== [], fn (Builder $query) => $query->whereHas('publicFigure', fn (Builder $figure) => $figure->whereIn('slug', $this->figures)))
-            ->when($this->themes !== [], fn (Builder $query) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereIn('slug', $this->themes)))
+            ->when($this->selected('figures'), fn (Builder $query, array $slugs) => $query->whereHas('publicFigure', fn (Builder $figure) => $figure->whereIn('slug', $slugs)))
+            ->when($this->selected('themes'), fn (Builder $query, array $slugs) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereIn('slug', $slugs)))
             ->when(trim($this->q) !== '', fn (Builder $query) => $query->matching($this->q));
     }
 
@@ -244,13 +284,14 @@ class Board extends Component
      */
     private function selectedTones(): array
     {
-        return array_values(array_intersect($this->verdicts, array_keys(Appearance::VERDICT_TONES)));
+        return array_values(array_intersect($this->selected('verdicts'), array_keys(Appearance::VERDICT_TONES)));
     }
 
     /**
-     * Choix des quatre menus de filtre : seules les personnalités et thèmes qui ont une carte publique.
+     * Les quatre menus de filtre. Personnalités et thèmes : seulement ceux qui ont une carte publique
+     * sur la page (sur la page d'un thème, les personnalités qui en parlent). Un menu fixé par la page est grisé.
      *
-     * @return array<string, array{label: string, options: array<string, string>}>
+     * @return array<string, array{label: string, options: array<string, string>, fixed: string|null}>
      */
     private function filterOptions(): array
     {
@@ -258,14 +299,25 @@ class Board extends Component
             return [];
         }
 
-        return [
+        $fixed = $this->fixedFilters();
+        $onPage = fn (Builder $query) => $query->visible()
+            ->when($this->figure, fn (Builder $card) => $card->where('public_figure_id', $this->figure->getKey()))
+            ->when($this->theme, fn (Builder $card) => $card->whereHas('themes', fn (Builder $theme) => $theme->whereKey($this->theme->getKey())));
+
+        $menus = [
             'states' => ['label' => 'États', 'options' => self::STATE_LABELS],
             'verdicts' => ['label' => 'Verdicts', 'options' => array_map(fn (array $tone) => $tone['label'], Appearance::VERDICT_TONES)],
-            'figures' => ['label' => 'Personnalités', 'options' => PublicFigure::whereHas('cards', fn (Builder $query) => $query->visible())
+            'figures' => ['label' => 'Personnalités', 'options' => isset($fixed['figures']) ? [] : PublicFigure::whereHas('cards', $onPage)
                 ->orderBy('name')->pluck('name', 'slug')->all()],
-            'themes' => ['label' => 'Thèmes', 'options' => Theme::whereHas('cards', fn (Builder $query) => $query->visible())
+            'themes' => ['label' => 'Thèmes', 'options' => isset($fixed['themes']) ? [] : Theme::whereHas('cards', $onPage)
                 ->orderBy('name')->pluck('name', 'slug')->all()],
         ];
+
+        foreach ($menus as $filter => $menu) {
+            $menus[$filter]['fixed'] = $fixed[$filter] ?? null;
+        }
+
+        return $menus;
     }
 
     private function title(): string

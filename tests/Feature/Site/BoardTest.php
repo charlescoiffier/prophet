@@ -222,3 +222,26 @@ it('affiche en haut la version et le commit de construction, avec un lien vers c
         ->assertSee(config('prophet.repository').'/commit/abc1234def5678', escape: false)
         ->assertDontSee('GitHub');
 });
+
+it('grise les filtres que la page fixe déjà et ne propose que les choix de la page', function () {
+    $ada = PublicFigure::factory()->create(['name' => 'Ada Filtre']);
+    $bob = PublicFigure::factory()->create(['name' => 'Bob Ailleurs']);
+    $logement = Theme::factory()->create(['name' => 'Logement']);
+    Card::factory()->published()->for($ada)->hasAttached($logement)->create(['quote' => '« Sur le logement. »']);
+    Card::factory()->published()->for($bob)->create(['quote' => '« Ailleurs. »']);
+
+    $onFigurePage = Livewire::withQueryParams(['personnalites' => [$bob->slug]])
+        ->test(Board::class, ['figure' => $ada])
+        ->set('filtering', true)
+        ->assertSee('« Sur le logement. »');
+
+    expect($onFigurePage->instance()->fixedFilters())->toHaveKey('figures')->not->toHaveKey('themes')
+        ->and($onFigurePage->get('figures'))->toBe([]);
+
+    Livewire::test(Board::class, ['theme' => $logement])
+        ->set('filtering', true)
+        ->assertSee('Ada Filtre')
+        ->assertDontSee('Bob Ailleurs');
+
+    expect(Livewire::test(Board::class, ['view' => 'awaiting'])->instance()->fixedFilters())->toHaveKeys(['states', 'verdicts']);
+});

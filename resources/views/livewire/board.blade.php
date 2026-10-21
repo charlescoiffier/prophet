@@ -55,6 +55,14 @@
     @if ($filtering)
         <div id="board-filters" class="flex flex-wrap items-center gap-2 border-b border-ink py-[13px]">
             @foreach ($filterOptions as $filter => $menu)
+                @if ($menu['fixed'])
+                    <button type="button" disabled title="{{ $menu['fixed'] }}" wire:key="filter-{{ $filter }}"
+                            class="flex min-h-10 cursor-not-allowed items-center gap-2 border border-line bg-transparent px-3 text-xs font-semibold text-muted opacity-60">
+                        {{ $menu['label'] }} <span aria-hidden="true" class="text-[10px]">▾</span>
+                        <span class="sr-only">: {{ $menu['fixed'] }}</span>
+                    </button>
+                    @continue
+                @endif
                 @php($selected = count($this->{$filter}))
                 <div x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false" class="relative" wire:key="filter-{{ $filter }}">
                     <button type="button" @click="open = ! open" :aria-expanded="open"
