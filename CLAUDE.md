@@ -24,6 +24,10 @@ Site qui recense les promesses et prédictions de personnalités publiques (poli
 - **Base** : PostgreSQL (choisi le 20 octobre 2026). Plusieurs règles sont doublées en base (contraintes CHECK, index uniques partiels) et la recherche plein texte utilise la configuration `french`. Les tests tournent sur PostgreSQL (base `prophet_test`), pas sur SQLite.
 - **Clés primaires** : UUID (`HasUuids`). Statut, auteur, version, décideur et rôle ne sont jamais « fillable » : ils ne changent que par les classes d'action.
 
+## Interface
+
+- Toute suppression, sur le site comme en modération, demande confirmation (fenêtre « Supprimer… ? » ; lignes de répétiteur comprises : `->deleteAction(fn (Action $action) => $action->requiresConfirmation())`).
+
 ## Règles métier à faire respecter partout (Policies + tests)
 
 1. Une carte proposée sans compte reste en `awaiting_email` tant que l'e-mail n'est pas confirmé par lien.
@@ -63,7 +67,7 @@ Rôles : `member`, `moderator`, `admin`.
 
 Les enums sont dans `app/Enums` ; leurs libellés français dans `lang/fr/enums.php` (`$enum->label()`, `Enum::options()`).
 
-Catégorie d'une personnalité : table `categories` (enrichissable par les modérateurs via `CreateCategory`), plus l'ancien enum. Personnalité : prénom (facultatif) et nom saisis séparément ; `name` est le nom affiché « Prénom Nom », recomposé à l'enregistrement (`PublicFigure::booted`). Organisations : un texte inconnu tapé dans le champ devient une nouvelle organisation (`Organizations::suggestions`) ; `App\Support\Organizations` fusionne les variantes d'écriture et signale les quasi-doublons (`NotNearDuplicateOrganization`, case « C'est une autre organisation »). Comptes : prénom et nom facultatifs, pseudo et adresse uniques (`AccountRules`), modifiables par le titulaire (« Mon compte », `/mon-compte`, et `PATCH /api/v1/accounts/me`) ou par l'admin (`UpdateAccount`, fiche du compte en modération) ; une nouvelle adresse doit être reconfirmée ; suppression douce par l'admin (`DeleteUser`, `RestoreUser`).
+Catégorie d'une personnalité : table `categories` (enrichissable par les modérateurs via `CreateCategory`), plus l'ancien enum. Personnalité : prénom (facultatif) et nom saisis séparément ; pas de « fonction actuelle » : seules les fonctions successives (table `affiliations` : fonction obligatoire, organisation facultative, début, fin) disent qui parlait, à la date de chaque déclaration (`affiliationOn`) ou aujourd'hui (`currentAffiliation`) ; catégorie tapée créée à l'enregistrement de la fiche (`App\Filament\Forms\CategoryField`) ; `name` est le nom affiché « Prénom Nom », recomposé à l'enregistrement (`PublicFigure::booted`). Organisations : un texte inconnu tapé dans le champ devient une nouvelle organisation (`Organizations::suggestions`) ; `App\Support\Organizations` fusionne les variantes d'écriture et signale les quasi-doublons (`NotNearDuplicateOrganization`, case « C'est une autre organisation »). Comptes : prénom et nom facultatifs, pseudo et adresse uniques (`AccountRules`), modifiables par le titulaire (« Mon compte », `/mon-compte`, et `PATCH /api/v1/accounts/me`) ou par l'admin (`UpdateAccount`, fiche du compte en modération) ; une nouvelle adresse doit être reconfirmée ; suppression douce par l'admin (`DeleteUser`, `RestoreUser`).
 
 Champs renommés par rapport à la spécification : `reformulation` → `testable_statement`, `critere_verdict` → `verdict_criterion`, `pseudo` → `username`, `media` → `outlet`, `horodatage` → `timecode`, `valide_par`/`valide_le` → `decided_by`/`decided_at`.
 

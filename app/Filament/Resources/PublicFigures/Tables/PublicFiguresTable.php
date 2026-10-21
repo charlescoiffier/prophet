@@ -17,7 +17,7 @@ class PublicFiguresTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with('category')->withCount('cards'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['category', 'affiliations'])->withCount('cards'))
             ->defaultSort(fn (Builder $query) => $query->alphabetical())
             ->columns([
                 // Petit portrait : la photo, ou le monogramme du site à défaut.
@@ -39,7 +39,7 @@ class PublicFiguresTable
                     ->sortable(query: fn (Builder $query, string $direction) => $query
                         ->orderByRaw('unaccent(lower(last_name)) '.($direction === 'desc' ? 'desc' : 'asc'))
                         ->orderByRaw('unaccent(lower(coalesce(first_name, \'\'))) '.($direction === 'desc' ? 'desc' : 'asc')))
-                    ->description(fn ($record) => $record->description),
+                    ->description(fn (PublicFigure $record) => $record->currentAffiliation()?->label()),
                 TextColumn::make('category.name')
                     ->label('Catégorie')
                     ->badge()

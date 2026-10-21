@@ -15,7 +15,7 @@ class Organizations
      */
     public static function known(): Collection
     {
-        return Affiliation::query()->distinct()->orderBy('organization')->pluck('organization');
+        return Affiliation::query()->whereNotNull('organization')->distinct()->orderBy('organization')->pluck('organization');
     }
 
     /**

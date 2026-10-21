@@ -89,7 +89,7 @@ class CardInfolist
         $affiliation = $record->publicFigure?->affiliationOn($record->stated_on);
 
         return $affiliation === null ? null
-            : trim("{$affiliation->role}, {$affiliation->organization}", ', ').', au moment de la déclaration';
+            : $affiliation->label().', au moment de la déclaration';
     }
 
     private static function author(Card $record): string

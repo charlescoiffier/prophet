@@ -94,7 +94,7 @@ class SavePublicFigure
 
         foreach ($affiliations as $attributes) {
             // « parti a » devient « Parti A » si cette organisation est déjà connue : pas de doublon.
-            $attributes['organization'] = Organizations::canonical($attributes['organization']);
+            $attributes['organization'] = filled($attributes['organization'] ?? null) ? Organizations::canonical($attributes['organization']) : null;
 
             $affiliation = $figure->affiliations()->updateOrCreate(
                 ['id' => $attributes['id'] ?? null],
@@ -116,12 +116,11 @@ class SavePublicFigure
             'name' => $figure->name,
             'slug' => $figure->slug,
             'category' => $figure->category()->value('name'),
-            'description' => $figure->description,
             'photo_url' => $figure->photo_url,
             'photo_path' => $figure->photo_path,
             'wikidata_id' => $figure->wikidata_id,
             'affiliations' => $figure->affiliations()->get()
-                ->map(fn ($a) => trim("{$a->organization} — {$a->role} ({$a->started_on?->toDateString()} → {$a->ended_on?->toDateString()})"))
+                ->map(fn ($a) => trim("{$a->label()} ({$a->started_on?->toDateString()} → {$a->ended_on?->toDateString()})"))
                 ->all(),
         ];
     }

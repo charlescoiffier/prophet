@@ -253,3 +253,13 @@ it('range les personnalités par nom de famille, sans tenir compte des accents',
 
     $this->get(route('figures.index'))->assertSeeInOrder(['Zoé Ancre', 'Bruno Élan', 'Alain Zèbre']);
 });
+
+it('montre sur chaque carte la fonction de la personnalité au moment de la déclaration', function () {
+    $figure = PublicFigure::factory()->create();
+    $figure->affiliations()->create(['role' => 'Ministre', 'organization' => 'Gouvernement C', 'started_on' => '2020-01-01', 'ended_on' => '2022-12-31']);
+    $figure->affiliations()->create(['role' => 'Députée', 'organization' => 'Parti A', 'started_on' => '2023-01-01']);
+    Card::factory()->published()->for($figure)->create(['stated_on' => '2021-06-01']);
+
+    $this->get('/')->assertSee('Ministre, Gouvernement C')->assertDontSee('Députée, Parti A');
+    $this->get(route('figures.show', $figure))->assertSee('Députée, Parti A');
+});

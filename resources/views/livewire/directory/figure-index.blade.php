@@ -6,7 +6,7 @@
 
     <div class="grid grid-cols-1 gap-[18px] border-t border-ink pt-6 sm:grid-cols-2 xl:grid-cols-3">
         @foreach ($figures as $figure)
-            @php($affiliation = $figure->affiliationOn(today()))
+            @php($affiliation = $figure->currentAffiliation())
             <a href="{{ route('figures.show', $figure) }}" wire:navigate wire:key="figure-{{ $figure->id }}"
                class="flex items-end gap-4 overflow-hidden border border-ink bg-field pl-4 text-ink no-underline hover:bg-paper-deep hover:text-ink">
                 <x-portrait :figure="$figure" class="translate-y-[3px]" />
@@ -16,7 +16,7 @@
                     @endif
                     <span class="text-[20px] leading-tight font-bold tracking-[-0.4px]">{{ $figure->name }}</span>
                     @if ($affiliation)
-                        <span class="text-xs">{{ trim($affiliation->role.', '.$affiliation->organization, ', ') }}</span>
+                        <span class="text-xs">{{ $affiliation->label() }}</span>
                     @endif
                     <span class="mt-1 text-xs text-muted">{{ trans_choice(':count carte|:count cartes', $figure->cards_count) }}</span>
                 </span>

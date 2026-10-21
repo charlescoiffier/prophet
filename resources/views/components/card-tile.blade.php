@@ -26,8 +26,9 @@
         <x-portrait :figure="$card->publicFigure" class="translate-y-[3px]" />
         <span class="pb-1.5 text-[21px] leading-none font-bold tracking-[-0.5px]">
             {{ $card->publicFigure->name }}
-            @if ($card->publicFigure->description)
-                <small class="mt-0.5 block text-[10px] leading-tight font-normal tracking-normal">{{ $card->publicFigure->description }}</small>
+            {{-- Fonction au moment de la déclaration --}}
+            @if ($affiliation = $card->publicFigure->affiliationOn($card->stated_on))
+                <small class="mt-0.5 block text-[10px] leading-tight font-normal tracking-normal">{{ $affiliation->label() }}</small>
             @endif
         </span>
     </span>

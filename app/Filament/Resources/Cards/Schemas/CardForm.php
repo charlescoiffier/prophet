@@ -6,10 +6,12 @@ use App\Actions\PublicFigures\SavePublicFigure;
 use App\Enums\CardType;
 use App\Enums\DeadlineNature;
 use App\Enums\SourceKind;
+use App\Filament\Forms\CategoryField;
 use App\Models\Card;
-use App\Models\Category;
 use App\Models\PublicFigure;
 use App\Models\Theme;
+use App\Support\Organizations;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Repeater;
@@ -20,6 +22,8 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Thèmes et sources ne sont pas liés en « relationship » : c'est l'action
@@ -72,11 +76,15 @@ class CardForm
                             ->createOptionForm([
                                 TextInput::make('first_name')->label('Prénom')->maxLength(100),
                                 TextInput::make('last_name')->label('Nom')->required()->maxLength(155),
-                                Select::make('category_id')->label('Catégorie')->options(fn () => Category::orderBy('name')->pluck('name', 'id'))->required(),
-                                TextInput::make('description')->label('Fonction actuelle'),
+                                CategoryField::make(),
+                                TextInput::make('role')->label('Fonction au moment de la déclaration')->maxLength(255),
+                                TextInput::make('organization')->label('Organisation')->maxLength(255)->datalist(fn () => Organizations::known()->all()),
                             ])
-                            ->createOptionUsing(fn (array $data, SavePublicFigure $savePublicFigure) => $savePublicFigure
-                                ->handle(null, auth()->user(), $data)->getKey()),
+                            ->createOptionUsing(fn (array $data, SavePublicFigure $savePublicFigure) => DB::transaction(fn () => $savePublicFigure
+                                ->handle(null, auth()->user(), [
+                                    ...CategoryField::resolve(Arr::except($data, ['role', 'organization']), auth()->user()),
+                                    'affiliations' => filled($data['role'] ?? null) ? [['role' => $data['role'], 'organization' => $data['organization'] ?? null]] : [],
+                                ])->getKey())),
                         ToggleButtons::make('type')
                             ->label('Type')
                             ->options(CardType::class)
@@ -107,6 +115,7 @@ class CardForm
                     ->columns(5)
                     ->minItems(1)
                     ->defaultItems(1)
+                    ->deleteAction(fn (Action $action) => $action->requiresConfirmation()->modalHeading('Supprimer cette source ?'))
                     ->addActionLabel('Ajouter une source')
                     ->schema(self::sourceFields()),
             ]);

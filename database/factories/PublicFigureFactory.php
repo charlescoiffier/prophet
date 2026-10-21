@@ -21,7 +21,6 @@ class PublicFigureFactory extends Factory
             'slug' => Str::slug($name),
             // Une des catégories d'origine, créées par la migration.
             'category_id' => fn () => Category::inRandomOrder()->value('id') ?? Category::factory(),
-            'description' => fake()->jobTitle(),
         ];
     }
 }

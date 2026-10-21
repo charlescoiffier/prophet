@@ -108,12 +108,11 @@ class DemoSeeder extends Seeder
             ['Hugo Fiction', 'journaliste', 'Chroniqueur radio', 'Radio E', 'Chroniqueur'],
             ['Anne Scénario', 'politique', 'Ministre', 'Gouvernement C', 'Ministre'],
             ['Claire Récit', 'politique', 'Députée', 'Parti F', 'Députée'],
-        ] as [$name, $category, $description, $organization, $role]) {
+        ] as [$name, $category, , $organization, $role]) {
             $figure = PublicFigure::create([
                 'name' => $name,
                 'slug' => Str::slug($name),
                 'category_id' => Category::where('slug', $category)->value('id'),
-                'description' => $description,
             ]);
 
             $figure->affiliations()->create([
@@ -207,12 +206,11 @@ class DemoSeeder extends Seeder
             ['Agathe Corollaire', 'journaliste', 'Présentatrice de la matinale', [['Télé G', 'Présentatrice', '-6 years', null]]],
             ['Yves Épilogue', 'politique', 'Ancien Premier ministre', [['Gouvernement C', 'Premier ministre', '-7 years', '-4 years'], ['Parti B', 'Conseiller politique', '-4 years', null]]],
             ['Margaux Tangente', 'autre', 'Secrétaire générale d’un syndicat', [['Syndicat L', 'Secrétaire générale', '-3 years', null]]],
-        ] as [$name, $category, $description, $affiliations]) {
+        ] as [$name, $category, , $affiliations]) {
             $figure = PublicFigure::create([
                 'name' => $name,
                 'slug' => Str::slug($name),
                 'category_id' => Category::where('slug', $category)->value('id'),
-                'description' => $description,
             ]);
 
             foreach ($affiliations as [$organization, $role, $start, $end]) {

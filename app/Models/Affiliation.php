@@ -30,6 +30,14 @@ class Affiliation extends Model
         return $this->belongsTo(PublicFigure::class);
     }
 
+    /**
+     * « Fonction, Organisation », ou l'une des deux seule.
+     */
+    public function label(): string
+    {
+        return collect([$this->role, $this->organization])->filter(fn (?string $part) => filled($part))->implode(', ');
+    }
+
     public function coversDate(Carbon $date): bool
     {
         return ($this->started_on === null || $this->started_on->lte($date))

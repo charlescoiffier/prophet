@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\PublicFigures\Schemas;
 
-use App\Actions\Categories\CreateCategory;
+use App\Filament\Forms\CategoryField;
 use App\Filament\Forms\Components\PortraitStudio;
-use App\Models\Category;
 use App\Models\PublicFigure;
 use App\Rules\NotNearDuplicateOrganization;
 use App\Support\Names;
 use App\Support\Organizations;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -52,19 +52,7 @@ class PublicFigureForm
                             ->helperText('Suit le nom automatiquement ; le modifier change l’adresse de la page.')
                             ->alphaDash()
                             ->unique(ignoreRecord: true),
-                        Select::make('category_id')
-                            ->label('Catégorie')
-                            ->options(fn () => Category::orderBy('name')->pluck('name', 'id'))
-                            ->searchable()
-                            ->required()
-                            ->createOptionForm([
-                                TextInput::make('name')->label('Nouvelle catégorie')->required()->maxLength(100),
-                            ])
-                            ->createOptionUsing(fn (array $data, CreateCategory $createCategory) => $createCategory
-                                ->handle(auth()->user(), $data['name'])->getKey()),
-                        TextInput::make('description')
-                            ->label('Fonction actuelle')
-                            ->maxLength(255),
+                        CategoryField::make(),
                         TextInput::make('wikidata_id')
                             ->label('Identifiant Wikidata')
                             ->placeholder('Q12345')
@@ -86,18 +74,24 @@ class PublicFigureForm
                             ->helperText('Photo libre de droits uniquement (crédit et licence vérifiés). Recadrée, découpée et passée en deux tons dans l’atelier.'),
                     ]),
                 Repeater::make('affiliations')
-                    ->label('Affiliations successives')
-                    ->helperText('Parti, média ou gouvernement : on affiche celle en cours au moment de chaque déclaration.')
+                    ->label('Fonctions successives')
+                    ->helperText('La fonction en cours au moment de chaque déclaration est affichée avec la carte ; celle en cours aujourd’hui, sur la page de la personnalité.')
                     ->columnSpanFull()
                     ->columns(4)
                     ->defaultItems(0)
-                    ->addActionLabel('Ajouter une affiliation')
+                    ->addActionLabel('Ajouter une fonction')
+                    ->deleteAction(fn (Action $action) => $action->requiresConfirmation()->modalHeading('Supprimer cette fonction ?'))
                     ->schema([
                         Hidden::make('id'),
+                        TextInput::make('role')
+                            ->label('Fonction')
+                            ->placeholder('Députée, ministre, éditorialiste…')
+                            ->required()
+                            ->maxLength(255),
                         Select::make('organization')
                             ->label('Organisation')
+                            ->placeholder('Facultative')
                             ->searchable()
-                            ->required()
                             // Organisations déjà connues, plus la valeur en cours.
                             ->options(fn (?string $state) => Organizations::known()
                                 ->when($state, fn ($known) => $known->push($state))
@@ -109,6 +103,8 @@ class PublicFigureForm
                             ->getOptionLabelUsing(fn (?string $value) => $value)
                             ->live()
                             ->rules(fn (Get $get) => [new NotNearDuplicateOrganization((bool) $get('distinct'))]),
+                        DatePicker::make('started_on')->label('Début'),
+                        DatePicker::make('ended_on')->label('Fin')->afterOrEqual('started_on'),
                         Checkbox::make('distinct')
                             ->label('C’est une autre organisation (pas une faute de frappe)')
                             ->helperText(fn (Get $get) => 'Proche de « '.implode(' », « ', Organizations::nearDuplicates((string) $get('organization'))).' ».')
@@ -116,9 +112,6 @@ class PublicFigureForm
                                 && Organizations::nearDuplicates($get('organization')) !== [])
                             ->dehydrated(false)
                             ->columnSpanFull(),
-                        TextInput::make('role')->label('Rôle'),
-                        DatePicker::make('started_on')->label('Début'),
-                        DatePicker::make('ended_on')->label('Fin')->afterOrEqual('started_on'),
                     ]),
             ]);
     }

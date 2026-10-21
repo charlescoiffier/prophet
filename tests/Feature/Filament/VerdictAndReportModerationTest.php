@@ -127,3 +127,19 @@ it('laisse l’administrateur supprimer puis restaurer un compte depuis le panne
 
     expect($member->refresh()->trashed())->toBeFalse();
 });
+
+it('crée la catégorie tapée et une fonction sans organisation avec la fiche', function () {
+    Livewire::actingAs(User::factory()->moderator()->create())
+        ->test(CreatePublicFigure::class)
+        ->fillForm([
+            'last_name' => 'Syndicale',
+            'category_id' => 'nouvelle:Syndicaliste',
+            'affiliations' => [['role' => 'Économiste']],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $figure = PublicFigure::where('slug', 'syndicale')->sole();
+    expect($figure->category->name)->toBe('Syndicaliste')
+        ->and($figure->affiliations()->sole())->role->toBe('Économiste')->organization->toBeNull();
+});

@@ -24,7 +24,8 @@ class PublicFigureResource extends JsonResource
             'slug' => $this->slug,
             /** Catégorie : slug stable et nom affiché. */
             'category' => $this->whenLoaded('category', fn () => ['value' => $this->category->slug, 'label' => $this->category->name]),
-            'description' => $this->description,
+            /** Fonction en cours aujourd'hui (« Députée, Parti A »), d'après les fonctions successives. */
+            'current_function' => $this->whenLoaded('affiliations', fn () => $this->currentAffiliation()?->label()),
             'photo_url' => $this->resource->photoUrl(),
             'wikidata_id' => $this->wikidata_id,
             'affiliations' => AffiliationResource::collection($this->whenLoaded('affiliations')),

@@ -33,13 +33,13 @@ it('met à jour, retire les affiliations disparues et journalise la différence'
     app(SavePublicFigure::class)->handle($figure, $moderator, [
         'name' => 'Élise Démo',
         'category_id' => Category::where('slug', 'politique')->value('id'),
-        'description' => 'Députée',
+        'wikidata_id' => 'Q4242',
         'affiliations' => [['id' => $keep->id, 'organization' => 'Parti B']],
     ]);
 
     $log = $figure->activityLogs()->where('action', ActivityAction::Edited)->sole();
     expect($figure->affiliations()->pluck('id')->all())->toBe([$keep->id])
-        ->and($log->after)->toHaveKeys(['description', 'affiliations'])
+        ->and($log->after)->toHaveKeys(['wikidata_id', 'affiliations'])
         ->and($log->after)->not->toHaveKey('name');
 });
 

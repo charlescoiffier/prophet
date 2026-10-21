@@ -76,7 +76,7 @@ it('ne touche pas à la photo si l’atelier est fermé sans valider', function 
     ]);
 
     editFigure($figure)
-        ->fillForm(['description' => 'Députée'])
+        ->fillForm(['wikidata_id' => 'Q4242'])
         ->call('save')
         ->assertHasNoFormErrors();
 
@@ -157,7 +157,7 @@ it('ne recopie pas la photo quand on enregistre à nouveau la même page', funct
         ->assertHasNoFormErrors();
     $first = $figure->refresh()->only(['photo_path', 'photo_original_path']);
 
-    $page->fillForm(['description' => 'Députée'])->call('save')->assertHasNoFormErrors();
+    $page->fillForm(['wikidata_id' => 'Q4242'])->call('save')->assertHasNoFormErrors();
 
     expect($figure->refresh()->only(['photo_path', 'photo_original_path']))->toBe($first)
         ->and(Storage::disk('public')->allFiles())->toHaveCount(2);

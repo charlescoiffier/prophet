@@ -12,7 +12,7 @@
         <p class="max-w-[450px] text-[13px] leading-relaxed lg:max-w-[255px]">
             {{ $lead }}
             @if ($currentAffiliation)
-                <br><span class="text-muted">{{ trim($currentAffiliation->role.', '.$currentAffiliation->organization, ', ') }}</span>
+                <br><span class="text-muted">{{ $currentAffiliation->label() }}</span>
             @endif
         </p>
     </header>

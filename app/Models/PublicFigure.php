@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['first_name', 'last_name', 'name', 'slug', 'category_id', 'description', 'photo_url', 'photo_path', 'photo_original_path', 'photo_settings', 'wikidata_id'])]
+#[Fillable(['first_name', 'last_name', 'name', 'slug', 'category_id', 'photo_url', 'photo_path', 'photo_original_path', 'photo_settings', 'wikidata_id'])]
 class PublicFigure extends Model
 {
     /** @use HasFactory<PublicFigureFactory> */
@@ -147,6 +147,15 @@ class PublicFigure extends Model
     public function affiliationOn(Carbon $date): ?Affiliation
     {
         return $this->affiliations
+            ->sortByDesc(fn (Affiliation $affiliation) => $affiliation->started_on?->toDateString() ?? '')
             ->first(fn (Affiliation $affiliation) => $affiliation->coversDate($date));
+    }
+
+    /**
+     * Fonction en cours aujourd'hui (elle remplace l'ancienne « fonction actuelle » saisie à la main).
+     */
+    public function currentAffiliation(): ?Affiliation
+    {
+        return $this->affiliationOn(today());
     }
 }

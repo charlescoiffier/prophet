@@ -52,9 +52,7 @@
                     <div class="pb-2">
                         <a href="{{ route('figures.show', $card->publicFigure) }}" wire:navigate class="text-[26px] leading-none font-bold tracking-[-0.5px] text-ink no-underline hover:underline">{{ $card->publicFigure->name }}</a>
                         @if ($affiliation)
-                            <span class="mt-1 block text-xs">{{ trim($affiliation->role.', '.$affiliation->organization, ', ') }}, au moment de la déclaration</span>
-                        @elseif ($card->publicFigure->description)
-                            <span class="mt-1 block text-xs">{{ $card->publicFigure->description }}</span>
+                            <span class="mt-1 block text-xs">{{ $affiliation->label() }}, au moment de la déclaration</span>
                         @endif
                     </div>
                 </div>

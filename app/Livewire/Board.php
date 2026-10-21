@@ -194,7 +194,7 @@ class Board extends Component
             'sections' => $this->sections(),
             'filterOptions' => $this->filterOptions(),
             'record' => $this->figure?->record(),
-            'currentAffiliation' => $this->figure?->affiliationOn(now()),
+            'currentAffiliation' => $this->figure?->currentAffiliation(),
         ])
             ->title($this->title())
             ->layoutData(['description' => $this->description()]);
@@ -257,7 +257,7 @@ class Board extends Component
     {
         return Card::query()
             ->visible()
-            ->with(['publicFigure', 'themes', 'approvedVerdict'])
+            ->with(['publicFigure.affiliations', 'themes', 'approvedVerdict'])
             ->when($this->figure, fn (Builder $query) => $query->where('public_figure_id', $this->figure->getKey()))
             ->when($this->theme, fn (Builder $query) => $query->whereHas('themes', fn (Builder $theme) => $theme->whereKey($this->theme->getKey())))
             ->when($withType ? CardType::tryFrom($this->type) : null, fn (Builder $query, CardType $type) => $query->where('type', $type))
@@ -343,7 +343,7 @@ class Board extends Component
     private function lead(): string
     {
         return match (true) {
-            $this->figure !== null => trim(($this->figure->description ?? '').' · Promesses et prédictions citées, datées et sourcées.', ' ·'),
+            $this->figure !== null => 'Promesses et prédictions citées, datées et sourcées.',
             $this->theme !== null => 'Promesses et prédictions sur ce thème.',
             default => match ($this->view) {
                 'awaiting' => 'L’échéance est passée : il reste à confronter la parole aux faits.',

@@ -29,7 +29,7 @@
                 <x-filament::button size="sm" color="gray" x-on:click="retouch()">Retoucher</x-filament::button>
             @endif
             @if ($imageUrl)
-                <x-filament::button size="sm" color="danger" outlined x-on:click="remove()">Retirer la photo</x-filament::button>
+                <x-filament::button size="sm" color="danger" outlined x-on:click="if (window.confirm('Retirer la photo de cette personnalité ? Elle sera supprimée à l’enregistrement de la fiche.')) remove()">Retirer la photo</x-filament::button>
             @endif
         </div>
 
