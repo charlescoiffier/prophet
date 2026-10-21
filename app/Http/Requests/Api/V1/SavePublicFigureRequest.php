@@ -19,7 +19,9 @@ class SavePublicFigureRequest extends FormRequest
         $required = $figure === null ? 'required' : 'sometimes';
 
         return [
-            'name' => [$required, 'string', 'max:255'],
+            'first_name' => ['nullable', 'string', 'max:100'],
+            /** Nom de famille (ou nom seul) ; le nom affiché est « Prénom Nom ». */
+            'last_name' => [$required, 'string', 'max:155'],
             /** Slug d'une catégorie existante (politique, journaliste, editorialiste, economiste, autre…). */
             'category' => [$required, 'string', Rule::exists('categories', 'slug')],
             'description' => ['nullable', 'string', 'max:255'],

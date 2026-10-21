@@ -66,7 +66,8 @@ class CardForm
                             ->searchable()
                             ->required()
                             ->createOptionForm([
-                                TextInput::make('name')->label('Nom')->required(),
+                                TextInput::make('first_name')->label('Prénom')->maxLength(100),
+                                TextInput::make('last_name')->label('Nom')->required()->maxLength(155),
                                 Select::make('category_id')->label('Catégorie')->options(fn () => Category::orderBy('name')->pluck('name', 'id'))->required(),
                                 TextInput::make('description')->label('Fonction actuelle'),
                             ])

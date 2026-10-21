@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CardType;
 use App\Enums\VerdictStatus;
 use App\Enums\VerdictValue;
+use App\Support\Names;
 use Database\Factories\PublicFigureFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'slug', 'category_id', 'description', 'photo_url', 'photo_path', 'photo_original_path', 'photo_settings', 'wikidata_id'])]
+#[Fillable(['first_name', 'last_name', 'name', 'slug', 'category_id', 'description', 'photo_url', 'photo_path', 'photo_original_path', 'photo_settings', 'wikidata_id'])]
 class PublicFigure extends Model
 {
     /** @use HasFactory<PublicFigureFactory> */
@@ -36,6 +37,23 @@ class PublicFigure extends Model
         return [
             'photo_settings' => 'array',
         ];
+    }
+
+    /**
+     * « name » est le nom affiché, recomposé à partir du prénom et du nom quand ils changent ;
+     * un nom complet donné seul (données anciennes, tests) est coupé en prénom et nom.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (PublicFigure $figure) {
+            if ($figure->isDirty(['first_name', 'last_name']) && filled($figure->last_name)) {
+                $figure->first_name = filled($figure->first_name) ? trim($figure->first_name) : null;
+                $figure->last_name = trim($figure->last_name);
+                $figure->name = Names::full($figure->first_name, $figure->last_name);
+            } elseif ($figure->isDirty('name') && filled($figure->name)) {
+                [$figure->first_name, $figure->last_name] = Names::split($figure->name);
+            }
+        });
     }
 
     public function getRouteKeyName(): string

@@ -8,6 +8,8 @@ use App\Filament\Resources\PublicFigures\Pages\CreatePublicFigure;
 use App\Filament\Resources\Reports\Pages\ListReports;
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Filament\Resources\Verdicts\Pages\ListVerdicts;
+use App\Models\Category;
+use App\Models\PublicFigure;
 use App\Models\Report;
 use App\Models\User;
 use App\Models\Verdict;
@@ -80,14 +82,32 @@ it('refuse dans la fiche d’un compte un pseudo déjà pris', function () {
         ->assertHasFormErrors(['username' => 'unique']);
 });
 
-it('fait suivre l’identifiant d’URL au nom tant qu’il n’a pas été retouché', function () {
+it('fait suivre l’identifiant d’URL au prénom et au nom tant qu’il n’a pas été retouché', function () {
     Livewire::actingAs(User::factory()->moderator()->create())
         ->test(CreatePublicFigure::class)
-        ->fillForm(['name' => 'Élise Démo'])
+        ->fillForm(['first_name' => 'Élise'])
+        ->fillForm(['last_name' => 'Démo'])
         ->assertSchemaStateSet(['slug' => 'elise-demo'])
         ->fillForm(['slug' => 'elise'])
-        ->fillForm(['name' => 'Élise Démonstration'])
+        ->fillForm(['last_name' => 'Démonstration'])
         ->assertSchemaStateSet(['slug' => 'elise']);
+});
+
+it('crée une personnalité avec prénom et nom séparés et une organisation tapée qui n’existait pas', function () {
+    Livewire::actingAs(User::factory()->moderator()->create())
+        ->test(CreatePublicFigure::class)
+        ->fillForm([
+            'first_name' => 'Élise',
+            'last_name' => 'de La Démo',
+            'category_id' => Category::where('slug', 'politique')->value('id'),
+            'affiliations' => [['organization' => 'Collectif Nouveau', 'role' => 'Porte-parole']],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $figure = PublicFigure::where('slug', 'elise-de-la-demo')->sole();
+    expect($figure)->name->toBe('Élise de La Démo')->first_name->toBe('Élise')->last_name->toBe('de La Démo')
+        ->and($figure->affiliations()->value('organization'))->toBe('Collectif Nouveau');
 });
 
 it('laisse l’administrateur supprimer puis restaurer un compte depuis le panneau', function () {

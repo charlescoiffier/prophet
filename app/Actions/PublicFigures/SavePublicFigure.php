@@ -6,6 +6,7 @@ use App\Actions\RecordActivity;
 use App\Enums\ActivityAction;
 use App\Models\PublicFigure;
 use App\Models\User;
+use App\Support\Names;
 use App\Support\Organizations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -21,7 +22,9 @@ class SavePublicFigure
     public function __construct(private RecordActivity $recordActivity) {}
 
     /**
-     * @param  array{name: string, affiliations?: list<array<string, mixed>>}&array<string, mixed>  $data
+     * Prénom et nom (ou, à défaut, un nom complet « name », coupé au premier espace).
+     *
+     * @param  array{first_name?: string|null, last_name?: string, name?: string, affiliations?: list<array<string, mixed>>}&array<string, mixed>  $data
      */
     public function handle(?PublicFigure $figure, User $actor, array $data): PublicFigure
     {
@@ -37,7 +40,8 @@ class SavePublicFigure
             $previousOriginal = $figure->photo_original_path;
 
             $figure->fill($data);
-            $figure->slug = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['name']);
+            $displayName = filled($figure->last_name) ? Names::full($figure->first_name, $figure->last_name) : (string) $figure->name;
+            $figure->slug = filled($data['slug'] ?? null) ? $data['slug'] : ($figure->slug ?? Str::slug($displayName));
             $figure->save();
 
             // Photo remplacée ou retirée : l'ancien fichier ne sert plus.

@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
  * Refuse un nom d'organisation très proche d'une organisation connue (faute de frappe probable),
- * sauf si l'on confirme qu'il s'agit bien d'une autre organisation.
+ * sauf si l'on confirme qu'il s'agit bien d'une autre organisation. Une organisation déjà connue passe toujours.
  */
 class NotNearDuplicateOrganization implements ValidationRule
 {
@@ -16,7 +16,7 @@ class NotNearDuplicateOrganization implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($this->confirmedDistinct || ! is_string($value)) {
+        if ($this->confirmedDistinct || ! is_string($value) || Organizations::isKnown($value)) {
             return;
         }
 

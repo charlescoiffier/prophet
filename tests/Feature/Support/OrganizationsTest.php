@@ -28,3 +28,11 @@ it('bloque un quasi-doublon sauf confirmation explicite', function () {
     expect($refused->errors()->first('name'))->toContain('« Rassemblement Fictif »')
         ->and($confirmed->passes())->toBeTrue();
 });
+
+it('propose pendant la saisie les organisations connues, puis le texte tapé comme nouvelle organisation', function () {
+    Affiliation::factory()->create(['organization' => 'Rassemblement Fictif']);
+
+    expect(Organizations::suggestions('rassemblement'))->toBe(['Rassemblement Fictif' => 'Rassemblement Fictif', 'rassemblement' => 'rassemblement (nouvelle organisation)'])
+        ->and(Organizations::suggestions('rassemblement fictif'))->toBe(['Rassemblement Fictif' => 'Rassemblement Fictif'])
+        ->and(Validator::make(['name' => 'Rassemblement Fictif'], ['name' => [new NotNearDuplicateOrganization]])->passes())->toBeTrue();
+});
