@@ -10,7 +10,7 @@
         x-data="portraitStudio({
             statePath: @js($getStatePath()),
             originalUrl: @js($getOriginalUrl()),
-            palette: @js($getPalette()),
+            studio: @js($getStudioDefaults()),
         })"
         x-on:keydown.window="keyDown($event)"
         {{ $getExtraAttributeBag()->class(['flex flex-col gap-3']) }}
@@ -56,7 +56,7 @@
                     <div
                         x-on:mousedown.prevent="pointerDown($event)"
                         x-on:mousemove="pointerMove($event)"
-                        x-bind:class="step === 'crop' ? 'cursor-move' : 'cursor-crosshair'"
+                        x-bind:style="{ cursor: step === 'crop' ? cursor : 'crosshair' }"
                         class="mx-auto w-full max-w-[calc(100vh-15rem+2rem)] p-4"
                     >
                         <canvas
@@ -68,12 +68,7 @@
                     </div>
 
                     <div x-show="step === 'crop'" class="flex flex-col gap-1 text-sm">
-                        <label class="flex items-center gap-3">
-                            <span class="w-24">Taille</span>
-                            <input type="range" class="flex-1" x-bind:min="Math.round(minSide * 0.2)" x-bind:max="minSide"
-                                   x-bind:value="settings.crop?.size" x-on:input="setCropSize(Number($event.target.value))">
-                        </label>
-                        <p class="text-gray-500">Déplacez le cadre à la souris.</p>
+                        <p class="text-gray-500">Déplacez le cadre ou tirez l’un de ses coins.</p>
                         <p x-show="lowResolution" class="text-warning-600">La photo sera agrandie, la qualité baissera.</p>
                     </div>
 

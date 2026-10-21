@@ -1,9 +1,11 @@
 /**
  * Calcul de l'atelier portrait, sans accès au DOM : découpe aux ciseaux, deux tons, liseré.
- * Coordonnées en pixels de l'image finale (SIZE × SIZE).
+ * Les coupes et l'épaisseur du liseré sont notées dans un espace de travail de WORK_SIZE × WORK_SIZE ;
+ * l'image finale fait settings.size de côté (taille donnée par resources/portrait/studio.json).
  */
 
-export const SIZE = 600;
+export const WORK_SIZE = 600;
+const SIZE = WORK_SIZE;
 export const SNAP_DISTANCE = 12;
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
@@ -16,18 +18,22 @@ const CORNERS = [
 ];
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-export function defaultSettings(palette) {
+export function defaultSettings(studio) {
     return {
         version: 1,
+        size: studio.size,
         crop: null,
         cuts: [],
         brightness: 0,
         contrast: 0,
         threshold: 128,
         halo: { enabled: false, width: 8 },
-        palette: { ...palette },
+        palette: { ...studio.palette },
     };
 }
+
+/** Taille de l'image finale ; les réglages d'avant ce paramètre valent 600. */
+export const outputSize = (settings) => settings.size ?? WORK_SIZE;
 
 export function checkFile(file) {
     if (!ACCEPTED_TYPES.includes(file.type)) {
@@ -38,6 +44,23 @@ export function checkFile(file) {
     }
 
     return null;
+}
+
+/**
+ * Cadre carré tiré par un coin : le coin opposé (anchor) reste fixe, le carré suit le pointeur
+ * sans sortir de la photo ni descendre sous min. Coordonnées en pixels de la photo d'origine.
+ */
+export function resizeCrop({ anchor: [ax, ay], pointer: [px, py], width, height, min }) {
+    const towardRight = px >= ax;
+    const towardBottom = py >= ay;
+    const room = Math.min(towardRight ? width - ax : ax, towardBottom ? height - ay : ay);
+    const size = Math.round(Math.min(Math.max(Math.abs(px - ax), Math.abs(py - ay), min), room));
+
+    return {
+        x: Math.round(towardRight ? ax : ax - size),
+        y: Math.round(towardBottom ? ay : ay - size),
+        size,
+    };
 }
 
 /**
@@ -148,8 +171,8 @@ export function toneValue(r, g, b, { brightness, contrast }) {
 /**
  * Efface du masque (1 = gardé) les pixels dont le centre est dans le polygone.
  */
-function clearPolygon(mask, polygon) {
-    for (let y = 0; y < SIZE; y++) {
+function clearPolygon(mask, polygon, size) {
+    for (let y = 0; y < size; y++) {
         const center = y + 0.5;
         const crossings = [];
         for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -162,8 +185,8 @@ function clearPolygon(mask, polygon) {
         crossings.sort((a, b) => a - b);
         for (let k = 0; k + 1 < crossings.length; k += 2) {
             const from = Math.max(Math.ceil(crossings[k] - 0.5), 0);
-            const to = Math.min(Math.floor(crossings[k + 1] - 0.5), SIZE - 1);
-            mask.fill(0, y * SIZE + from, y * SIZE + to + 1);
+            const to = Math.min(Math.floor(crossings[k + 1] - 0.5), size - 1);
+            mask.fill(0, y * size + from, y * size + to + 1);
         }
     }
 }
@@ -171,7 +194,7 @@ function clearPolygon(mask, polygon) {
 /**
  * Masque dilaté par un disque : chaque pixel gardé au bord du masque y imprime un disque.
  */
-export function dilate(mask, radius) {
+export function dilate(mask, radius, size = SIZE) {
     const result = mask.slice();
     const offsets = [];
     for (let dy = -radius; dy <= radius; dy++) {
@@ -179,15 +202,15 @@ export function dilate(mask, radius) {
             if (dx * dx + dy * dy <= radius * radius) offsets.push([dx, dy]);
         }
     }
-    const kept = (x, y) => x >= 0 && y >= 0 && x < SIZE && y < SIZE && mask[y * SIZE + x] === 1;
+    const kept = (x, y) => x >= 0 && y >= 0 && x < size && y < size && mask[y * size + x] === 1;
 
-    for (let y = 0; y < SIZE; y++) {
-        for (let x = 0; x < SIZE; x++) {
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
             if (!kept(x, y) || (kept(x - 1, y) && kept(x + 1, y) && kept(x, y - 1) && kept(x, y + 1))) continue;
             for (const [dx, dy] of offsets) {
                 const nx = x + dx;
                 const ny = y + dy;
-                if (nx >= 0 && ny >= 0 && nx < SIZE && ny < SIZE) result[ny * SIZE + nx] = 1;
+                if (nx >= 0 && ny >= 0 && nx < size && ny < size) result[ny * size + nx] = 1;
             }
         }
     }
@@ -198,22 +221,24 @@ export function dilate(mask, radius) {
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
 /**
- * Image finale à partir de la photo recadrée (SIZE × SIZE) et des réglages.
+ * Image finale à partir de la photo recadrée (settings.size de côté) et des réglages.
  */
 export function renderPortrait(source, settings) {
-    const mask = new Uint8Array(SIZE * SIZE).fill(1);
+    const size = outputSize(settings);
+    const scale = size / WORK_SIZE;
+    const mask = new Uint8Array(size * size).fill(1);
     settings.cuts.forEach((cut) => {
         const polygon = discardedPolygon(cut);
-        if (polygon !== null) clearPolygon(mask, polygon);
+        if (polygon !== null) clearPolygon(mask, polygon.map(([x, y]) => [x * scale, y * scale]), size);
     });
-    const halo = settings.halo.enabled ? dilate(mask, settings.halo.width) : null;
+    const halo = settings.halo.enabled ? dilate(mask, Math.round(settings.halo.width * scale), size) : null;
 
     const dark = rgb(settings.palette.dark);
     const light = rgb(settings.palette.light);
     const haloColor = rgb(settings.palette.halo);
-    const data = new Uint8ClampedArray(SIZE * SIZE * 4);
+    const data = new Uint8ClampedArray(size * size * 4);
 
-    for (let i = 0; i < SIZE * SIZE; i++) {
+    for (let i = 0; i < size * size; i++) {
         const o = i * 4;
         if (mask[i] === 1) {
             const value = toneValue(source.data[o], source.data[o + 1], source.data[o + 2], settings);
@@ -223,5 +248,5 @@ export function renderPortrait(source, settings) {
         }
     }
 
-    return typeof ImageData === 'function' ? new ImageData(data, SIZE, SIZE) : { width: SIZE, height: SIZE, data };
+    return typeof ImageData === 'function' ? new ImageData(data, size, size) : { width: size, height: size, data };
 }

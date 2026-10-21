@@ -2,17 +2,19 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    SIZE,
+    WORK_SIZE as SIZE,
     checkFile,
     defaultSettings,
     discardedPolygon,
     renderPortrait,
+    resizeCrop,
     snapToEdge,
     splitByCut,
     toneValue,
 } from './pipeline.js';
 
-const palette = JSON.parse(readFileSync(new URL('../../portrait/palette.json', import.meta.url)));
+const studio = JSON.parse(readFileSync(new URL('../../portrait/studio.json', import.meta.url)));
+const palette = studio.palette;
 
 const area = (polygon) =>
     Math.abs(polygon.reduce((sum, [x, y], i) => {
@@ -20,15 +22,15 @@ const area = (polygon) =>
         return sum + x * ny - nx * y;
     }, 0)) / 2;
 
-const grayImage = (value) => {
-    const data = new Uint8ClampedArray(SIZE * SIZE * 4);
+const grayImage = (value, size = SIZE) => {
+    const data = new Uint8ClampedArray(size * size * 4);
     for (let i = 0; i < data.length; i += 4) {
         data.set([value, value, value, 255], i);
     }
-    return { width: SIZE, height: SIZE, data };
+    return { width: size, height: size, data };
 };
 
-const pixel = (image, x, y) => Array.from(image.data.slice((y * SIZE + x) * 4, (y * SIZE + x) * 4 + 4));
+const pixel = (image, x, y) => Array.from(image.data.slice((y * image.width + x) * 4, (y * image.width + x) * 4 + 4));
 
 const rgba = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).concat(255);
 
@@ -62,7 +64,7 @@ test('toneValue applique luminosité et contraste', () => {
 });
 
 test('renderPortrait rend le morceau jeté transparent et le reste en deux tons', () => {
-    const settings = { ...defaultSettings(palette), cuts: [horizontalCut] };
+    const settings = { ...defaultSettings(studio), cuts: [horizontalCut] };
 
     const dark = renderPortrait(grayImage(100), { ...settings, threshold: 128 });
     assert.equal(pixel(dark, 300, 100)[3], 0);
@@ -73,20 +75,44 @@ test('renderPortrait rend le morceau jeté transparent et le reste en deux tons'
 });
 
 test('renderPortrait trace le liseré le long de la coupe', () => {
-    const settings = { ...defaultSettings(palette), cuts: [horizontalCut], halo: { enabled: true, width: 8 } };
+    const settings = { ...defaultSettings(studio), cuts: [horizontalCut], halo: { enabled: true, width: 8 } };
     const image = renderPortrait(grayImage(100), settings);
 
     assert.deepEqual(pixel(image, 300, 296), rgba(palette.halo));
     assert.equal(pixel(image, 300, 280)[3], 0);
 });
 
-test('palette.json donne trois couleurs #RRGGBB', () => {
-    assert.deepEqual(Object.keys(palette).sort(), ['dark', 'halo', 'light']);
-    Object.values(palette).forEach((color) => assert.match(color, /^#[0-9A-Fa-f]{6}$/));
+test('studio.json donne la taille finale et trois couleurs #RRGGBB', () => {
+    assert.ok(Number.isInteger(studio.size) && studio.size >= 100);
+    assert.deepEqual(Object.keys(studio.palette).sort(), ['dark', 'halo', 'light']);
+    Object.values(studio.palette).forEach((color) => assert.match(color, /^#[0-9A-Fa-f]{6}$/));
+});
+
+test('defaultSettings reprend la taille et les couleurs du fichier', () => {
+    const settings = defaultSettings({ size: 800, palette });
+    assert.equal(settings.size, 800);
+    assert.deepEqual(settings.palette, palette);
+});
+
+test('renderPortrait rend à la taille demandée, coupes notées sur 600', () => {
+    const settings = { ...defaultSettings({ size: 300, palette }), cuts: [horizontalCut] };
+    const image = renderPortrait(grayImage(100, 300), settings);
+
+    assert.equal(image.width, 300);
+    assert.equal(pixel(image, 150, 50)[3], 0);
+    assert.deepEqual(pixel(image, 150, 250), rgba(palette.dark));
 });
 
 test('checkFile refuse un fichier trop lourd ou illisible', () => {
     assert.equal(typeof checkFile({ size: 11 * 1024 * 1024, type: 'image/jpeg' }), 'string');
     assert.equal(typeof checkFile({ size: 1000, type: 'image/heic' }), 'string');
     assert.equal(checkFile({ size: 1000, type: 'image/png' }), null);
+});
+
+test('resizeCrop garde le coin opposé fixe, un carré dans la photo', () => {
+    const photo = { width: 1200, height: 900, min: 50 };
+    assert.deepEqual(resizeCrop({ ...photo, anchor: [100, 100], pointer: [400, 300] }), { x: 100, y: 100, size: 300 });
+    assert.deepEqual(resizeCrop({ ...photo, anchor: [100, 100], pointer: [0, 0] }), { x: 0, y: 0, size: 100 });
+    assert.deepEqual(resizeCrop({ ...photo, anchor: [100, 100], pointer: [1500, 120] }), { x: 100, y: 100, size: 800 });
+    assert.deepEqual(resizeCrop({ ...photo, anchor: [100, 100], pointer: [110, 105] }), { x: 100, y: 100, size: 50 });
 });
