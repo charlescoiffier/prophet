@@ -12,6 +12,8 @@ use App\Livewire\Auth\ResetPasswordForm;
 use App\Livewire\Board;
 use App\Livewire\Cards\ProposeCardForm;
 use App\Livewire\Cards\ShowCard;
+use App\Livewire\Directory\FigureIndex;
+use App\Livewire\Directory\ThemeIndex;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,7 +28,9 @@ Route::get('/en-relecture', Board::class)->defaults('view', 'review')->name('car
 Route::get('/tranchees', Board::class)->defaults('view', 'closed')->name('cards.closed');
 Route::get('/verdicts/{tone}', Board::class)->defaults('view', 'verdict')->name('cards.verdict');
 Route::get('/recherche', Board::class)->defaults('view', 'search')->name('search');
+Route::get('/personnalites', FigureIndex::class)->name('figures.index');
 Route::get('/personnalites/{figure:slug}', Board::class)->name('figures.show');
+Route::get('/themes', ThemeIndex::class)->name('themes.index');
 Route::get('/themes/{theme:slug}', Board::class)->name('themes.show');
 
 // Cartes

@@ -161,3 +161,29 @@ it('filtre par citation ou par nom de personnalité, sans accents ni majuscules,
         ->assertDontSee('« Le déficit repassera sous 3 %. »')
         ->assertDontSee('« Les prix du métro augmenteront. »');
 });
+
+it('liste dans la barre latérale les personnalités les plus fournies, puis les plus récemment modifiées, avec un lien vers toutes', function () {
+    $figures = PublicFigure::factory()->count(Sidebar::LIMIT + 1)->create();
+    foreach ($figures as $index => $figure) {
+        Card::factory()->published()->for($figure)->create(['updated_at' => now()->subDays($index + 1)]);
+    }
+    Card::factory()->published()->for($figures->last())->create(['updated_at' => now()->subYear()]);
+    Card::factory()->published()->for($figures[1])->create(['updated_at' => now()]);
+
+    $sidebar = new Sidebar;
+
+    expect($sidebar->figures->pluck('id')->take(3)->all())->toBe([$figures[1]->id, $figures->last()->id, $figures[0]->id])
+        ->and($sidebar->figures)->toHaveCount(Sidebar::LIMIT)
+        ->and($sidebar->figuresTotal)->toBe(Sidebar::LIMIT + 1);
+
+    $this->get('/')->assertSee('Toutes les personnalités');
+});
+
+it('liste toutes les personnalités et tous les thèmes qui ont une carte publique', function () {
+    $theme = Theme::factory()->create(['name' => 'Logement']);
+    Card::factory()->published()->for(PublicFigure::factory()->state(['name' => 'Ada Visible']))->hasAttached($theme)->create();
+    Card::factory()->for(PublicFigure::factory()->state(['name' => 'Bob Caché']))->create();
+
+    $this->get(route('figures.index'))->assertOk()->assertSee('Ada Visible')->assertDontSee('Bob Caché');
+    $this->get(route('themes.index'))->assertOk()->assertSee('# Logement');
+});

@@ -75,6 +75,14 @@
                             <span @class(['flex-1', $active => $isActive])>{{ $figure->name }}</span>
                         </a>
                     @endforeach
+                    @if ($figuresTotal > $figures->count())
+                        @php($isActive = request()->routeIs('figures.index'))
+                        <a href="{{ route('figures.index') }}" wire:navigate class="{{ $item }} font-normal" @if ($isActive) aria-current="page" @endif>
+                            <span class="{{ $icon }}"><x-uicon name="all-cards" :size="16" /></span>
+                            <span @class(['flex-1', $active => $isActive])>Toutes les personnalités</span>
+                            <span class="text-[11px]">{{ $figuresTotal }}</span>
+                        </a>
+                    @endif
                 </section>
             @endif
 
@@ -88,6 +96,14 @@
                             <span @class(['flex-1', $active => $isActive])>{{ $theme->name }}</span>
                         </a>
                     @endforeach
+                    @if ($themesTotal > $themes->count())
+                        @php($isActive = request()->routeIs('themes.index'))
+                        <a href="{{ route('themes.index') }}" wire:navigate class="{{ $item }} font-normal" @if ($isActive) aria-current="page" @endif>
+                            <span class="{{ $icon }}"><x-uicon name="all-cards" :size="16" /></span>
+                            <span @class(['flex-1', $active => $isActive])>Tous les thèmes</span>
+                            <span class="text-[11px]">{{ $themesTotal }}</span>
+                        </a>
+                    @endif
                 </section>
             @endif
         </nav>
