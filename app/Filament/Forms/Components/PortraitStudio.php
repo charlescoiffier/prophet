@@ -159,12 +159,12 @@ class PortraitStudio extends Field
     }
 
     /**
-     * Couleurs de l'atelier pour une nouvelle photo (une photo retouchée garde les siennes).
+     * Taille finale et couleurs pour une nouvelle photo (une photo retouchée garde les siennes).
      *
-     * @return array{dark: string, light: string, halo: string}
+     * @return array{size: int, palette: array{dark: string, light: string, halo: string}}
      */
-    public function getPalette(): array
+    public function getStudioDefaults(): array
     {
-        return json_decode((string) file_get_contents(resource_path('portrait/palette.json')), true, flags: JSON_THROW_ON_ERROR);
+        return json_decode((string) file_get_contents(resource_path('portrait/studio.json')), true, flags: JSON_THROW_ON_ERROR);
     }
 }

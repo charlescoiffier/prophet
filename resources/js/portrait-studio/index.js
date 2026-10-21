@@ -3,16 +3,21 @@
  * Le calcul est dans pipeline.js ; ici, l'affichage et les clics.
  */
 import {
-    SIZE,
+    WORK_SIZE as SIZE,
     checkFile,
     defaultSettings,
     discardedPolygon,
+    outputSize,
     renderPortrait,
+    resizeCrop,
     snapToEdge,
     splitByCut,
 } from './pipeline.js';
 
 const INK = '#20212B';
+
+/** Demi-côté des poignées du cadre, en pixels du canevas. */
+const HANDLE = 9;
 
 /** Copie simple : structuredClone refuse les objets réactifs d'Alpine. */
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -43,7 +48,7 @@ function upload($wire, name, file) {
     return new Promise((resolve, reject) => $wire.upload(name, file, resolve, reject));
 }
 
-function portraitStudio({ statePath, originalUrl, palette }) {
+function portraitStudio({ statePath, originalUrl, studio }) {
     return {
         open: false,
         step: 'crop',
@@ -52,11 +57,12 @@ function portraitStudio({ statePath, originalUrl, palette }) {
         busy: false,
         source: null,
         originalFile: null,
-        settings: defaultSettings(palette),
+        settings: defaultSettings(studio),
         currentCut: [],
         pendingCut: null,
         pointer: null,
         dragging: null,
+        cursor: 'default',
         sourceData: null,
         frame: null,
 
@@ -69,7 +75,7 @@ function portraitStudio({ statePath, originalUrl, palette }) {
         },
 
         get lowResolution() {
-            return this.settings.crop !== null && this.settings.crop.size < SIZE;
+            return this.settings.crop !== null && this.settings.crop.size < outputSize(this.settings);
         },
 
         init() {
@@ -95,7 +101,7 @@ function portraitStudio({ statePath, originalUrl, palette }) {
             }
 
             this.originalFile = file;
-            this.settings = defaultSettings(palette);
+            this.settings = defaultSettings(studio);
             const size = this.minSide;
             this.settings.crop = {
                 x: Math.round((this.source.width - size) / 2),
@@ -149,16 +155,17 @@ function portraitStudio({ statePath, originalUrl, palette }) {
         },
 
         /**
-         * Photo recadrée, 600 × 600, en couleurs : base des découpes et des tons.
+         * Photo recadrée, à la taille finale, en couleurs : base des découpes et des tons.
          */
         captureCrop() {
+            const output = outputSize(this.settings);
             const buffer = document.createElement('canvas');
-            buffer.width = buffer.height = SIZE;
+            buffer.width = buffer.height = output;
             const context = buffer.getContext('2d', { willReadFrequently: true });
             const { x, y, size } = this.settings.crop;
-            context.drawImage(this.source, x, y, size, size, 0, 0, SIZE, SIZE);
+            context.drawImage(this.source, x, y, size, size, 0, 0, output, output);
             this.cropped = buffer;
-            this.sourceData = context.getImageData(0, 0, SIZE, SIZE);
+            this.sourceData = context.getImageData(0, 0, output, output);
         },
 
         /** Position du pointeur dans les coordonnées du canevas (0 à 600). */
@@ -179,10 +186,41 @@ function portraitStudio({ statePath, originalUrl, palette }) {
             };
         },
 
-        setCropSize(size) {
-            const crop = this.settings.crop;
-            const center = [crop.x + crop.size / 2, crop.y + crop.size / 2];
-            this.moveCrop(center[0] - size / 2, center[1] - size / 2, size);
+        /** Point du canevas ramené en pixels de la photo d'origine. */
+        toSource([x, y]) {
+            const { scale, left, top } = this.fit();
+
+            return [(x - left) / scale, (y - top) / scale];
+        },
+
+        /** Coins du cadre, en pixels du canevas, avec le coin opposé de chacun. */
+        cropCorners() {
+            const { scale, left, top } = this.fit();
+            const { x, y, size } = this.settings.crop;
+            const x1 = left + x * scale;
+            const y1 = top + y * scale;
+            const x2 = x1 + size * scale;
+            const y2 = y1 + size * scale;
+
+            return [
+                { point: [x1, y1], opposite: [x + size, y + size], cursor: 'nwse-resize' },
+                { point: [x2, y1], opposite: [x, y + size], cursor: 'nesw-resize' },
+                { point: [x2, y2], opposite: [x, y], cursor: 'nwse-resize' },
+                { point: [x1, y2], opposite: [x + size, y], cursor: 'nesw-resize' },
+            ];
+        },
+
+        /** Ce que le pointeur saisit dans le cadre : un coin, le cadre entier, ou rien. */
+        cropTarget(point) {
+            const corner = this.cropCorners()
+                .find(({ point: [cx, cy] }) => Math.abs(point[0] - cx) <= HANDLE + 4 && Math.abs(point[1] - cy) <= HANDLE + 4);
+            if (corner) return { mode: 'resize', ...corner };
+
+            const [x1, y1] = this.cropCorners()[0].point;
+            const [x2, y2] = this.cropCorners()[2].point;
+            const inside = point[0] >= x1 && point[0] <= x2 && point[1] >= y1 && point[1] <= y2;
+
+            return inside ? { mode: 'move', cursor: 'move' } : null;
         },
 
         moveCrop(x, y, size = this.settings.crop.size) {
@@ -196,7 +234,8 @@ function portraitStudio({ statePath, originalUrl, palette }) {
         pointerDown(event) {
             const point = this.position(event);
             if (this.step === 'crop') {
-                this.dragging = { point, crop: { ...this.settings.crop } };
+                const target = this.cropTarget(point);
+                this.dragging = target && { ...target, point, crop: { ...this.settings.crop } };
             } else if (this.step === 'cut') {
                 this.cutClick(point);
             }
@@ -204,12 +243,22 @@ function portraitStudio({ statePath, originalUrl, palette }) {
 
         pointerMove(event) {
             const point = this.position(event);
-            if (this.step === 'crop' && this.dragging) {
+            if (this.step === 'crop' && this.dragging?.mode === 'resize') {
+                this.settings.crop = resizeCrop({
+                    anchor: this.dragging.opposite,
+                    pointer: this.toSource(point),
+                    width: this.source.width,
+                    height: this.source.height,
+                    min: Math.round(this.minSide * 0.2),
+                });
+            } else if (this.step === 'crop' && this.dragging) {
                 const { scale } = this.fit();
                 this.moveCrop(
                     this.dragging.crop.x + (point[0] - this.dragging.point[0]) / scale,
                     this.dragging.crop.y + (point[1] - this.dragging.point[1]) / scale,
                 );
+            } else if (this.step === 'crop') {
+                this.cursor = this.cropTarget(point)?.cursor ?? 'default';
             } else if (this.step === 'cut') {
                 this.pointer = point;
                 this.draw();
@@ -300,7 +349,7 @@ function portraitStudio({ statePath, originalUrl, palette }) {
                 context.clearRect(0, 0, SIZE, SIZE);
                 if (this.step === 'crop') this.drawCrop(context);
                 if (this.step === 'cut') this.drawCuts(context);
-                if (this.step === 'tones') context.putImageData(renderPortrait(this.sourceData, this.settings), 0, 0);
+                if (this.step === 'tones') context.drawImage(this.renderCanvas(), 0, 0, SIZE, SIZE);
             });
         },
 
@@ -316,10 +365,27 @@ function portraitStudio({ statePath, originalUrl, palette }) {
             context.strokeStyle = '#ffffff';
             context.lineWidth = 2;
             context.strokeRect(left + x * scale, top + y * scale, size * scale, size * scale);
+            this.cropCorners().forEach(({ point: [cx, cy] }) => {
+                context.fillStyle = '#ffffff';
+                context.fillRect(cx - HANDLE, cy - HANDLE, HANDLE * 2, HANDLE * 2);
+                context.strokeStyle = INK;
+                context.lineWidth = 1.5;
+                context.strokeRect(cx - HANDLE, cy - HANDLE, HANDLE * 2, HANDLE * 2);
+            });
+        },
+
+        /** Image finale, à sa taille, dans un canevas. */
+        renderCanvas() {
+            const image = renderPortrait(this.sourceData, this.settings);
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = image.width;
+            canvas.getContext('2d').putImageData(image, 0, 0);
+
+            return canvas;
         },
 
         drawCuts(context) {
-            context.drawImage(this.cropped, 0, 0);
+            context.drawImage(this.cropped, 0, 0, SIZE, SIZE);
             context.fillStyle = checkerPattern(context);
             this.settings.cuts.forEach((cut) => {
                 const polygon = discardedPolygon(cut);
@@ -352,10 +418,9 @@ function portraitStudio({ statePath, originalUrl, palette }) {
             this.busy = true;
             this.error = null;
             try {
-                const output = document.createElement('canvas');
-                output.width = output.height = SIZE;
-                output.getContext('2d').putImageData(renderPortrait(this.sourceData, this.settings), 0, 0);
-                const blob = await new Promise((resolve) => output.toBlob(resolve, 'image/png'));
+                // Depuis l'onglet Recadrer, la photo recadrée n'est pas encore prête (ou date d'un ancien cadre).
+                this.captureCrop();
+                const blob = await new Promise((resolve) => this.renderCanvas().toBlob(resolve, 'image/png'));
 
                 if (this.originalFile) {
                     await upload(this.$wire, `${statePath}.original`, this.originalFile);
